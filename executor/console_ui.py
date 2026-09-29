@@ -154,7 +154,12 @@ function system(){
  return api("/v1/console/core").then(function(data){
   $("status").innerHTML='<span class="status-dot"></span> Core + Body online';
   var core=data.core||{},body=data.body||{};
-  $("system").innerHTML='<b>Core '+esc(core.version||"10.0.0")+"</b><br>"+esc(core.brain||"Hashtag")+"<br><br><b>Executor</b><br>"+esc(body.name||"Hashtag the Executor")+"<br>"+esc(body.version||"1.3.0")+'<br><span style="color:#8fa0bb">'+esc(data.pending_permissions||0)+" pending permissions</span>";
+  var omniHtml="";
+  if(core.omniscience){
+   var tot=core.omniscience.total_learned||0;
+   omniHtml='<br><span style="color:#58a6ff;font-size:11px">🌐 Omniscience: '+esc(tot)+' learned</span>';
+  }
+  $("system").innerHTML='<b>Core '+esc(core.version||"10.0.0")+"</b><br>"+esc(core.brain||"Hashtag")+omniHtml+"<br><br><b>Executor</b><br>"+esc(body.name||"Hashtag the Executor")+"<br>"+esc(body.version||"1.3.0")+'<br><span style="color:#8fa0bb">'+esc(data.pending_permissions||0)+" pending permissions</span>";
  }).catch(function(error){
   $("status").innerHTML='<span class="status-error">●</span> Core offline';
   $("system").textContent=error.message||"Unable to reach Core";
