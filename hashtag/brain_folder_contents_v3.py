@@ -1,0 +1,766 @@
+import re
+from collections import Counter
+from .contracts import Action, Operation
+
+FIELD_ALIASES = {
+    "user": "username", "usr": "username", "login": "username", "username": "username",
+    "pass": "password", "pwd": "password", "password": "password",
+    "mail": "email", "email": "email", "e-mail": "email",
+    "name": "name", "fullname": "name", "full_name": "name",
+    "phone": "phone", "mobile": "phone", "tel": "phone",
+    "url": "url", "link": "url", "token": "token", "key": "token", "secret": "secret",
+}
+
+
+class DataInspector:
+    def inspect(self, text):
+        text = text or ""
+        lines = text.splitlines()
+        nonempty = [x for x in lines if x.strip()]
+        separators = Counter()
+        samples = []
+        for line in nonempty[:1000]:
+            for sep in (":", "|", "->", "=>", ",", "\t", ";", "="):
+                if sep in line:
+                    separators[sep] += 1
+            samples.append(self._split_best(line))
+        delimiter = separators.most_common(1)[0][0] if separators else ""
+        counts = Counter(len(x) for x in samples)
+        field_count = counts.most_common(1)[0][0] if counts else 0
+        first_fields = []
+        for i in range(min(field_count, 12)):
+            vals = [row[i].strip() for row in samples if len(row) > i and row[i].strip()]
+            first_fields.append({"position": i + 1, "samples": vals[:5]})
+        return {
+            "lineCount": len(lines),
+            "nonEmptyLines": len(nonempty),
+            "hasDigits": bool(re.search(r"\d", text)),
+            "digitCount": len(re.findall(r"\d", text)),
+            "letterCount": len(re.findall(r"[A-Za-z]", text)),
+            "numberOnlyLines": sum(bool(re.fullmatch(r"\s*\d+(?:\.\d+)?\s*", x)) for x in lines),
+            "separators": [s for s, _ in separators.most_common(7)],
+            "delimiter": delimiter,
+            "fieldCount": field_count,
+            "firstFields": first_fields,
+            "sample": lines[:8],
+            "wordSample": re.findall(r"[A-Za-z_][A-Za-z0-9_]*", text)[:20],
+        }
+
+    @staticmethod
+    def _split_best(line):
+        candidates = [":", "|", "->", "=>", ",", "\t", ";", "="]
+        present = [(line.count(s), s) for s in candidates if s in line]
+        return line.split(max(present)[1]) if present else [line]
+
+
+class HashtagBrain:
+    VERSION = "10.0.0"
+
+    def __init__(self, memory=None, learner=None):
+        self.inspector = DataInspector()
+        self.memory = memory
+        self.learner = learner
+
+    def plan(self, tool, request, context=None):
+        context = context or {}
+        text = (request or "").strip()
+        low = text.lower()
+        caps = self._capability_ids(tool)
+        sample = str(context.get("inputText", "") or "")
+        inspection = self.inspector.inspect(sample) if sample else None
+        actions = []
+
+        def add(cap, args=None, reason="", source="brain"):
+            args = args or {}
+            if cap not in caps:
+                return False
+            if not any(a["capability"] == cap and a["arguments"] == args for a in actions):
+                actions.append(Action(cap, args, reason, source).as_dict())
+            return True
+
+        if self.learner:
+            for a in self.learner.reuse(tool.get("id"), text, tool.get("capabilities", [])):
+                add(a["capability"], a.get("arguments", {}), a.get("reason", "Reused learned skill."), "learned")
+
+        # Existing V10 text/format intelligence remains authoritative.
+        if self._asks_remove_digits(low):
+            add("text.remove_digits", {}, "Remove every numeric character (0-9) from the input.")
+        if self._asks_remove_letters(low):
+            add("text.remove_letters", {}, "Remove alphabetic characters from every line.")
+        target = self._generic_remove_target(text)
+        if target and not self._asks_remove_digits(low) and not self._asks_remove_letters(low):
+            add("text.replace", {"old": target, "new": ""}, f"Remove the requested text {target!r}.")
+
+        m = re.search(
+            r'(?:replace|change)\s+(?:the\s+)?(?:text\s+)?["“\']?(.+?)["”\']?\s+(?:with|to|into)\s+["“\']?(.+?)["”\']?(?:\s*$|[.!?]$)',
+            text,
+            re.I,
+        )
+        if m:
+            old = m.group(1).strip().strip('"“”\'')
+            new = m.group(2).strip().strip('"“”\'')
+            if old and new:
+                add("text.replace", {"old": old, "new": new}, f"Replace {old!r} with {new!r}.")
+
+        if self._asks_remove_duplicates(low):
+            add("format.remove_duplicates", {}, "Remove duplicate lines.")
+        if self._asks_remove_number_only(low):
+            add("format.remove_number_only", {}, "Remove lines containing only numbers.")
+        sep = self._separator(text)
+        if sep and any(x in low for x in ("before", "left side", "left of", "remove everything after")):
+            add("format.keep_before", {"separator": sep}, f"Keep the text before {sep!r}.")
+        if sep and any(x in low for x in ("keep after", "take after", "text after", "right side", "right of", "remove everything before")):
+            add("format.keep_after", {"separator": sep}, f"Keep the text after {sep!r}.")
+        if self._asks_lower(low):
+            add("format.lowercase", {}, "Convert output to lowercase.")
+        if self._asks_upper(low):
+            add("format.uppercase", {}, "Convert output to uppercase.")
+        field_action = self._infer_field_projection(text, inspection)
+        if field_action:
+            add(field_action["capability"], field_action["arguments"], field_action["reason"])
+
+        m = re.search(r'\b(?:join|combine|merge)\s+(?:every|each)\s+(\d+)\s+lines?(?:.*?)(?:with|using|by)\s+(colon|comma|semicolon|pipe|tab|space|[,:;|])', low)
+        if m:
+            add("format.join_blocks", {"size": int(m.group(1)), "delimiter": self._delimiter(m.group(2))}, "Join each requested line block.")
+        if any(x in low for x in ("sort lines", "sort the lines", "alphabetically", "alphabetical order")):
+            add("format.sort_lines", {"order": "desc" if any(x in low for x in ("descending", "z to a", "reverse order")) else "asc"}, "Sort lines.")
+        m = re.search(r'regex\s+(?:replace|remove)\s+["\'](.+?)["\'](?:\s+(?:with|to)\s+["\'](.*?)["\'])?$', text, re.I)
+        if m:
+            add("text.regex_replace", {"pattern": m.group(1), "to": m.group(2) or "", "flags": "g"}, "Use the requested regex.")
+
+        # Natural-language folder-content intent.
+        #
+        # Phrases such as "what is inside this folder" and
+        # "tell me what is in this directory" mean that the user wants the
+        # directory entries, not merely metadata about the directory itself.
+        # Keep this semantic resolution in the Brain rather than in the
+        # Console or Executor.
+        if self._asks_folder_contents(low, path_hint=self._extract_path(text, context)):
+            folder_path = self._extract_path(text, context)
+            if folder_path and "filesystem.list" in caps:
+                add(
+                    "filesystem.list",
+                    {"path": folder_path},
+                    f"Mapped the request for the folder contents to filesystem.list using {folder_path!r}.",
+                )
+
+        # V1.7-E: generic capability understanding for Body-native operations.
+        # This is driven by capability IDs and operation semantics, not by
+        # registering every natural-language phrase as a separate rule.
+        for capability in caps:
+            inferred = self._infer_body_capability(capability, text, low, context)
+            if inferred:
+                add(capability, inferred["arguments"], inferred["reason"])
+
+        return {
+            "ok": True,
+            "tool": tool["id"],
+            "request": text,
+            "actions": actions,
+            "brain": "Hashtag Core V10.0.0",
+            "mode": "central-autonomous-recovery",
+            "confidence": min(0.99, 0.72 + 0.08 * len(actions) + (0.08 if inspection else 0)),
+            "inspection": inspection,
+            "needs_provider": not bool(actions),
+            "needs_help": not bool(actions),
+            "message": "Hashtag understood the request and built a safe executable plan." if actions else "Hashtag could not safely map the request yet.",
+            "reasoning": {
+                "understood": bool(actions),
+                "inspected_input": bool(inspection),
+                "composed_capabilities": len(actions) > 1,
+                "safe_execution_only": True,
+                "recovery_enabled": True,
+                "learning_enabled": bool(self.learner),
+                "body_capability_inference": any(a.get("source") == "brain" and a.get("capability", "").split(".", 1)[0] in {"filesystem", "terminal", "process", "git", "github", "tests"} for a in actions),
+            },
+        }
+
+    @staticmethod
+    def _extract_path(text, context=None):
+        context = context or {}
+        path = context.get("path") or context.get("root")
+        match = re.search(
+            r'(?:"([^"]+)"|\'([^\']+)\'|((?:[A-Za-z]:\\|/)[^\s"<>|]+))',
+            text or "",
+        )
+        if match:
+            path = next((group for group in match.groups() if group), path)
+        if path:
+            return str(path).rstrip(".,;):?!").strip()
+        return None
+
+    @staticmethod
+    def _asks_folder_contents(low, path_hint=None):
+        # Strong folder/directory wording plus a request to see what it
+        # contains.  "what is inside" is intentionally treated differently
+        # from "inspect", because inspect is metadata-only.
+        content_phrases = (
+            "what is inside",
+            "what's inside",
+            "what is in",
+            "what's in",
+            "tell me what is inside",
+            "tell me what's inside",
+            "tell me what is in",
+            "tell me what's in",
+            "show me what is inside",
+            "show me what's inside",
+            "show me what is in",
+            "show me what's in",
+            "list what is inside",
+            "list what's inside",
+            "list what is in",
+            "list what's in",
+            "what files are inside",
+            "what files are in",
+            "what folders are inside",
+            "what folders are in",
+            "what files and folders are inside",
+            "what files and folders are in",
+            "which files are inside",
+            "which files are in",
+            "which folders are inside",
+            "which folders are in",
+            "which files and folders are inside",
+            "which files and folders are in",
+            "show files inside",
+            "show files in",
+            "show folders inside",
+            "show folders in",
+            "show files and folders inside",
+            "show files and folders in",
+            "list files inside",
+            "list files in",
+            "list folders inside",
+            "list folders in",
+            "list files and folders inside",
+            "list files and folders in",
+        )
+        if any(phrase in low for phrase in content_phrases):
+            return True
+
+        # More flexible natural-language form:
+        # a question asking what/which items are inside/in a folder should
+        # resolve to filesystem.list rather than metadata-only inspect.
+        folder_words = ("folder", "directory", "folders", "directories")
+        question_words = ("what", "which", "show", "list", "tell me")
+        item_words = ("file", "files", "folder", "folders", "directory", "directories", "contents", "items")
+        has_folder = any(word in low for word in folder_words)
+        has_question = any(word in low for word in question_words)
+        has_items = any(word in low for word in item_words)
+        has_location_word = "inside" in low or re.search(r"\bin\b", low) is not None
+
+        if has_folder and has_question and has_items and has_location_word:
+            return True
+
+        # An explicit filesystem path with "inside/in" is also sufficient
+        # when the caller supplied a path through context.
+        return bool(path_hint) and has_location_word
+
+    @staticmethod
+    def _capability_ids(tool):
+        result = set()
+        for c in tool.get("capabilities", []):
+            if isinstance(c, str):
+                result.add(c)
+            elif isinstance(c, dict) and c.get("id"):
+                result.add(str(c["id"]))
+        return result
+
+    @staticmethod
+    def _infer_body_capability(capability, text, low, context):
+        """
+        Generic natural-language -> Body capability inference.
+
+        The capability ID is authoritative for the operation domain/action.
+        Natural language is used to determine whether the user actually
+        requested that operation.
+
+        This deliberately avoids matching arbitrary words from capability
+        descriptions, which could cause unrelated capabilities such as
+        tests.run to win over filesystem.inspect.
+        """
+        parts = str(capability or "").lower().split(".")
+        if len(parts) < 2:
+            return None
+
+        domain = parts[0]
+        verb = parts[-1]
+
+        context = context or {}
+
+        # ------------------------------------------------------------
+        # Generic semantic aliases
+        # ------------------------------------------------------------
+
+        verb_aliases = {
+            "inspect": (
+                "inspect",
+                "check",
+                "examine",
+                "analyze",
+                "analyse",
+                "look at",
+                "information about",
+                "details about",
+            ),
+            "list": (
+                "list",
+                "enumerate",
+                "show contents",
+                "display contents",
+                "contents of",
+            ),
+            "search": (
+                "search",
+                "find",
+                "locate",
+                "look for",
+            ),
+            "read": (
+                "read",
+                "open",
+                "view",
+                "show me the contents",
+                "contents of",
+            ),
+            "create": (
+                "create",
+                "make",
+                "new",
+            ),
+            "write": (
+                "write",
+                "save",
+                "edit",
+                "modify",
+            ),
+            "delete": (
+                "delete",
+                "remove",
+                "erase",
+            ),
+            "move": (
+                "move",
+                "rename",
+            ),
+            "copy": (
+                "copy",
+                "duplicate",
+            ),
+            "execute": (
+                "execute",
+                "run",
+                "launch",
+            ),
+        }
+
+        domain_aliases = {
+            "filesystem": (
+                "file",
+                "files",
+                "folder",
+                "folders",
+                "directory",
+                "directories",
+                "path",
+                "filesystem",
+                "drive",
+                "disk",
+            ),
+            "terminal": (
+                "terminal",
+                "command",
+                "shell",
+                "console",
+            ),
+            "process": (
+                "process",
+                "processes",
+                "running process",
+                "running processes",
+            ),
+            "git": (
+                "git",
+                "repository",
+                "repo",
+                "branch",
+                "commit",
+                "working tree",
+                "workspace",
+            ),
+            "github": (
+                "github",
+                "repository",
+                "repo",
+                "pull request",
+                "branch",
+                "commit",
+                "file",
+            ),
+            "tests": (
+                "test",
+                "tests",
+                "pytest",
+                "test suite",
+                "unit test",
+            ),
+        }
+
+        # ------------------------------------------------------------
+        # Extract an explicit resource/path.
+        # ------------------------------------------------------------
+
+        path = context.get("path") or context.get("root")
+
+        # Prefer quoted paths (which may contain spaces). For an unquoted
+        # Windows/Unix path, stop at whitespace so trailing natural-language
+        # instructions such as "and list its contents" are not swallowed.
+        path_match = re.search(
+            r'(?:"([^"]+)"|\'([^\']+)\'|((?:[A-Za-z]:\\|/)[^\s"<>|]+))',
+            text,
+        )
+
+        if path_match:
+            path = next(
+                (group for group in path_match.groups() if group),
+                path,
+            )
+
+        if path:
+            path = str(path).rstrip(".,;):").strip()
+
+        # ------------------------------------------------------------
+        # Determine whether the requested verb is actually present.
+        # ------------------------------------------------------------
+
+        verb_phrases = verb_aliases.get(verb, (verb,))
+
+        requested_verb = any(
+            re.search(r"(?<!\w)" + re.escape(phrase) + r"(?!\w)", low)
+            for phrase in verb_phrases
+        )
+
+        # A multi-word phrase such as "show contents" can legitimately
+        # contain punctuation/spacing that prevents the boundary regex.
+        if not requested_verb:
+            requested_verb = any(
+                phrase in low
+                for phrase in verb_phrases
+                if " " in phrase
+            )
+
+        if not requested_verb:
+            return None
+
+        # ------------------------------------------------------------
+        # Determine whether the request contains domain/resource evidence.
+        # ------------------------------------------------------------
+
+        domain_phrases = domain_aliases.get(domain, (domain,))
+
+        requested_domain = any(
+            re.search(r"(?<!\w)" + re.escape(phrase) + r"(?!\w)", low)
+            for phrase in domain_phrases
+        )
+
+        if not requested_domain:
+            requested_domain = any(
+                phrase in low
+                for phrase in domain_phrases
+                if " " in phrase
+            )
+
+        # An explicit filesystem path is very strong filesystem evidence.
+        explicit_filesystem_path = bool(
+            path and (
+                re.match(r"^[A-Za-z]:\\", path)
+                or path.startswith("/")
+            )
+        )
+
+        if domain == "filesystem" and explicit_filesystem_path:
+            requested_domain = True
+
+        # ------------------------------------------------------------
+        # Domain-specific requirements
+        # ------------------------------------------------------------
+
+        if domain == "filesystem":
+            if not requested_domain:
+                return None
+
+            if verb in {
+                "inspect",
+                "list",
+                "search",
+                "read",
+                "create",
+                "write",
+                "delete",
+                "move",
+                "copy",
+            } and not path:
+                return None
+
+            if verb == "inspect":
+                return {
+                    "arguments": {"path": path},
+                    "reason": (
+                        f"Mapped the requested inspection to filesystem.inspect "
+                        f"and extracted the filesystem path {path!r}."
+                    ),
+                }
+
+            if verb == "list":
+                return {
+                    "arguments": {"path": path},
+                    "reason": (
+                        f"Mapped the requested listing to filesystem.list "
+                        f"and extracted the filesystem path {path!r}."
+                    ),
+                }
+
+            if verb == "search":
+                return {
+                    "arguments": {"path": path},
+                    "reason": (
+                        f"Mapped the requested filesystem search to "
+                        f"filesystem.search using {path!r}."
+                    ),
+                }
+
+            if verb == "read":
+                return {
+                    "arguments": {"path": path},
+                    "reason": (
+                        f"Mapped the requested read operation to "
+                        f"filesystem.read using {path!r}."
+                    ),
+                }
+
+            return {
+                "arguments": {"path": path},
+                "reason": (
+                    f"Mapped the requested {verb} operation to the "
+                    f"filesystem capability using {path!r}."
+                ),
+            }
+
+        # ------------------------------------------------------------
+        # Terminal
+        # ------------------------------------------------------------
+
+        if domain == "terminal":
+            if not requested_domain:
+                return None
+
+            if verb == "inspect":
+                return {
+                    "arguments": {},
+                    "reason": (
+                        "Mapped the terminal inspection request to "
+                        "the Executor terminal inspection capability."
+                    ),
+                }
+
+            if verb == "execute":
+                command = context.get("command")
+
+                match = re.search(
+                    r"(?:run|execute)\s+"
+                    r"(?:this\s+)?"
+                    r"(?:command\s+)?[:]?\s*(.+)$",
+                    text,
+                    re.I,
+                )
+
+                if match and not command:
+                    command = match.group(1).strip()
+
+                if not command:
+                    return None
+
+                return {
+                    "arguments": {"command": str(command)},
+                    "reason": (
+                        "Mapped the explicitly requested command execution "
+                        "to the Executor terminal capability."
+                    ),
+                }
+
+            return None
+
+        # ------------------------------------------------------------
+        # Process
+        # ------------------------------------------------------------
+
+        if domain == "process":
+            if verb == "inspect" and requested_domain:
+                return {
+                    "arguments": {},
+                    "reason": (
+                        "Mapped the request to the Executor process "
+                        "inspection capability."
+                    ),
+                }
+
+            return None
+
+        # ------------------------------------------------------------
+        # Git
+        # ------------------------------------------------------------
+
+        if domain == "git":
+            if not requested_domain:
+                return None
+
+            if verb == "inspect":
+                return {
+                    "arguments": {},
+                    "reason": (
+                        "Mapped the repository/workspace inspection request "
+                        "to the Executor Git inspection capability."
+                    ),
+                }
+
+            return None
+
+        # ------------------------------------------------------------
+        # GitHub
+        # ------------------------------------------------------------
+
+        if domain == "github":
+            if not requested_domain:
+                return None
+
+            if verb in {"read", "search", "inspect"}:
+                return {
+                    "arguments": {},
+                    "reason": (
+                        f"Mapped the request to the available GitHub "
+                        f"{verb} capability."
+                    ),
+                }
+
+            return None
+
+        # ------------------------------------------------------------
+        # Tests
+        # ------------------------------------------------------------
+
+        if domain == "tests":
+            if verb != "run":
+                return None
+
+            # IMPORTANT:
+            # Do not treat generic "run" as a test request.
+            # There must be explicit test-domain evidence.
+            if not any(
+                re.search(
+                    r"(?<!\w)" + re.escape(phrase) + r"(?!\w)",
+                    low,
+                )
+                for phrase in domain_aliases["tests"]
+            ):
+                return None
+
+            return {
+                "arguments": {},
+                "reason": (
+                    "Mapped the explicit test request to the Executor "
+                    "tests.run capability."
+                ),
+            }
+
+        return None
+
+    @staticmethod
+    def _asks_remove_digits(low):
+        return bool(re.search(r"\b(?:remove|delete|strip|erase)\s+(?:all|every|each)?\s*(?:number|numbers|digit|digits|numeric characters|0\s*[-–]\s*9)\b|\bno\s+(?:number|numbers|digit|digits)\b", low))
+
+    @staticmethod
+    def _asks_remove_letters(low):
+        return bool(re.search(r"\b(?:remove|delete|strip|erase)\s+(?:all\s+)?letters\b", low))
+
+    @staticmethod
+    def _asks_remove_duplicates(low):
+        return any(x in low for x in ("remove duplicates", "delete duplicates", "deduplicate"))
+
+    @staticmethod
+    def _asks_remove_number_only(low):
+        return any(x in low for x in ("number-only lines", "number only lines", "numeric-only lines", "remove lines that contain only numbers"))
+
+    @staticmethod
+    def _asks_lower(low):
+        return any(x in low for x in ("lowercase", "to lowercase", "lower case"))
+
+    @staticmethod
+    def _asks_upper(low):
+        return any(x in low for x in ("uppercase", "to uppercase", "upper case"))
+
+    @staticmethod
+    def _separator(text):
+        for s in ("->", "=>", "→", "|", ":", ";"):
+            if s in text:
+                return s
+        return None
+
+    @staticmethod
+    def _delimiter(x):
+        return {"colon": ":", "comma": ",", "semicolon": ";", "pipe": "|", "tab": "\t", "space": " "}.get(x, x)
+
+    @staticmethod
+    def _generic_remove_target(text):
+        raw = (text or "").strip()
+        if not raw:
+            return None
+        if re.search(r"\b(?:lines?|rows?|records?)\b", raw, re.I) and re.search(r"\b(?:remove|delete|strip|erase|eliminate|discard)\b", raw, re.I):
+            return None
+        raw = re.sub(r"\b(?:from|in|on|inside|throughout)\s+(?:the\s+)?(?:whole|entire|full|complete|text|file|document|input|content)\b.*$", "", raw, flags=re.I)
+        m = re.search(r'\b(?:remove|delete|erase|strip|eliminate|discard)\s+(?:the\s+)?(?:text|word|phrase|value|string)\s+["“\']?([^"”\']+?)["”\']?(?:\s*$|\s+(?:from|in|throughout)\b)', raw, re.I)
+        if m:
+            return m.group(1).strip()
+        m = re.search(r'\b(?:remove|delete|erase|strip|eliminate|discard)\s+["“\']?([^"”\']+?)["”\']?(?:\s*$|\s+(?:from|in|throughout)\b)', raw, re.I)
+        return m.group(1).strip() if m else None
+
+    def _infer_field_projection(self, text, inspection):
+        if not inspection or inspection.get("fieldCount", 0) < 2:
+            return None
+        low = text.lower()
+        requested = []
+        for tok in re.findall(r"[a-zA-Z][a-zA-Z0-9_-]*", low):
+            canon = FIELD_ALIASES.get(tok)
+            if canon and canon not in requested:
+                requested.append(canon)
+        if len(requested) < 2 or not any(x in low for x in ("field", "keep", "convert", "want", "format", "only", "select", ":")):
+            return None
+        positions = []
+        for field in requested:
+            pos = None
+            for item in inspection["firstFields"]:
+                vals = [str(v).lower() for v in item["samples"]]
+                aliases = [k for k, v in FIELD_ALIASES.items() if v == field]
+                if any(any(a in s for a in aliases) for s in vals):
+                    pos = item["position"]
+                    break
+            if pos is None and field == "username" and inspection["fieldCount"] >= 2:
+                pos = 1
+            if pos is None and field == "password" and inspection["fieldCount"] >= 2:
+                pos = inspection["fieldCount"]
+            if pos is not None:
+                positions.append(pos)
+        if len(positions) != len(requested):
+            return None
+        delim = inspection.get("delimiter") or ":"
+        m = re.search(r'(?:user(?:name)?|pass(?:word)?)\s*([:|;,])\s*(?:user(?:name)?|pass(?:word)?)', text, re.I)
+        if m:
+            delim = m.group(1)
+        return {
+            "capability": "format.pick_fields",
+            "arguments": {"fields": positions, "delimiter": delim, "inputDelimiter": inspection.get("delimiter") or delim},
+            "reason": f"Inspected the sample fields and mapped {':'.join(requested)} to positions {positions}; keep only those fields with {delim!r}.",
+        }
+
+    def normalize_actions(self, actions):
+        return [Operation.from_action(a) for a in actions]

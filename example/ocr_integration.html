@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>Hashtag V4 OCR Body</title>
+<textarea id="inputText" rows="8" cols="80">Netflix 2026 -> done
+Google 2025 -> done
+Netflix 123 -> done</textarea><br><button id="ask">Ask Hashtag</button><pre id="status"></pre><textarea id="outputText" rows="8" cols="80"></textarea>
+<script src="../sdk/hashtag-connector-v4.js"></script><script src="../bodies/ocr_formatter/ocr_hashtag_adapter.js"></script><script>
+const body=createOCRHashtagBody(); const hashtag=new HashtagConnectorV4({api:"http://127.0.0.1:8774",manifest:body.manifest,body,onEvent:e=>status.textContent=JSON.stringify(e,null,2)}); for(const [id,h] of Object.entries(body.handlers))hashtag.capability(id,h);
+ask.onclick=async()=>{const r=await hashtag.ask("remove every number from every line and keep the text before ->",{inputText:inputText.value});status.textContent=JSON.stringify(r,null,2)};
+</script>

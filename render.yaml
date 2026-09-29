@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: hashtag-core
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m hashtag.server
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: HASHTAG_ALLOWED_ORIGINS
+        value: https://hashtag-movies.github.io
+      - key: HASHTAG_ALLOW_FILE_ORIGIN
+        value: "false"

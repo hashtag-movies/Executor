@@ -1,0 +1,2 @@
+This starter project is provided for use in your Hashtag tool ecosystem.
+Add your own project license before public redistribution.
