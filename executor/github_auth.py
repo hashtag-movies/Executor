@@ -74,6 +74,9 @@ def _read_windows_credential(target_name: str) -> Optional[dict[str, str]]:
 
 def _find_windows_github_credentials() -> Optional[dict[str, str]]:
     """Scan common Windows Credential Manager targets for GitHub."""
+    if os.name != "nt":
+        return None
+
     known_targets = [
         "LegacyGeneric:target=GitHub - https://api.github.com/hashtag-movies",
         "LegacyGeneric:target=git:https://github.com",
