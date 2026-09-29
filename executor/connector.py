@@ -25,6 +25,7 @@ class PCConnectorManager:
         self.system_info: Dict[str, Any] = {}
         self.pending_requests: Dict[str, asyncio.Future] = {}
         self.lock = asyncio.Lock()
+        self.loop: Optional[asyncio.AbstractEventLoop] = None
 
     @property
     def is_connected(self) -> bool:
@@ -33,6 +34,10 @@ class PCConnectorManager:
     async def connect(self, websocket: WebSocket, client_info: Dict[str, Any]):
         self.active_socket = websocket
         self.system_info = client_info or {}
+        try:
+            self.loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self.loop = asyncio.get_event_loop()
         logger.info("PC Connector linked: %s", self.system_info)
 
     def disconnect(self):
@@ -43,6 +48,14 @@ class PCConnectorManager:
                 future.set_exception(ConnectionResetError("PC Connector disconnected"))
         self.pending_requests.clear()
         logger.info("PC Connector unlinked.")
+
+    def send_action_sync(self, action: str, params: Dict[str, Any], timeout: float = 60.0) -> Any:
+        """Synchronously execute action on connected PC by bridging into server event loop."""
+        if not self.is_connected or not self.loop:
+            raise ConnectionError("No PC Connector is currently linked.")
+        coro = self.send_action(action, params, timeout=timeout)
+        future = asyncio.run_coroutine_threadsafe(coro, self.loop)
+        return future.result(timeout=timeout)
 
     async def send_action(self, action: str, params: Dict[str, Any], timeout: float = 60.0) -> Any:
         """Send an action to the connected PC and await result."""

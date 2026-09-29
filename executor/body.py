@@ -105,8 +105,7 @@ class HashtagBody:
         if not os.path.exists(source_path):
             from .connector import pc_connector
             if pc_connector.is_connected:
-                import asyncio
-                return asyncio.run(pc_connector.send_action("collect_path_files", {"path": source_path}))
+                return pc_connector.send_action_sync("collect_path_files", {"path": source_path})
             raise FileNotFoundError(f"Path does not exist on disk: {source_path}")
 
         if os.path.isfile(source_path):
