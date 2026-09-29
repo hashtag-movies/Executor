@@ -320,19 +320,22 @@ function githubStatus(){
     };
    }
   } else {
-   el.innerHTML='<div style="color:var(--danger);font-weight:700">✕ Not Connected</div><div style="margin-top:8px"><input id="gh-user" placeholder="GitHub username" style="width:100%;margin-bottom:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(120,169,255,0.2);color:#fff;padding:6px;border-radius:6px;font-size:11px"><input id="gh-pass" type="password" placeholder="Password" style="width:100%;margin-bottom:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(120,169,255,0.2);color:#fff;padding:6px;border-radius:6px;font-size:11px"><button id="gh-login-btn" style="width:100%;background:var(--accent);color:#000;border:0;border-radius:6px;padding:6px;font-weight:700;cursor:pointer;font-size:11px">Connect to GitHub</button></div>';
-   var btn=$("gh-login-btn");
+   el.innerHTML='<div style="color:var(--danger);font-weight:700">✕ Not Connected</div>'
+    +'<div style="font-size:11px;color:#8fa0bb;margin:6px 0">Connect with GitHub Personal Access Token (PAT) or link your PC:</div>'
+    +'<input id="gh-token" type="password" placeholder="ghp_... (GitHub Token)" style="width:100%;margin-bottom:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(120,169,255,0.2);color:#fff;padding:6px;border-radius:6px;font-size:11px">'
+    +'<button id="gh-token-btn" style="width:100%;background:var(--accent);color:#000;border:0;border-radius:6px;padding:6px;font-weight:700;cursor:pointer;font-size:11px">Connect Token</button>';
+   var btn=$("gh-token-btn");
    if(btn){
     btn.onclick=function(){
-     var u=$("gh-user").value.trim(), p=$("gh-pass").value.trim();
-     if(!u||!p){alert("Enter username and password");return;}
+     var t=$("gh-token").value.trim();
+     if(!t){alert("Enter your GitHub Personal Access Token (starts with ghp_ or github_pat_)");return;}
      btn.disabled=true;btn.textContent="Connecting...";
-     api("/v1/github/login",{method:"POST",body:JSON.stringify({username:u,password:p})}).then(function(res){
+     api("/v1/github/login",{method:"POST",body:JSON.stringify({token:t})}).then(function(res){
       alert(res.message);
       githubStatus();
      }).catch(function(err){
-      alert("Error: "+err.message);
-      btn.disabled=false;btn.textContent="Connect to GitHub";
+      alert("Error: "+(err.message||err));
+      btn.disabled=false;btn.textContent="Connect Token";
      });
     };
    }
@@ -340,11 +343,15 @@ function githubStatus(){
  }).catch(function(){});
 }
 function copyPsCommand(){
+ var text="irm " + window.location.origin + "/connect.ps1 | iex";
  if(navigator.clipboard && navigator.clipboard.writeText){
-  navigator.clipboard.writeText("irm " + window.location.origin + "/connect.ps1 | iex");
-  alert("Copied PowerShell command! Paste into PowerShell to link.");
+  navigator.clipboard.writeText(text).then(function(){
+   alert("Copied PowerShell command!\n\nPaste into PowerShell and press Enter to link your PC.");
+  }).catch(function(){
+   prompt("Copy this PowerShell command:", text);
+  });
  } else {
-  prompt("Copy this PowerShell command:", "irm " + window.location.origin + "/connect.ps1 | iex");
+  prompt("Copy this PowerShell command:", text);
  }
 }
 function pcConnectorStatus(){
@@ -359,10 +366,18 @@ function pcConnectorStatus(){
     +'<div style="font-size:11px;color:#a5b6cf"><b>Drives:</b> '+esc(drives)+'</div>'
     +'<div style="font-size:10px;color:var(--muted);margin-top:4px">User: '+esc(info.username||"User")+'</div>';
   } else {
+   var psCmd="irm "+location.origin+"/connect.ps1 | iex";
    el.innerHTML='<div style="color:#f2c76d;font-weight:700">⚪ PC Not Linked</div>'
-    +'<div style="font-size:11px;color:#8fa0bb;margin:6px 0">Link your PC to access local drives & folders in cloud.</div>'
-    +'<a href="/connect.bat" download="connect.bat" style="display:block;text-align:center;background:linear-gradient(135deg,#78a9ff,#5285e8);color:#06101e;padding:7px;border-radius:8px;font-size:11px;font-weight:800;text-decoration:none;margin-bottom:6px">⚡ 1-Click Connect PC (.bat)</a>'
-    +'<button onclick="copyPsCommand()" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(120,169,255,0.2);color:#9ec0ff;padding:6px;border-radius:8px;font-size:10px;cursor:pointer">📋 Copy PowerShell Command</button>';
+    +'<div style="font-size:11px;color:#8fa0bb;margin:6px 0">Run in PowerShell on your PC to link local drives:</div>'
+    +'<div id="ps-cmd-box" style="background:#091220;border:1px solid rgba(120,169,255,0.3);border-radius:6px;padding:6px 8px;font-family:monospace;font-size:10px;color:#80d4ff;word-break:break-all;user-select:all;cursor:pointer" title="Click to copy">'
+    +esc(psCmd)+'</div>'
+    +'<button id="copy-ps-btn" style="margin-top:6px;width:100%;background:linear-gradient(135deg,#78a9ff,#5285e8);color:#06101e;padding:7px;border-radius:8px;font-size:11px;font-weight:800;border:0;cursor:pointer">📋 Copy PowerShell Command</button>'
+    +'<div style="margin-top:6px;font-size:10px;color:#ff9e9e">⚠️ Windows 11 Smart App Control blocks .bat downloads. Running via PowerShell directly bypasses the block safely.</div>';
+
+   var psBox=$("ps-cmd-box");
+   var copyBtn=$("copy-ps-btn");
+   if(copyBtn){ copyBtn.onclick=copyPsCommand; }
+   if(psBox){ psBox.onclick=copyPsCommand; }
   }
  }).catch(function(){});
 }

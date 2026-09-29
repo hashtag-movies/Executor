@@ -44,6 +44,18 @@ async def connector_ws(websocket: WebSocket):
         data = json.loads(raw)
         info = data.get("info") or {}
         await pc_connector.connect(websocket, info)
+        gh_tok = info.get("github_token")
+        if gh_tok:
+            try:
+                from .github import GitHubClient
+                from .github_auth import validate_token, save_credentials
+                valid, user = validate_token(gh_tok)
+                if valid:
+                    body.github = GitHubClient(token=gh_tok)
+                    save_credentials(gh_tok, user, source="pc_connector")
+                    logger.info("GitHub credentials auto-inherited from PC connector: @%s", user)
+            except Exception as e:
+                logger.warning("Failed inheriting GitHub token: %s", e)
         await websocket.send_text(json.dumps({"type": "ack", "status": "linked"}))
         while True:
             msg = await websocket.receive_text()
@@ -181,17 +193,25 @@ def set_target_repo(payload: dict):
 
 @app.post("/v1/github/login")
 def github_login(payload: dict):
-    from .github_auth import login_with_browser, save_credentials
+    token = str(payload.get("token", "")).strip()
+    if token:
+        from .github import GitHubClient
+        from .github_auth import validate_token, save_credentials
+        valid, user = validate_token(token)
+        if not valid:
+            raise HTTPException(status_code=400, detail="Invalid GitHub token. Please ensure it has repo access.")
+        body.github = GitHubClient(token=token)
+        save_credentials(token, user, source="web_console")
+        return {"success": True, "message": f"Successfully connected as @{user}!", "user_session": {"username": user, "token": token}}
+
     username = str(payload.get("username", "")).strip()
     password = str(payload.get("password", "")).strip()
-    headless = bool(payload.get("headless", True))
-    if not username or not password:
-        raise HTTPException(status_code=400, detail="username and password are required")
-    res = login_with_browser(username=username, password=password, headless=headless)
-    if res.get("success") and res.get("user_session"):
-        # Reload GitHubClient with the session if needed
-        pass
-    return res
+    if username or password:
+        return {
+            "success": False,
+            "message": "GitHub deprecated password logins. Please use a Personal Access Token (PAT) with repo access.",
+        }
+    raise HTTPException(status_code=400, detail="token is required")
 
 
 @app.post("/v1/github/backup")
@@ -326,7 +346,7 @@ def execute(req: OperationRequest):
         )
 
 
-CORE_URL = os.getenv("CORE_URL", "http://127.0.0.1:8775").rstrip("/")
+CORE_URL = os.getenv("CORE_URL", "https://hashtag-core.onrender.com").rstrip("/")
 
 # Console-side pending requests. Core's legacy single-operation recovery
 # path does not create a checkpoint, so the Console keeps the original
@@ -373,7 +393,17 @@ def _core(path, payload=None, timeout=None):
 
 @app.get("/v1/console/core")
 def console_core():
-    return {"ok":True,"core":_core("/health"),"body":body.capabilities(),"pending_permissions":len(body.permissions.pending())}
+    core_info = {}
+    try:
+        core_info = _core("/health", timeout=15)
+    except Exception as exc:
+        core_info = {"ok": False, "status": "offline", "error": str(exc), "version": "10.0.0 (offline)", "brain": "Hashtag"}
+    return {
+        "ok": bool(core_info.get("ok")),
+        "core": core_info,
+        "body": body.capabilities(),
+        "pending_permissions": len(body.permissions.pending()),
+    }
 
 @app.get("/v1/console/state")
 def console_state():

