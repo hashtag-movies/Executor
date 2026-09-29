@@ -529,8 +529,10 @@ def console_permission_decide(payload:dict):
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
 
+@app.get("/", response_class=HTMLResponse)
+@app.get("/console", response_class=HTMLResponse)
 @app.get("/permissions", response_class=HTMLResponse)
-def permission_ui():
+def console_ui_view():
     return CONSOLE_HTML
 
 if __name__ == "__main__":
