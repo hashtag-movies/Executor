@@ -105,7 +105,13 @@ def get_connect_ps1(request: Request):
 Write-Host "Linking PC to Hashtag Cloud..." -ForegroundColor Cyan
 $script = Invoke-RestMethod -Uri '{base_url}/connect.py'
 $script | Out-File -FilePath "$env:TEMP\\hashtag_connector.py" -Encoding utf8
-python "$env:TEMP\\hashtag_connector.py"
+if (Get-Command python -ErrorAction SilentlyContinue) {{
+    python "$env:TEMP\\hashtag_connector.py"
+}} elseif (Get-Command py -ErrorAction SilentlyContinue) {{
+    py "$env:TEMP\\hashtag_connector.py"
+}} else {{
+    Write-Host "Python not found in PATH. Please ensure Python is installed." -ForegroundColor Red
+}}
 """
 
 
