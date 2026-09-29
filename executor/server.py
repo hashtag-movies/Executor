@@ -421,22 +421,29 @@ def console_state():
     }
 
 
+def get_executor_public_url(request: Request = None) -> str:
+    url = os.getenv("EXECUTOR_PUBLIC_URL", "") or os.getenv("RENDER_EXTERNAL_URL", "")
+    if not url and request:
+        try:
+            url = str(request.base_url).rstrip("/")
+        except Exception:
+            pass
+    if not url:
+        if os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID"):
+            url = "https://executor-awhg.onrender.com"
+        else:
+            host = os.getenv("HOST", "127.0.0.1")
+            port = os.getenv("PORT", "8780")
+            url = f"http://{host}:{port}"
+    return url.rstrip("/")
+
+
 @app.post("/v1/console/register")
-def console_register():
-    m = body.capabilities()
-    base_url = os.getenv("EXECUTOR_PUBLIC_URL", "").rstrip("/")
-    if not base_url:
-        host = os.getenv("HOST", "127.0.0.1")
-        port = os.getenv("PORT", "8780")
-        base_url = f"http://{host}:{port}"
+def console_register(request: Request = None):
+    base_url = get_executor_public_url(request)
     return _core("/v1/body/register", {
-        "body_id": m.get("body_id", "hashtag-executor"),
-        "name": m.get("name", "Hashtag the Executor"),
-        "protocol_version": m.get("protocol_version", "1.1"),
-        "version": m.get("version", "1.3.0"),
-        "capabilities": m.get("capabilities", []),
         "base_url": base_url,
-    }, timeout=10)
+    }, timeout=20)
 
 def _find_permission_request(result: dict):
     if not isinstance(result, dict):
@@ -471,7 +478,7 @@ def _remember_console_pending(result: dict, request_payload: dict):
 
 
 @app.post("/v1/console/request")
-def console_request(payload:dict):
+def console_request(payload: dict, request: Request = None):
     text=str(payload.get("request") or payload.get("task") or "").strip()
     if not text: raise HTTPException(status_code=400,detail="Request text is required")
     context = dict(payload.get("context") or {})
@@ -480,8 +487,10 @@ def console_request(payload:dict):
         body.set_target_repository(target)
     else:
         context["target_repo"] = getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
-    try: console_register()
-    except Exception: pass
+    try:
+        console_register(request)
+    except Exception as e:
+        logger.warning("Auto-registration before request failed: %s", e)
     q={"request":text,"body_id":payload.get("body_id") or "hashtag-executor","context":context}
     if payload.get("task_id"): q["task_id"]=payload["task_id"]
     result = _core("/v1/request",q)
@@ -514,8 +523,9 @@ def console_permission_decide(payload:dict):
             "scope": scope,
             "reason": reason,
         }
+        base_url = get_executor_public_url()
         approval = requests.post(
-            "http://127.0.0.1:8780/v1/body/permissions/decide",
+            f"{base_url}/v1/body/permissions/decide",
             json=decision,
             timeout=30,
         )

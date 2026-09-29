@@ -253,8 +253,7 @@ function send(){
   }
   var details=resultText(response);
   if(details){addMessage("assistant",details,"result",metaObj);}
-  else if(response&&response.ok){addMessage("assistant","Done. Hashtag completed the request.",null,metaObj);}
-  else{addMessage("assistant",response&&response.message?response.message:"Hashtag returned a result.",null,metaObj);}
+  else{addMessage("assistant",(response&&(response.error||response.message))?(response.error||response.message):"Hashtag returned a result.",null,metaObj);}
   return permissions();
  }).catch(function(error){
   var durationMs=Date.now()-startTime;

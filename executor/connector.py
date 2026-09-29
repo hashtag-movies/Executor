@@ -133,16 +133,21 @@ def get_local_github_token():
                 ("TargetAlias", wintypes.LPWSTR), ("UserName", wintypes.LPWSTR),
             ]
         adv = ctypes.windll.advapi32
+        CredReadW = adv.CredReadW
+        CredReadW.argtypes = [wintypes.LPWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.POINTER(ctypes.POINTER(CRED))]
+        CredReadW.restype = wintypes.BOOL
+        CredFree = adv.CredFree
+        CredFree.argtypes = [ctypes.c_void_p]
         pcred = ctypes.POINTER(CRED)()
         for target in [
             "LegacyGeneric:target=GitHub - https://api.github.com/hashtag-movies",
             "git:https://github.com",
             "LegacyGeneric:target=git:https://github.com"
         ]:
-            if adv.CredReadW(target, 1, 0, ctypes.byref(pcred)):
+            if CredReadW(target, 1, 0, ctypes.byref(pcred)):
                 c = pcred.contents
                 blob = bytes(c.CredentialBlob[:c.CredentialBlobSize])
-                adv.CredFree(pcred)
+                CredFree(pcred)
                 try: tok = blob.decode('utf-16-le')
                 except Exception: tok = blob.decode('utf-8', errors='ignore')
                 if tok and ('ghp_' in tok or 'github_pat_' in tok or len(tok) > 20):
