@@ -346,7 +346,7 @@ function copyPsCommand(){
  var text="irm " + window.location.origin + "/connect.ps1 | iex";
  if(navigator.clipboard && navigator.clipboard.writeText){
   navigator.clipboard.writeText(text).then(function(){
-   alert("Copied PowerShell command!\n\nPaste into PowerShell and press Enter to link your PC.");
+   alert("Copied PowerShell command! Paste into PowerShell and press Enter to link your PC.");
   }).catch(function(){
    prompt("Copy this PowerShell command:", text);
   });
