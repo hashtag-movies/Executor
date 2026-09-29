@@ -1,15 +1,18 @@
 """Local Hashtag Executor Body HTTP interface."""
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from pydantic import BaseModel, Field
 import requests
 import uuid
+import json
+import os
 
 from .body import HashtagBody
 from .permissions import PermissionDecision, PermissionScope
 from .protocol import Operation
 from .console_ui import CONSOLE_HTML
+from .connector import pc_connector, generate_client_script
 
 
 app = FastAPI(
@@ -18,6 +21,78 @@ app = FastAPI(
 )
 
 body = HashtagBody()
+
+
+@app.get("/health")
+def health():
+    return {
+        "ok": True,
+        "service": "Hashtag the Executor",
+        "version": "1.3.0",
+        "status": "online",
+        "body_id": "hashtag-executor",
+        "pc_connected": pc_connector.is_connected,
+        "pc_info": pc_connector.system_info,
+    }
+
+
+@app.websocket("/v1/connector/ws")
+async def connector_ws(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        raw = await websocket.receive_text()
+        data = json.loads(raw)
+        info = data.get("info") or {}
+        await pc_connector.connect(websocket, info)
+        while True:
+            msg = await websocket.receive_text()
+            pc_connector.handle_response(json.loads(msg))
+    except (WebSocketDisconnect, Exception):
+        pc_connector.disconnect()
+
+
+@app.get("/v1/connector/status")
+def connector_status():
+    return {
+        "ok": True,
+        "connected": pc_connector.is_connected,
+        "info": pc_connector.system_info,
+    }
+
+
+@app.get("/connect.py", response_class=PlainTextResponse)
+def get_connect_py(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    return generate_client_script(base_url)
+
+
+@app.get("/connect.bat", response_class=PlainTextResponse)
+def get_connect_bat(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    return f"""@echo off
+title Hashtag PC Connector
+echo ========================================================
+echo   HASHTAG PC CONNECTOR - LINKING LOCAL DRIVE TO CLOUD
+echo ========================================================
+curl -s {base_url}/connect.py -o hashtag_connector.py
+if not exist hashtag_connector.py (
+    powershell -Command "Invoke-WebRequest -Uri '{base_url}/connect.py' -OutFile 'hashtag_connector.py'"
+)
+python hashtag_connector.py
+if errorlevel 1 py hashtag_connector.py
+pause
+"""
+
+
+@app.get("/connect.ps1", response_class=PlainTextResponse)
+def get_connect_ps1(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    return f"""# Hashtag 1-Click PC Connector
+Write-Host "Linking PC to Hashtag Cloud..." -ForegroundColor Cyan
+$script = Invoke-RestMethod -Uri '{base_url}/connect.py'
+$script | Out-File -FilePath "$env:TEMP\\hashtag_connector.py" -Encoding utf8
+python "$env:TEMP\\hashtag_connector.py"
+"""
 
 
 class OperationRequest(BaseModel):
@@ -44,6 +119,7 @@ def status():
         "pending_permissions": len(
             body.permissions.pending()
         ),
+        "pc_connected": pc_connector.is_connected,
     }
 
 
@@ -248,7 +324,7 @@ def execute(req: OperationRequest):
         )
 
 
-CORE_URL = "http://127.0.0.1:8775"
+CORE_URL = os.getenv("CORE_URL", "http://127.0.0.1:8775").rstrip("/")
 
 # Console-side pending requests. Core's legacy single-operation recovery
 # path does not create a checkpoint, so the Console keeps the original
@@ -309,8 +385,20 @@ def console_state():
 
 @app.post("/v1/console/register")
 def console_register():
-    m=body.capabilities()
-    return _core("/v1/body/register",{"body_id":m.get("body_id","hashtag-executor"),"name":m.get("name","Hashtag the Executor"),"protocol_version":m.get("protocol_version","1.1"),"version":m.get("version","1.3.0"),"capabilities":m.get("capabilities",[]),"base_url":"http://127.0.0.1:8780"}, timeout=10)
+    m = body.capabilities()
+    base_url = os.getenv("EXECUTOR_PUBLIC_URL", "").rstrip("/")
+    if not base_url:
+        host = os.getenv("HOST", "127.0.0.1")
+        port = os.getenv("PORT", "8780")
+        base_url = f"http://{host}:{port}"
+    return _core("/v1/body/register", {
+        "body_id": m.get("body_id", "hashtag-executor"),
+        "name": m.get("name", "Hashtag the Executor"),
+        "protocol_version": m.get("protocol_version", "1.1"),
+        "version": m.get("version", "1.3.0"),
+        "capabilities": m.get("capabilities", []),
+        "base_url": base_url,
+    }, timeout=10)
 
 def _find_permission_request(result: dict):
     if not isinstance(result, dict):
@@ -445,4 +533,6 @@ def permission_ui():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("executor.server:app", host="127.0.0.1", port=8780, reload=False)
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", "8780"))
+    uvicorn.run("executor.server:app", host=host, port=port, reload=False)

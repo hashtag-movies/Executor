@@ -1,14 +1,16 @@
 services:
   - type: web
-    name: hashtag-core
+    name: hashtag-executor
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python -m hashtag.server
+    startCommand: uvicorn executor.server:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: HOST
         value: 0.0.0.0
-      - key: HASHTAG_ALLOWED_ORIGINS
-        value: https://hashtag-movies.github.io
-      - key: HASHTAG_ALLOW_FILE_ORIGIN
-        value: "false"
+      - key: CORE_URL
+        value: https://hashtag-core.onrender.com
+      - key: GITHUB_OWNER
+        value: hashtag-movies
+      - key: HASHTAG_DISABLE_PERMISSIONS
+        value: "1"
