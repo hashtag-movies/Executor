@@ -44,10 +44,12 @@ async def connector_ws(websocket: WebSocket):
         data = json.loads(raw)
         info = data.get("info") or {}
         await pc_connector.connect(websocket, info)
+        await websocket.send_text(json.dumps({"type": "ack", "status": "linked"}))
         while True:
             msg = await websocket.receive_text()
             pc_connector.handle_response(json.loads(msg))
-    except (WebSocketDisconnect, Exception):
+    except (WebSocketDisconnect, Exception) as err:
+        logger.info("PC Connector WS disconnected: %s", err)
         pc_connector.disconnect()
 
 

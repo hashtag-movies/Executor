@@ -31,7 +31,6 @@ class PCConnectorManager:
         return self.active_socket is not None
 
     async def connect(self, websocket: WebSocket, client_info: Dict[str, Any]):
-        await websocket.accept()
         self.active_socket = websocket
         self.system_info = client_info or {}
         logger.info("PC Connector linked: %s", self.system_info)
@@ -209,8 +208,12 @@ async def run_client():
                 async for msg in ws:
                     try:
                         data = json.loads(msg)
+                        if data.get("type") == "ack":
+                            continue
                         req_id = data.get("id")
                         action = data.get("action")
+                        if not action:
+                            continue
                         params = data.get("params") or {{}}
                         print(f"[Hashtag] Running action: {{action}} -> {{params.get('path') or params.get('command') or ''}}")
                         res = handle_action(action, params)
