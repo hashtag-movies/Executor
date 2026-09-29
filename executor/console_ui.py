@@ -339,6 +339,14 @@ function githubStatus(){
   }
  }).catch(function(){});
 }
+function copyPsCommand(){
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText("irm " + window.location.origin + "/connect.ps1 | iex");
+  alert("Copied PowerShell command! Paste into PowerShell to link.");
+ } else {
+  prompt("Copy this PowerShell command:", "irm " + window.location.origin + "/connect.ps1 | iex");
+ }
+}
 function pcConnectorStatus(){
  var el=$("pc_drive");
  if(!el){return;}
@@ -354,7 +362,7 @@ function pcConnectorStatus(){
    el.innerHTML='<div style="color:#f2c76d;font-weight:700">⚪ PC Not Linked</div>'
     +'<div style="font-size:11px;color:#8fa0bb;margin:6px 0">Link your PC to access local drives & folders in cloud.</div>'
     +'<a href="/connect.bat" download="connect.bat" style="display:block;text-align:center;background:linear-gradient(135deg,#78a9ff,#5285e8);color:#06101e;padding:7px;border-radius:8px;font-size:11px;font-weight:800;text-decoration:none;margin-bottom:6px">⚡ 1-Click Connect PC (.bat)</a>'
-    +'<button onclick="navigator.clipboard.writeText(\'irm \'+location.origin+\'/connect.ps1 | iex\');alert(\'Copied PowerShell command! Paste into PowerShell to link.\');" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(120,169,255,0.2);color:#9ec0ff;padding:6px;border-radius:8px;font-size:10px;cursor:pointer">📋 Copy PowerShell Command</button>';
+    +'<button onclick="copyPsCommand()" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(120,169,255,0.2);color:#9ec0ff;padding:6px;border-radius:8px;font-size:10px;cursor:pointer">📋 Copy PowerShell Command</button>';
   }
  }).catch(function(){});
 }
