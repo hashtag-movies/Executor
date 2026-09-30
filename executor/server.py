@@ -632,6 +632,17 @@ def body_evolution_status_proxy():
 def body_evolve_proxy(payload: dict):
     return _core("/v1/body/evolve", payload, timeout=20)
 
+@app.get("/v1/autonomous/capabilities")
+def autonomous_capabilities_proxy():
+    try:
+        return _core("/v1/autonomous/capabilities", timeout=15)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "capabilities": []}
+
+@app.post("/v1/autonomous/learn-and-execute")
+def autonomous_learn_and_execute_proxy(payload: dict):
+    return _core("/v1/autonomous/learn-and-execute", payload, timeout=30)
+
 if __name__ == "__main__":
     import uvicorn
     host = os.getenv("HOST", "127.0.0.1")
