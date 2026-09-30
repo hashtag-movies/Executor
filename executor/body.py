@@ -933,6 +933,61 @@ class HashtagBody:
                 sha,
             )
 
+        if operation == "github.file.fix":
+            owner, repo = self._resolve_owner_repo(arguments)
+            raw_path = arguments.get("path") or arguments.get("file") or "index.html"
+            path = self._clean_github_path(raw_path)
+            branch = arguments.get("branch", "main")
+            purpose = arguments.get("purpose", f"Diagnose and repair {path} on GitHub")
+            task_id = arguments.get("task_id")
+
+            self._authorize_github(
+                operation,
+                self._github_resource(
+                    owner,
+                    repo,
+                    path,
+                ),
+                purpose,
+                task_id,
+            )
+
+            # 1. Read existing file from GitHub
+            raw_content = self.github.get_file_text(owner=owner, repo=repo, path=path, ref=branch)
+
+            # 2. Diagnose and apply autonomous code repairs
+            from .file_fixer import repair_file
+            fixed_content, applied_fixes = repair_file(path, raw_content)
+
+            # 3. Commit fixed content back to GitHub
+            msg = f"Fix {path} via Hashtag AI ({len(applied_fixes)} repairs)" if applied_fixes else f"Clean and validate {path} via Hashtag AI"
+            write_res = self.github.write_file(
+                owner=owner,
+                repo=repo,
+                path=path,
+                content=fixed_content,
+                message=msg,
+                branch=branch,
+            )
+
+            commit_info = write_res.get("commit") or {}
+            commit_sha = commit_info.get("sha") or ""
+            fixes_text = "\n".join(f"• {f}" for f in applied_fixes) if applied_fixes else "• Validated and normalized file syntax."
+
+            return {
+                "ok": True,
+                "path": path,
+                "owner": owner,
+                "repo": repo,
+                "branch": branch,
+                "commit": commit_sha,
+                "fixes": applied_fixes,
+                "fixes_count": len(applied_fixes),
+                "text": f"Successfully fixed and updated {path} on GitHub ({owner}/{repo}):\n{fixes_text}\nCommit: {commit_sha[:8] if commit_sha else 'Saved'}",
+                "message": f"Fixed {path} on GitHub ({len(applied_fixes)} repairs applied).",
+                "content": write_res.get("content"),
+            }
+
         if operation == "github.pull_request.create":
             owner, repo = self._resolve_owner_repo(arguments)
             title = arguments.get("title", "Update via Hashtag")
