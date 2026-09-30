@@ -126,7 +126,12 @@ function executionResult(response){
 }
 function resultText(response){
  var result=executionResult(response);
- if(typeof result.text==="string"){return result.text.trim();}
+ if(!result){return null;}
+ if(typeof result==="string"){return result.trim();}
+ if(typeof result.text==="string"){
+  var pathHeader=result.path?("📄 File: "+result.path+NL+NL):"";
+  return pathHeader+result.text.trim();
+ }
  if(result.content&&result.commit){
   var cPath=result.content.path||result.path||"file";
   var cSha=(result.commit.sha||"").substring(0,8);
@@ -141,16 +146,17 @@ function resultText(response){
   if(result.size!==undefined){meta+=NL+"Size: "+result.size+" bytes";}
   return meta;
  }
- if(Array.isArray(result.entries)){
+ if(Array.isArray(result)||(result&&Array.isArray(result.entries))){
+  var entries=Array.isArray(result)?result:result.entries;
   var lines=[],i;
-  for(i=0;i<result.entries.length;i+=1){
-   var entry=result.entries[i];
+  for(i=0;i<entries.length;i+=1){
+   var entry=entries[i];
    if(typeof entry==="string"){lines.push(entry);}
-   else if(entry&&entry.name){lines.push(entry.name);}
-   else if(entry&&entry.path){lines.push(entry.path);}
+   else if(entry&&entry.name){lines.push((entry.type==="dir"?"📁 ":"📄 ")+entry.name);}
+   else if(entry&&entry.path){lines.push((entry.type==="dir"?"📁 ":"📄 ")+entry.path);}
    else{lines.push(JSON.stringify(entry));}
   }
-  return "Here is what I found:"+NL+NL+(lines.length?lines.map(function(x){return "• "+x;}).join(NL):"The folder is empty.");
+  return "Here is what I found in GitHub:"+NL+NL+(lines.length?lines.map(function(x){return "• "+x;}).join(NL):"The repository is empty.");
  }
  return null;
 }
