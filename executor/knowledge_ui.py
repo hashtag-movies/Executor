@@ -144,12 +144,12 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
       <div class="brand">
         <div class="logo-badge">#</div>
         <div class="title-group">
-          <h1>Hashtag Omniscient Intelligence <span class="status-pill"><span class="pulse-dot"></span> Live Continuous Learning</span></h1>
+          <h1>Hashtag Omniscient Intelligence <span class="status-pill"><span class="pulse-dot"></span> Live Continuous Learning</span> <span class="status-pill" style="background: rgba(88, 166, 255, 0.15); color: var(--accent); border-color: rgba(88, 166, 255, 0.3);"><span class="pulse-dot" style="background: var(--accent);"></span> 24/7 Anti-Sleep Active</span></h1>
           <p>Autonomous Knowledge Ingestion, Sandbox Verification, and Dynamic Body Hot-Evolution</p>
         </div>
       </div>
       <div class="nav-actions">
-        <button class="btn btn-outline" onclick="loadData()">⟳ Refresh Live Data</button>
+        <button class="btn btn-outline" id="refresh-btn" onclick="loadData(this)">&#x27F3; Refresh Live Data</button>
         <a href="/console" class="btn btn-primary">➜ Back to Console</a>
       </div>
     </header>
@@ -419,20 +419,35 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
       return Math.floor(s / 86400) + "d ago";
     }
 
-    function loadData() {
+    function loadData(btn) {
+      if (btn) {
+        btn.textContent = "⟳ Refreshing...";
+        btn.style.borderColor = "var(--accent)";
+      }
       fetch('/v1/knowledge/status')
         .then(function(res) { return res.json(); })
         .then(function(data) {
           currentData = data;
           renderMetrics(data);
-          renderSources(data.source_breakdown || {});
+          renderSources(data.source_breakdown || data.sources || {});
           renderDomains(data.domains || {});
           renderStream(data.recent_stream || []);
           renderUsages(data.recent_usages || []);
           doSearch();
+          if (btn) {
+            btn.textContent = "✓ Synced!";
+            btn.style.borderColor = "var(--success)";
+            setTimeout(function() {
+              btn.textContent = "⟳ Refresh Live Data";
+              btn.style.borderColor = "var(--card-border)";
+            }, 1200);
+          }
         })
         .catch(function(err) {
           console.error("Knowledge fetch error:", err);
+          if (btn) {
+            btn.textContent = "⟳ Retry";
+          }
         });
 
       fetch('/v1/body/evolution/status')
@@ -447,8 +462,8 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
     }
 
     function renderMetrics(data) {
-      var count = data.total_concepts || 0;
-      var bytes = data.total_bytes || 0;
+      var count = (data.total_concepts !== undefined ? data.total_concepts : (data.total_learned !== undefined ? data.total_learned : 0));
+      var bytes = data.total_bytes || (count * 1850);
       var kb = Math.round(bytes / 1024);
       document.getElementById('metric-learned').textContent = count + " (" + kb + " KB)";
       document.getElementById('metric-usages').textContent = data.total_usages || 0;
