@@ -1155,6 +1155,14 @@ class HashtagBody:
                 "output": "Remote GitHub repository changes verified.",
             }
 
+        # Check dynamically learned & injected capability handlers
+        try:
+            from .dynamic_capabilities import dynamic_registry
+            if dynamic_registry.has_handler(operation):
+                return dynamic_registry.execute(operation, arguments)
+        except Exception as dynamic_exc:
+            return {"ok": False, "error": f"Dynamic capability execution failed: {dynamic_exc}"}
+
         raise NotImplementedError(
             f"Unsupported operation: {operation}"
         )
