@@ -67,10 +67,17 @@ class BodyManifest:
     )
 
     def to_dict(self) -> dict:
+        caps = set(self.capabilities)
+        try:
+            from .dynamic_capabilities import dynamic_registry
+            caps.update(dynamic_registry.list_capabilities())
+        except Exception:
+            pass
         return {
             "body_id": self.body_id,
             "name": self.name,
             "protocol_version": self.protocol_version,
             "version": self.version,
-            "capabilities": list(self.capabilities),
+            "capabilities": sorted(list(caps)),
         }
+
