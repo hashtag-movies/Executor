@@ -126,8 +126,16 @@ function executionResult(response){
 }
 function resultText(response){
  var result=executionResult(response);
- if(!result||typeof result!=="object"){return null;}
  if(typeof result.text==="string"){return result.text.trim();}
+ if(result.content&&result.commit){
+  var cPath=result.content.path||result.path||"file";
+  var cSha=(result.commit.sha||"").substring(0,8);
+  var cMsg=result.message||("Successfully committed "+cPath+" to GitHub.");
+  return "✓ "+cMsg+(cSha?NL+"Commit: "+cSha:"");
+ }
+ if(result.message&&typeof result.message==="string"&&result.ok){
+  return "✓ "+result.message;
+ }
  if(result.path&&Object.prototype.hasOwnProperty.call(result,"exists")){
   var meta="I inspected "+result.path+"."+NL+NL+"Exists: "+(result.exists?"yes":"no")+NL+"Type: "+(result.is_dir?"folder":result.is_file?"file":"unknown");
   if(result.size!==undefined){meta+=NL+"Size: "+result.size+" bytes";}
