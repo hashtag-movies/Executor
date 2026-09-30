@@ -1,11 +1,12 @@
-"""Hashtag Omniscient Knowledge & Body Evolution Dashboard (HTML/JS/CSS).
+"""Hashtag Omniscient Knowledge, Auto-Task Learning & Body Evolution Dashboard (HTML/JS/CSS).
 
 Comprehensive visual reports of:
-1. Total knowledge acquired
+1. Total knowledge acquired across the internet
 2. Where knowledge was acquired (Wikipedia, Reddit, HackerNews, AI Federation)
 3. What knowledge was acquired (Domain distribution & searchable concept explorer)
 4. How learned knowledge was used (Execution & repair audit telemetry)
 5. Autonomous body modification & evolution panel (Executor, Console, OCR Formatter)
+6. Autonomous Task Learning & Hot-Injection Pipeline (Detect Gap -> Harvest -> Sandbox Test -> Retain -> Hot-Inject -> Execute)
 """
 
 KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
@@ -43,6 +44,8 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
     .btn { padding: 9px 16px; border-radius: 9px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
     .btn-primary { background: #238636; color: #fff; }
     .btn-primary:hover { background: #2ea043; }
+    .btn-accent { background: #1f6feb; color: #fff; }
+    .btn-accent:hover { background: #388bfd; }
     .btn-outline { background: rgba(30, 41, 59, 0.6); color: var(--text); border-color: var(--card-border); }
     .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.1); }
     .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid rgba(63, 185, 80, 0.3); }
@@ -95,23 +98,39 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
     .body-caps { display: flex; flex-wrap: wrap; gap: 6px; }
     .cap-tag { font-size: 11px; background: rgba(255, 255, 255, 0.05); padding: 2px 7px; border-radius: 5px; color: #8fa0bb; }
 
+    /* Autonomous Task Learning Pipeline Section */
+    .pipeline-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 18px 0; }
+    .pipe-step-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px; position: relative; }
+    .pipe-step-card.active { border-color: var(--accent); background: rgba(88, 166, 255, 0.1); }
+    .pipe-step-card.completed { border-color: var(--success); background: rgba(63, 185, 80, 0.08); }
+    .step-num { font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
+    .pipe-step-card.completed .step-num { color: var(--success); }
+    .step-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .step-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    .task-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 16px; background: rgba(88, 166, 255, 0.1); border: 1px solid var(--card-border); font-size: 12px; color: #c9d1d9; cursor: pointer; margin-right: 8px; margin-bottom: 8px; transition: all 0.2s; }
+    .task-chip:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.25); color: #fff; }
+    .result-console { background: #06090f; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 14px; font-family: monospace; font-size: 12px; color: #3fb950; max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; margin-top: 12px; }
+
     /* Concept Stream */
     .stream-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.02); margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.04); font-size: 13px; }
     .stream-title { font-weight: 600; color: #c9d1d9; }
     .stream-meta { font-size: 11px; color: var(--muted); }
 
-    /* Search & Controls */
-    .search-box { display: flex; gap: 10px; margin-bottom: 16px; }
-    .input-field { flex: 1; background: rgba(10, 16, 28, 0.9); border: 1px solid var(--card-border); border-radius: 9px; padding: 10px 16px; color: #fff; font-size: 13px; outline: none; transition: border-color 0.2s; }
-    .input-field:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-    .live-search-results { max-height: 380px; overflow-y: auto; margin-top: 12px; }
-    .concept-card { background: rgba(10, 16, 28, 0.6); border: 1px solid rgba(88, 166, 255, 0.12); border-radius: 10px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
-    .concept-card:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.08); }
-    .concept-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 4px; color: #58a6ff; }
-    .concept-body { font-size: 12px; color: #8b949e; line-height: 1.5; }
+    /* Inputs */
+    .input-field { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    .input-field:focus { border-color: var(--accent); }
+    .search-box { margin-bottom: 16px; }
+    .search-box input { width: 100%; }
+
+    /* Concept Explorer Grid */
+    .live-search-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; max-height: 440px; overflow-y: auto; padding-right: 6px; }
+    .concept-card { background: rgba(18, 26, 43, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.2s; }
+    .concept-card:hover { border-color: var(--accent); background: rgba(88, 166, 255, 0.06); }
+    .concept-head { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .concept-body { font-size: 12px; color: var(--muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
     /* Modal */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
     .modal-content { background: #0d1322; border: 1px solid var(--accent); border-radius: 16px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 28px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8); }
     .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-close { font-size: 22px; cursor: pointer; color: var(--muted); border: none; background: none; }
@@ -126,7 +145,7 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
         <div class="logo-badge">#</div>
         <div class="title-group">
           <h1>Hashtag Omniscient Intelligence <span class="status-pill"><span class="pulse-dot"></span> Live Continuous Learning</span></h1>
-          <p>Autonomous Knowledge Ingestion, Reasoning Telemetry, and Body Evolution Engine</p>
+          <p>Autonomous Knowledge Ingestion, Sandbox Verification, and Dynamic Body Hot-Evolution</p>
         </div>
       </div>
       <div class="nav-actions">
@@ -143,52 +162,133 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
         <div class="card-sub" id="metric-harvest-rate">Harvesting Wikipedia, Reddit, HN, AI Mesh</div>
       </div>
       <div class="card">
-        <div class="card-title"><span>Applied Knowledge Usages</span><span>⚡</span></div>
-        <div class="card-num" id="metric-usages" style="color: var(--accent);">--</div>
-        <div class="card-sub">Real-world tasks & repairs executed</div>
+        <div class="card-title"><span>Knowledge Applications</span><span>⚡</span></div>
+        <div class="card-num" id="metric-usages" style="color: var(--purple);">--</div>
+        <div class="card-sub">Reasoning hits, repairs & plan executions</div>
       </div>
       <div class="card">
-        <div class="card-title"><span>Connected Knowledge Sources</span><span>🌐</span></div>
-        <div class="card-num" id="metric-sources">4 Feeds</div>
-        <div class="card-sub">Wikipedia, Reddit, HackerNews, AI Mesh</div>
+        <div class="card-title"><span>Active Knowledge Sources</span><span>🌐</span></div>
+        <div class="card-num" id="metric-sources" style="color: var(--accent);">4 / 4</div>
+        <div class="card-sub">Wikipedia • HackerNews • Reddit • AI Federation</div>
       </div>
       <div class="card">
         <div class="card-title"><span>Connected Bodies Evolving</span><span>🧬</span></div>
-        <div class="card-num" id="metric-bodies" style="color: var(--purple);">3 Active</div>
-        <div class="card-sub">Executor, Web Console, OCR Formatter</div>
+        <div class="card-num" id="metric-evolutions" style="color: var(--success);">--</div>
+        <div class="card-sub">Executor, Console, OCR Formatter & Dynamic</div>
       </div>
     </div>
 
-    <!-- Section: Knowledge Sources & Domain Breakdown -->
+    <!-- Section: Autonomous Task Learning & Hot-Injection Pipeline -->
+    <div class="card" style="margin-bottom: 28px; border-color: rgba(88, 166, 255, 0.4);">
+      <div class="section-title">
+        <span>⚡</span> Autonomous Self-Learning & Hot-Injection Pipeline
+        <span>(Ask any task → Researched → Sandbox Tested → Learned → Injected into Body → Executed)</span>
+      </div>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+        When a user requests a task for any connected body that Hashtag does not yet know how to do, this entire 5-step loop runs <b>100% automatically with zero human intervention</b>:
+      </p>
+
+      <!-- 5 Visual Pipeline Steps -->
+      <div class="pipeline-grid">
+        <div class="pipe-step-card" id="pstep-1">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">Gap Detection</div>
+          <div class="step-desc">Identifies user intent & detects missing capability in the body.</div>
+        </div>
+        <div class="pipe-step-card" id="pstep-2">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Web Ingestion</div>
+          <div class="step-desc">Searches Wikipedia, Reddit, HN & AI nodes for algorithms & code recipes.</div>
+        </div>
+        <div class="pipe-step-card" id="pstep-3">
+          <div class="step-num">Step 3</div>
+          <div class="step-title">Sandbox Testing</div>
+          <div class="step-desc">Generates Python code & executes automated unit tests in isolated sandbox.</div>
+        </div>
+        <div class="pipe-step-card" id="pstep-4">
+          <div class="step-num">Step 4</div>
+          <div class="step-title">Permanent Learning</div>
+          <div class="step-desc">Commits verified capability to memory & telemetry audit logs.</div>
+        </div>
+        <div class="pipe-step-card" id="pstep-5">
+          <div class="step-num">Step 5</div>
+          <div class="step-title">Hot-Injection & Run</div>
+          <div class="step-desc">Injects handler into the target body and executes the user's task.</div>
+        </div>
+      </div>
+
+      <!-- Interactive Runner Form -->
+      <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: 12px; padding: 18px; margin-top: 14px;">
+        <div style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Test the Autonomous Loop Live:</div>
+        
+        <div style="margin-bottom: 12px;">
+          <span style="font-size: 12px; color: var(--muted); margin-right: 8px;">Try sample tasks:</span>
+          <div style="display: inline-block;">
+            <span class="task-chip" onclick="quickFillTask('calculate sha256 checksum of this text', 'executor', 'hashtag autonomous intelligence system')">🔐 SHA-256 Checksum</span>
+            <span class="task-chip" onclick="quickFillTask('convert this markdown table to json format', 'ocr_formatter', '| Name | Role |\n|---|---|\n| Hashtag Core | Brain |\n| Executor | Physical Body |')">📊 Markdown Table to JSON</span>
+            <span class="task-chip" onclick="quickFillTask('extract all emails from this document', 'executor', 'Contact admin@hashtag.ai and support@render.com for details')">📧 Extract Emails</span>
+            <span class="task-chip" onclick="quickFillTask('package files into zip archive', 'executor', 'project_backup')">📦 Compress ZIP</span>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Target Body:</label>
+            <select id="auto-body" class="input-field" style="width: 100%;">
+              <option value="executor">Hashtag the Executor (executor)</option>
+              <option value="ocr_formatter">OCR Record Formatter (ocr_formatter)</option>
+              <option value="console">Hashtag Web Console (console)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Task Description / Command:</label>
+            <input type="text" id="auto-task" class="input-field" style="width: 100%;" placeholder="e.g. calculate sha256 checksum, convert markdown table to json...">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Input Payload / Text (Optional):</label>
+          <textarea id="auto-input" class="input-field" rows="2" style="width: 100%; resize: vertical;" placeholder="Optional text or data for the task..."></textarea>
+        </div>
+
+        <button class="btn btn-accent" style="width: 100%; justify-content: center; font-size: 14px; padding: 12px;" onclick="runAutonomousCycle()">
+          🚀 Run Full Autonomous Self-Learning & Hot-Injection Cycle
+        </button>
+
+        <div id="auto-status-msg" style="font-size: 13px; margin-top: 10px; font-weight: 600; text-align: center;"></div>
+        <div id="auto-console" class="result-console" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Section: Where Knowledge Comes From (Source Breakdown) -->
     <div class="grid-2">
       <!-- Sources Card -->
       <div class="card">
-        <div class="section-title">Where Hashtag Gets Knowledge <span>(Source Ingestion Breakdown)</span></div>
-        <p style="font-size: 12px; color: var(--muted); margin-bottom: 18px;">Continuous background harvesters query global encyclopedias, discussions, and AI federations.</p>
+        <div class="section-title">Where Hashtag Gets Knowledge <span>(Source Reports)</span></div>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">Hashtag continuously harvests free public knowledge bases and AI peer nodes across the internet:</p>
         
         <div class="source-row">
-          <div class="source-header"><span>📚 Wikipedia Encyclopedic Knowledge</span><span id="wiki-stat">--</span></div>
-          <div class="source-bar-bg"><div id="wiki-bar" class="source-bar-fill fill-wiki" style="width: 0%"></div></div>
+          <div class="source-header"><span>🌐 Wikipedia (Articles & Definitions)</span><span id="src-wiki-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-wiki" class="source-bar-fill fill-wiki" style="width: 0%;"></div></div>
         </div>
         <div class="source-row">
-          <div class="source-header"><span>🔥 HackerNews Tech & Engineering</span><span id="hn-stat">--</span></div>
-          <div class="source-bar-bg"><div id="hn-bar" class="source-bar-fill fill-hn" style="width: 0%"></div></div>
+          <div class="source-header"><span>💬 Reddit Tech (r/programming, r/MachineLearning)</span><span id="src-reddit-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-reddit" class="source-bar-fill fill-reddit" style="width: 0%;"></div></div>
         </div>
         <div class="source-row">
-          <div class="source-header"><span>💬 Reddit Developer Communities</span><span id="reddit-stat">--</span></div>
-          <div class="source-bar-bg"><div id="reddit-bar" class="source-bar-fill fill-reddit" style="width: 0%"></div></div>
+          <div class="source-header"><span>📰 HackerNews (Architecture & Best Practices)</span><span id="src-hn-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-hn" class="source-bar-fill fill-hn" style="width: 0%;"></div></div>
         </div>
         <div class="source-row">
-          <div class="source-header"><span>🤖 AI Federation Mesh (Distilled AIs)</span><span id="ai-stat">--</span></div>
-          <div class="source-bar-bg"><div id="ai-bar" class="source-bar-fill fill-ai" style="width: 0%"></div></div>
+          <div class="source-header"><span>🤖 AI Federation Mesh (Distilled Model Logic)</span><span id="src-ai-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-ai" class="source-bar-fill fill-ai" style="width: 0%;"></div></div>
         </div>
 
-        <!-- Harvest on demand -->
-        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--card-border);">
-          <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Trigger Immediate Topic Absorption:</div>
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+          <div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Trigger Immediate Knowledge Ingestion:</div>
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="harvest-input" class="input-field" placeholder="e.g. Transformers, WebAssembly, Quantum...">
-            <button class="btn btn-primary" onclick="triggerHarvest()">Learn Topic</button>
+            <input type="text" id="custom-topic" class="input-field" placeholder="Topic to learn (e.g. GraphQL, WebSockets, PyTorch)..." style="flex: 1;">
+            <button class="btn btn-outline" onclick="triggerHarvest()">Absorb Topic</button>
           </div>
           <div id="harvest-feedback" style="font-size: 12px; margin-top: 6px; color: var(--success);"></div>
         </div>
@@ -196,7 +296,7 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
 
       <!-- Domain Distribution Card -->
       <div class="card">
-        <div class="section-title">What Hashtag Learned <span>(Domain Categorization)</span></div>
+        <div class="section-title">What Hashtag Learned <span>(Engineering Domains)</span></div>
         <p style="font-size: 12px; color: var(--muted); margin-bottom: 14px;">Distilled concepts clustered into engineering domains and reasoning foundations:</p>
         <div class="domain-list" id="domain-badges">
           <div class="domain-badge active" onclick="filterDomain('all')">All Domains <span class="domain-count" id="dom-all-cnt">0</span></div>
@@ -300,100 +400,105 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
         <button class="modal-close" onclick="closeModal()">&times;</button>
       </div>
       <div id="modal-meta" style="font-size: 12px; color: var(--muted); margin-bottom: 14px;"></div>
-      <div id="modal-summary" style="font-size: 14px; line-height: 1.6; color: #c9d1d9; margin-bottom: 16px;"></div>
-      <div id="modal-tags" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;"></div>
+      <div id="modal-summary" style="font-size: 14px; line-height: 1.6; color: #c9d1d9; margin-bottom: 16px; white-space: pre-wrap;"></div>
+      <div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Tags / Context:</div>
+      <div id="modal-tags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;"></div>
       <div id="modal-url"></div>
     </div>
   </div>
 
   <script>
-    var globalReport = null;
-    var activeDomainFilter = 'all';
+    var currentData = null;
 
     function timeAgo(ts) {
       if (!ts) return "recently";
-      var sec = Math.floor(Date.now() / 1000 - ts);
-      if (sec < 60) return sec + "s ago";
-      if (sec < 3600) return Math.floor(sec / 60) + "m ago";
-      if (sec < 86400) return Math.floor(sec / 3600) + "h ago";
-      return Math.floor(sec / 86400) + "d ago";
+      var s = Math.floor(Date.now() / 1000 - ts);
+      if (s < 60) return "just now";
+      if (s < 3600) return Math.floor(s / 60) + "m ago";
+      if (s < 86400) return Math.floor(s / 3600) + "h ago";
+      return Math.floor(s / 86400) + "d ago";
     }
 
     function loadData() {
       fetch('/v1/knowledge/status')
         .then(function(res) { return res.json(); })
         .then(function(data) {
-          globalReport = data;
+          currentData = data;
           renderMetrics(data);
-          renderSources(data.sources);
-          renderDomains(data.domains);
-          renderStream(data.recent_stream);
-          renderUsages(data.recent_usages);
+          renderSources(data.source_breakdown || {});
+          renderDomains(data.domains || {});
+          renderStream(data.recent_stream || []);
+          renderUsages(data.recent_usages || []);
           doSearch();
         })
         .catch(function(err) {
-          console.error("Failed to load knowledge status:", err);
+          console.error("Knowledge fetch error:", err);
         });
 
       fetch('/v1/body/evolution/status')
         .then(function(res) { return res.json(); })
         .then(function(data) {
-          renderBodies(data.bodies);
+          document.getElementById('metric-evolutions').textContent = data.total_evolutions || 0;
+          renderBodies(data.bodies || []);
         })
         .catch(function(err) {
-          console.error("Failed to load bodies status:", err);
+          console.error("Evolution fetch error:", err);
         });
     }
 
     function renderMetrics(data) {
-      document.getElementById('metric-learned').textContent = (data.total_learned || 0) + " Concepts";
-      document.getElementById('metric-usages').textContent = (data.total_usages || 0) + " Applied";
+      var count = data.total_concepts || 0;
+      var bytes = data.total_bytes || 0;
+      var kb = Math.round(bytes / 1024);
+      document.getElementById('metric-learned').textContent = count + " (" + kb + " KB)";
+      document.getElementById('metric-usages').textContent = data.total_usages || 0;
+      document.getElementById('dom-all-cnt').textContent = count;
     }
 
     function renderSources(sources) {
-      if (!sources) return;
       var wiki = sources.wikipedia || { count: 0, percentage: 0 };
       var reddit = sources.reddit || { count: 0, percentage: 0 };
       var hn = sources.hackernews || { count: 0, percentage: 0 };
       var ai = sources.ai_federation || { count: 0, percentage: 0 };
 
-      document.getElementById('wiki-stat').textContent = wiki.count + " concepts (" + wiki.percentage + "%)";
-      document.getElementById('wiki-bar').style.width = Math.max(5, wiki.percentage) + "%";
+      document.getElementById('src-wiki-pct').textContent = wiki.percentage + "% (" + wiki.count + ")";
+      document.getElementById('bar-wiki').style.width = wiki.percentage + "%";
 
-      document.getElementById('hn-stat').textContent = hn.count + " discussions (" + hn.percentage + "%)";
-      document.getElementById('hn-bar').style.width = Math.max(5, hn.percentage) + "%";
+      document.getElementById('src-reddit-pct').textContent = reddit.percentage + "% (" + reddit.count + ")";
+      document.getElementById('bar-reddit').style.width = reddit.percentage + "%";
 
-      document.getElementById('reddit-stat').textContent = reddit.count + " articles (" + reddit.percentage + "%)";
-      document.getElementById('reddit-bar').style.width = Math.max(5, reddit.percentage) + "%";
+      document.getElementById('src-hn-pct').textContent = hn.percentage + "% (" + hn.count + ")";
+      document.getElementById('bar-hn').style.width = hn.percentage + "%";
 
-      document.getElementById('ai-stat').textContent = ai.count + " syntheses (" + ai.percentage + "%)";
-      document.getElementById('ai-bar').style.width = Math.max(5, ai.percentage) + "%";
+      document.getElementById('src-ai-pct').textContent = ai.percentage + "% (" + ai.count + ")";
+      document.getElementById('bar-ai').style.width = ai.percentage + "%";
     }
 
     function renderDomains(domains) {
       var container = document.getElementById('domain-badges');
-      if (!domains) return;
-      var total = globalReport ? globalReport.total_learned : 0;
-      var html = '<div class="domain-badge ' + (activeDomainFilter === 'all' ? 'active' : '') + '" onclick="filterDomain(\\'all\\')">All Domains <span class="domain-count">' + total + '</span></div>';
+      var allCount = currentData ? (currentData.total_concepts || 0) : 0;
+      var html = '<div class="domain-badge active" onclick="filterDomain(\\'all\\')">All Domains <span class="domain-count">' + allCount + '</span></div>';
       
       for (var d in domains) {
-        var cnt = domains[d];
-        var isAct = (activeDomainFilter === d) ? 'active' : '';
-        html += '<div class="domain-badge ' + isAct + '" onclick="filterDomain(\\'' + d.replace(/'/g, "\\\\'") + '\\')">' + d + ' <span class="domain-count">' + cnt + '</span></div>';
+        if (domains.hasOwnProperty(d)) {
+          html += '<div class="domain-badge" onclick="filterDomain(\\'' + d + '\\')">' + d + ' <span class="domain-count">' + domains[d] + '</span></div>';
+        }
       }
       container.innerHTML = html;
     }
 
-    function filterDomain(d) {
-      activeDomainFilter = d;
-      renderDomains(globalReport ? globalReport.domains : {});
+    function filterDomain(dom) {
+      var badges = document.querySelectorAll('.domain-badge');
+      badges.forEach(function(b) { b.classList.remove('active'); });
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+      document.getElementById('search-input').value = (dom === 'all' ? '' : dom);
       doSearch();
     }
 
     function renderStream(stream) {
       var box = document.getElementById('recent-stream-box');
       if (!stream || !stream.length) {
-        box.innerHTML = '<div style="color:var(--muted); font-size:12px;">Waiting for new harvest cycles...</div>';
+        box.innerHTML = '<div style="color:var(--muted); font-size:12px;">Absorbing knowledge in background...</div>';
         return;
       }
       var html = "";
@@ -498,22 +603,21 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
       if (concept.details && concept.details.url) {
         urlDiv.innerHTML = '<a href="' + concept.details.url + '" target="_blank" class="btn btn-outline" style="font-size:12px;">🔗 View Original Knowledge Source</a>';
       } else {
-        urlDiv.innerHTML = "";
+        urlDiv.innerHTML = '';
       }
-
       document.getElementById('modal').style.display = 'flex';
     }
 
-    function closeModal() {
+    function closeModal(e) {
       document.getElementById('modal').style.display = 'none';
     }
 
     function triggerHarvest() {
-      var input = document.getElementById('harvest-input');
+      var input = document.getElementById('custom-topic');
       var val = input.value.trim();
-      if (!val) return;
       var fb = document.getElementById('harvest-feedback');
-      fb.textContent = "Harvesting and synthesizing " + val + "...";
+      if (!val) return;
+      fb.textContent = "Hashtag is searching & absorbing " + val + "...";
       fetch('/v1/knowledge/harvest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -570,6 +674,97 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
       .catch(function(err) {
         fb.textContent = "Evolution error: " + err.message;
         fb.style.color = "red";
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // Autonomous Task Learning & Hot-Injection Runner
+    // ------------------------------------------------------------------
+
+    function quickFillTask(task, bodyId, inputPayload) {
+      document.getElementById('auto-task').value = task;
+      document.getElementById('auto-body').value = bodyId;
+      document.getElementById('auto-input').value = inputPayload || "";
+    }
+
+    function setStepStatus(stepNum, status) {
+      var card = document.getElementById('pstep-' + stepNum);
+      if (!card) return;
+      card.classList.remove('active', 'completed');
+      if (status === 'active') card.classList.add('active');
+      if (status === 'completed') card.classList.add('completed');
+    }
+
+    function resetPipelineSteps() {
+      for (var s = 1; s <= 5; s++) setStepStatus(s, '');
+    }
+
+    function runAutonomousCycle() {
+      var targetBody = document.getElementById('auto-body').value;
+      var task = document.getElementById('auto-task').value.trim();
+      var inputText = document.getElementById('auto-input').value;
+      var statusMsg = document.getElementById('auto-status-msg');
+      var consoleBox = document.getElementById('auto-console');
+
+      if (!task) {
+        statusMsg.textContent = "Please enter a task or select a quick task above.";
+        statusMsg.style.color = "var(--warning)";
+        return;
+      }
+
+      resetPipelineSteps();
+      setStepStatus(1, 'active');
+      statusMsg.textContent = "Hashtag is analyzing request and detecting capability gaps in " + targetBody + "...";
+      statusMsg.style.color = "var(--accent)";
+      consoleBox.style.display = "block";
+      consoleBox.textContent = "[1/5] Analyzing body capabilities... Gap identified!\\n[2/5] Core searching Wikipedia, Reddit, HN & AI Mesh for algorithms...\\n";
+
+      setTimeout(function() {
+        setStepStatus(1, 'completed');
+        setStepStatus(2, 'active');
+        consoleBox.textContent += "[3/5] Generating Python implementation & automated verification test cases...\\n[4/5] Executing sandbox test runner...\\n";
+      }, 400);
+
+      fetch('/v1/autonomous/learn-and-execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_body: targetBody,
+          request: task,
+          inputText: inputText
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        for (var s = 1; s <= 5; s++) setStepStatus(s, 'completed');
+        
+        if (data.ok) {
+          statusMsg.textContent = "✓ Task Completed! Learned, sandboxed, injected, and executed successfully.";
+          statusMsg.style.color = "var(--success)";
+          
+          var log = "=== AUTONOMOUS TASK LEARNING & HOT-INJECTION COMPLETE ===\\n";
+          log += "Target Body: " + data.target_body + "\\n";
+          log += "Capability ID: " + data.capability_id + "\\n\\n";
+          log += "--- Execution Steps Completed ---\\n";
+          (data.steps_completed || []).forEach(function(st) {
+            log += "✓ " + st.name + ": " + st.details + "\\n";
+          });
+          log += "\\n--- Real Execution Output ---\\n";
+          log += JSON.stringify(data.execution_result, null, 2);
+          consoleBox.textContent = log;
+          
+          // Refresh background data to show newly recorded usage and evolution
+          setTimeout(loadData, 1000);
+        } else {
+          statusMsg.textContent = "Pipeline Error: " + (data.error || data.message || "Failed");
+          statusMsg.style.color = "red";
+          consoleBox.textContent += "\\nERROR: " + (data.error || data.message);
+        }
+      })
+      .catch(function(err) {
+        statusMsg.textContent = "Network Error: " + err.message;
+        statusMsg.style.color = "red";
+        consoleBox.textContent += "\\nNetwork Error: " + err.message;
       });
     }
 
