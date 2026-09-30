@@ -32,6 +32,7 @@ class BodyManifest:
         "github.files.list",
         "github.file.read",
         "github.file.write",
+        "github.file.fix",
         "github.repositories.list",
         "github.branches.list",
         "github.branch.inspect",
