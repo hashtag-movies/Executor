@@ -385,7 +385,10 @@ def _core(path, payload=None, timeout=None):
         if timeout is None:
             timeout = 60 if payload is None else 1200
         r = requests.get(CORE_URL + path, timeout=timeout) if payload is None else requests.post(CORE_URL + path, json=payload, timeout=timeout)
-        data = r.json()
+        try:
+            data = r.json()
+        except Exception:
+            data = {"ok": False, "error": r.text[:300] if r.text else f"HTTP {r.status_code}"}
         if r.status_code >= 400:
             if r.status_code == 422 and _is_permission_pause(data):
                 return data
@@ -394,7 +397,7 @@ def _core(path, payload=None, timeout=None):
             raise RuntimeError(data.get("error") or data.get("detail") or str(data))
         return data
 
-    except requests.RequestException as exc:
+    except Exception as exc:
         raise RuntimeError(f"Hashtag Core unavailable at {CORE_URL}: {exc}") from exc
 
 @app.get("/v1/console/core")
@@ -492,8 +495,17 @@ def console_request(payload: dict, request: Request = None):
     except Exception as e:
         logger.warning("Auto-registration before request failed: %s", e)
     q={"request":text,"body_id":payload.get("body_id") or "hashtag-executor","context":context}
-    if payload.get("task_id"): q["task_id"]=payload["task_id"]
-    result = _core("/v1/request",q)
+    try:
+        result = _core("/v1/request", q)
+    except Exception as e:
+        if "Body not registered" in str(e) or "404" in str(e):
+            try:
+                console_register(request)
+                result = _core("/v1/request", q)
+            except Exception as e2:
+                raise HTTPException(status_code=500, detail=str(e2))
+        else:
+            raise HTTPException(status_code=500, detail=str(e))
     pending_id = _remember_console_pending(result, q) if _is_permission_pause(result) else None
     if pending_id:
         result["console_permission_request_id"] = pending_id
