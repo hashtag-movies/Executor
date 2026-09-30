@@ -593,6 +593,45 @@ def console_permission_decide(payload:dict):
 def console_ui_view():
     return CONSOLE_HTML
 
+from .knowledge_ui import KNOWLEDGE_DASHBOARD_HTML
+import urllib.parse
+
+@app.get("/knowledge", response_class=HTMLResponse)
+@app.get("/intelligence", response_class=HTMLResponse)
+def knowledge_dashboard_view():
+    return KNOWLEDGE_DASHBOARD_HTML
+
+@app.get("/v1/knowledge/status")
+def knowledge_status_proxy():
+    try:
+        return _core("/v1/knowledge/status", timeout=15)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "total_learned": 0, "sources": {}, "domains": {}, "recent_stream": [], "recent_usages": []}
+
+@app.get("/v1/knowledge/search")
+def knowledge_search_proxy(request: Request):
+    q = request.query_params.get("q", "")
+    limit = request.query_params.get("limit", "15")
+    try:
+        return _core(f"/v1/knowledge/search?q={urllib.parse.quote(q)}&limit={limit}", timeout=15)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "results": []}
+
+@app.post("/v1/knowledge/harvest")
+def knowledge_harvest_proxy(payload: dict):
+    return _core("/v1/knowledge/harvest", payload, timeout=20)
+
+@app.get("/v1/body/evolution/status")
+def body_evolution_status_proxy():
+    try:
+        return _core("/v1/body/evolution/status", timeout=15)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "bodies": []}
+
+@app.post("/v1/body/evolve")
+def body_evolve_proxy(payload: dict):
+    return _core("/v1/body/evolve", payload, timeout=20)
+
 if __name__ == "__main__":
     import uvicorn
     host = os.getenv("HOST", "127.0.0.1")
