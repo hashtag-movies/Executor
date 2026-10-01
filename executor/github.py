@@ -141,6 +141,35 @@ class GitHubClient:
 
         return normalized
 
+    def create_repository(
+        self,
+        name: str,
+        description: str = "",
+        private: bool = False,
+        auto_init: bool = True,
+    ) -> dict[str, Any]:
+        """Create a new GitHub repository for the authenticated user."""
+        payload = {
+            "name": name,
+            "description": description,
+            "private": private,
+            "auto_init": auto_init,
+        }
+        return self._post("user/repos", payload)
+
+    def get_tree(
+        self,
+        owner: str,
+        repo: str,
+        tree_sha: str = "main",
+        recursive: bool = True,
+    ) -> dict[str, Any]:
+        """Fetch the full git tree of a repository."""
+        endpoint = f"repos/{owner}/{repo}/git/trees/{tree_sha}"
+        if recursive:
+            endpoint += "?recursive=1"
+        return self._get(endpoint)
+
     def list_files(
         self,
         owner: str,

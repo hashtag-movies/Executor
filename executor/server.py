@@ -12,6 +12,7 @@ from .body import HashtagBody
 from .permissions import PermissionDecision, PermissionScope
 from .protocol import Operation
 from .console_ui import CONSOLE_HTML
+from .studio_ui import STUDIO_HTML
 from .connector import pc_connector, generate_client_script
 
 
@@ -231,6 +232,118 @@ def github_backup(payload: dict):
     try:
         path = body.github.download_zip(owner=owner, repo=repo, output_path=output_path, ref=ref)
         return {"ok": True, "backup_path": path}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/v1/github/project/tree")
+def github_project_tree(repo: str = "", ref: str = "main"):
+    target = repo.strip() or getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
+    owner, repo_name = body._resolve_owner_repo({"repository": target})
+    try:
+        branch_info = body.github.get_branch(owner, repo_name, ref)
+        tree_sha = branch_info["commit"]["commit"]["tree"]["sha"]
+        tree_data = body.github.get_tree(owner, repo_name, tree_sha=tree_sha, recursive=True)
+        items = tree_data.get("tree", [])
+        return {
+            "ok": True,
+            "owner": owner,
+            "repo": repo_name,
+            "full_name": f"{owner}/{repo_name}",
+            "ref": ref,
+            "tree": items,
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/v1/github/project/file")
+def github_project_file(path: str, repo: str = "", ref: str = "main"):
+    target = repo.strip() or getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
+    owner, repo_name = body._resolve_owner_repo({"repository": target})
+    try:
+        text = body.github.get_file_text(owner, repo_name, path=path, ref=ref)
+        file_info = body.github.get_file(owner, repo_name, path=path, ref=ref)
+        sha = file_info.get("sha") if isinstance(file_info, dict) else None
+        return {
+            "ok": True,
+            "path": path,
+            "text": text,
+            "sha": sha,
+            "owner": owner,
+            "repo": repo_name,
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/v1/github/project/file")
+def github_project_write_file(payload: dict):
+    path = str(payload.get("path", "")).strip()
+    if not path:
+        raise HTTPException(status_code=400, detail="path is required")
+    content = str(payload.get("content", ""))
+    message = str(payload.get("message", "")).strip() or f"Update {path} via Hashtag Cloud Studio"
+    branch = str(payload.get("branch", "main")).strip() or "main"
+    repo = str(payload.get("repo", "")).strip() or getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
+    owner, repo_name = body._resolve_owner_repo({"repository": repo})
+
+    try:
+        res = body.github.write_file(
+            owner=owner,
+            repo=repo_name,
+            path=path,
+            content=content,
+            message=message,
+            branch=branch,
+        )
+        return {"ok": True, "result": res}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.delete("/v1/github/project/file")
+def github_project_delete_file(payload: dict):
+    path = str(payload.get("path", "")).strip()
+    if not path:
+        raise HTTPException(status_code=400, detail="path is required")
+    message = str(payload.get("message", "")).strip() or f"Delete {path} via Hashtag Cloud Studio"
+    branch = str(payload.get("branch", "main")).strip() or "main"
+    repo = str(payload.get("repo", "")).strip() or getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
+    owner, repo_name = body._resolve_owner_repo({"repository": repo})
+
+    try:
+        res = body.github.delete_file(
+            owner=owner,
+            repo=repo_name,
+            path=path,
+            message=message,
+            branch=branch,
+        )
+        return {"ok": True, "result": res}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/v1/github/project/create-repo")
+def github_project_create_repo(payload: dict):
+    name = str(payload.get("name", "")).strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="name is required")
+    description = str(payload.get("description", "")).strip()
+    private = bool(payload.get("private", False))
+    auto_init = bool(payload.get("auto_init", True))
+
+    try:
+        repo_data = body.github.create_repository(
+            name=name,
+            description=description,
+            private=private,
+            auto_init=auto_init,
+        )
+        full_name = repo_data.get("full_name") or f"{repo_data.get('owner', {}).get('login')}/{name}"
+        body.set_target_repository(full_name)
+        return {"ok": True, "repo": repo_data, "full_name": full_name}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -592,6 +705,11 @@ def console_permission_decide(payload:dict):
 @app.get("/permissions", response_class=HTMLResponse)
 def console_ui_view():
     return CONSOLE_HTML
+
+@app.get("/studio", response_class=HTMLResponse)
+@app.get("/github-studio", response_class=HTMLResponse)
+def studio_ui_view():
+    return STUDIO_HTML
 
 from .knowledge_ui import KNOWLEDGE_DASHBOARD_HTML
 import urllib.parse
