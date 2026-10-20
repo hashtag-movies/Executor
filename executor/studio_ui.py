@@ -723,37 +723,70 @@ STUDIO_HTML = """<!doctype html>
     options = options || {};
     var headers = options.headers || {};
     headers["Content-Type"] = "application/json";
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 12000);
     return fetch(url, {
       method: options.method || "GET",
       headers: headers,
-      body: options.body ? JSON.stringify(options.body) : undefined
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal
     }).then(function(r) {
+      clearTimeout(timeoutId);
       return r.json().then(function(d) {
         if (!r.ok) throw new Error(d.detail || d.error || ("HTTP " + r.status));
         return d;
       });
+    }).catch(function(err) {
+      clearTimeout(timeoutId);
+      throw err;
     });
   }
 
-  // 1. Load User's GitHub Repositories
-  function loadRepositories() {
+  function renderRepoList(repos, current) {
     var select = $("repo-select");
+    if (!select || !repos || !repos.length) return;
+    var html = "";
+    current = current || state.repo || repos[0].full_name;
+    repos.forEach(function(r) {
+      var sel = (r.full_name === current) ? "selected" : "";
+      html += '<option value="' + esc(r.full_name) + '" ' + sel + '>' + esc(r.full_name) + (r.private ? " 🔒" : "") + '</option>';
+    });
+    select.innerHTML = html;
+    state.repo = select.value;
+  }
+
+  // 1. Load User's GitHub Repositories
+  function loadRepositories(retryCount) {
+    retryCount = retryCount || 0;
+    var select = $("repo-select");
+    
+    // Instant cache render
+    try {
+      var cached = localStorage.getItem("hashtag_cached_repos");
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (parsed && parsed.length && select && (!select.value || select.value === "")) {
+          renderRepoList(parsed);
+          if (!state.tree || !state.tree.length) loadProjectTree();
+        }
+      }
+    } catch(e) {}
+
     api("/v1/github/repositories").then(function(res) {
       if (res.repositories && res.repositories.length) {
-        var html = "";
-        var current = res.current || res.repositories[0].full_name;
-        res.repositories.forEach(function(r) {
-          var sel = (r.full_name === current) ? "selected" : "";
-          html += '<option value="' + esc(r.full_name) + '" ' + sel + '>' + esc(r.full_name) + (r.private ? " 🔒" : "") + '</option>';
-        });
-        select.innerHTML = html;
-        state.repo = select.value;
+        try { localStorage.setItem("hashtag_cached_repos", JSON.stringify(res.repositories)); } catch(e) {}
+        renderRepoList(res.repositories, res.current);
         loadProjectTree();
       } else {
         select.innerHTML = '<option value="">No repositories found</option>';
       }
     }).catch(function(err) {
-      select.innerHTML = '<option value="">Error loading repos</option>';
+      if (retryCount < 2) {
+        setTimeout(function() { loadRepositories(retryCount + 1); }, 1500);
+      } else {
+        select.innerHTML = '<option value="">⚠️ Error loading repos (Click ↻ to retry)</option>';
+        $("file-tree").innerHTML = '<div style="padding:20px;text-align:center;color:var(--danger);font-size:12px">Could not load repositories. Please check server or click ↻ to retry.</div>';
+      }
     });
   }
 
@@ -1088,7 +1121,7 @@ STUDIO_HTML = """<!doctype html>
     api("/v1/github/target_repo", { method: "POST", body: { target_repo: state.repo } }).catch(function(){});
     loadProjectTree();
   };
-  $("refresh-repo-btn").onclick = loadProjectTree;
+  $("refresh-repo-btn").onclick = function() { loadRepositories(0); };
 
   // 12. Aux Tabs: Preview vs AI Assistant
   $("tab-btn-preview").onclick = function() {

@@ -151,14 +151,38 @@ def capabilities():
 
 @app.get("/v1/github/status")
 def github_status():
+    from .github_auth import detect_github_session
+    from .github import GitHubClient
+
+    if not getattr(body, "github", None) or not getattr(body.github, "token", None):
+        sess = detect_github_session()
+        if sess and sess.get("token"):
+            body.github = GitHubClient(token=sess["token"])
+            body.default_owner = sess.get("username") or body.default_owner
+            body.current_target_repo = f"{body.default_owner}/Hashtag-core"
+
     try:
         user = body.github.get_authenticated_user()
         return {
             "connected": True,
             "username": user.get("login", ""),
             "target_repo": getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core"),
+            "source": getattr(body.github, "source", "auto_detected"),
         }
     except Exception as exc:
+        sess = detect_github_session()
+        if sess and sess.get("token"):
+            body.github = GitHubClient(token=sess["token"])
+            try:
+                user = body.github.get_authenticated_user()
+                return {
+                    "connected": True,
+                    "username": user.get("login", ""),
+                    "target_repo": getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core"),
+                    "source": sess.get("source", "auto_detected"),
+                }
+            except Exception:
+                pass
         return {"connected": False, "error": str(exc)}
 
 
@@ -465,7 +489,7 @@ def execute(req: OperationRequest):
         )
 
 
-CORE_URL = os.getenv("CORE_URL", "https://hashtag-core.onrender.com").rstrip("/")
+CORE_URL = os.getenv("CORE_URL", "https://core.hashtagai.online").rstrip("/")
 
 # Console-side pending requests. Core's legacy single-operation recovery
 # path does not create a checkpoint, so the Console keeps the original

@@ -342,14 +342,55 @@ function githubStatus(){
    }
   } else {
    el.innerHTML='<div style="color:var(--danger);font-weight:700">✕ Not Connected</div>'
-    +'<div style="font-size:11px;color:#8fa0bb;margin:6px 0">Connect with GitHub Personal Access Token (PAT) or link your PC:</div>'
-    +'<input id="gh-token" type="password" placeholder="ghp_... (GitHub Token)" style="width:100%;margin-bottom:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(120,169,255,0.2);color:#fff;padding:6px;border-radius:6px;font-size:11px">'
-    +'<button id="gh-token-btn" style="width:100%;background:var(--accent);color:#000;border:0;border-radius:6px;padding:6px;font-weight:700;cursor:pointer;font-size:11px">Connect Token</button>';
+    +'<div style="font-size:11px;color:#8fa0bb;margin:6px 0">Connect to GitHub via active browser session or credentials:</div>'
+    +'<button id="gh-autodetect-btn" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,#78a9ff,#4784f4);color:#040914;border:0;border-radius:6px;padding:7px;font-weight:800;cursor:pointer;font-size:11px">⚡ Auto-Connect from Browser / PC</button>'
+    +'<div style="display:flex;gap:4px;margin-bottom:8px">'
+    +'<button id="tab-token" style="flex:1;background:rgba(120,169,255,0.2);color:#edf4ff;border:1px solid rgba(120,169,255,0.3);border-radius:5px;padding:5px;font-size:10px;font-weight:700;cursor:pointer">1. Token (Recommended)</button>'
+    +'<button id="tab-login" style="flex:1;background:rgba(255,255,255,0.05);color:#8fa0bb;border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:5px;font-size:10px;font-weight:700;cursor:pointer">2. Username & Pass</button>'
+    +'</div>'
+    +'<div id="form-token">'
+    +'<input id="gh-token" type="password" placeholder="ghp_... or gho_... token" style="width:100%;margin-bottom:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(120,169,255,0.2);color:#fff;padding:6px;border-radius:6px;font-size:11px">'
+    +'<button id="gh-token-btn" style="width:100%;background:var(--accent);color:#000;border:0;border-radius:6px;padding:6px;font-weight:700;cursor:pointer;font-size:11px">Connect Token</button>'
+    +'</div>'
+    +'<div id="form-login" style="display:none">'
+    +'<input id="gh-user" type="text" placeholder="GitHub Username" style="width:100%;margin-bottom:4px;background:rgba(0,0,0,0.3);border:1px solid rgba(120,169,255,0.2);color:#fff;padding:6px;border-radius:6px;font-size:11px">'
+    +'<input id="gh-pass" type="password" placeholder="GitHub Password" style="width:100%;margin-bottom:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(120,169,255,0.2);color:#fff;padding:6px;border-radius:6px;font-size:11px">'
+    +'<button id="gh-pass-btn" style="width:100%;background:var(--accent);color:#000;border:0;border-radius:6px;padding:6px;font-weight:700;cursor:pointer;font-size:11px">Sign In via Browser</button>'
+    +'</div>';
+
+   var tabToken = $("tab-token");
+   var tabLogin = $("tab-login");
+   var formToken = $("form-token");
+   var formLogin = $("form-login");
+   if(tabToken && tabLogin){
+    tabToken.onclick=function(){
+     tabToken.style.background="rgba(120,169,255,0.2)";tabToken.style.color="#edf4ff";
+     tabLogin.style.background="rgba(255,255,255,0.05)";tabLogin.style.color="#8fa0bb";
+     formToken.style.display="block";formLogin.style.display="none";
+    };
+    tabLogin.onclick=function(){
+     tabLogin.style.background="rgba(120,169,255,0.2)";tabLogin.style.color="#edf4ff";
+     tabToken.style.background="rgba(255,255,255,0.05)";tabToken.style.color="#8fa0bb";
+     formLogin.style.display="block";formToken.style.display="none";
+    };
+   }
+
+   var autoBtn = $("gh-autodetect-btn");
+   if(autoBtn){
+    autoBtn.onclick=function(){
+     autoBtn.disabled=true;autoBtn.textContent="Detecting session...";
+     api("/v1/github/status").then(function(res){
+      if(res.connected){githubStatus();}
+      else{alert("No active browser session or saved token found. Please use Token or Username/Password below.");autoBtn.disabled=false;autoBtn.textContent="⚡ Auto-Connect from Browser / PC";}
+     }).catch(function(e){autoBtn.disabled=false;autoBtn.textContent="⚡ Auto-Connect from Browser / PC";});
+    };
+   }
+
    var btn=$("gh-token-btn");
    if(btn){
     btn.onclick=function(){
      var t=$("gh-token").value.trim();
-     if(!t){alert("Enter your GitHub Personal Access Token (starts with ghp_ or github_pat_)");return;}
+     if(!t){alert("Enter your GitHub Personal Access Token (starts with ghp_ or gho_)");return;}
      btn.disabled=true;btn.textContent="Connecting...";
      api("/v1/github/login",{method:"POST",body:JSON.stringify({token:t})}).then(function(res){
       alert(res.message);
@@ -357,6 +398,24 @@ function githubStatus(){
      }).catch(function(err){
       alert("Error: "+(err.message||err));
       btn.disabled=false;btn.textContent="Connect Token";
+     });
+    };
+   }
+
+   var passBtn=$("gh-pass-btn");
+   if(passBtn){
+    passBtn.onclick=function(){
+     var u=$("gh-user").value.trim();
+     var p=$("gh-pass").value.trim();
+     if(!u || !p){alert("Enter your GitHub username and password");return;}
+     passBtn.disabled=true;passBtn.textContent="Authenticating...";
+     api("/v1/github/login",{method:"POST",body:JSON.stringify({username:u, password:p})}).then(function(res){
+      alert(res.message);
+      if(res.success){githubStatus();}
+      else{passBtn.disabled=false;passBtn.textContent="Sign In via Browser";}
+     }).catch(function(err){
+      alert("Error: "+(err.message||err));
+      passBtn.disabled=false;passBtn.textContent="Sign In via Browser";
      });
     };
    }

@@ -165,22 +165,31 @@ def save_credentials(token: str, username: str, source: str = "user_login") -> N
 
 
 def load_cached_credentials() -> Optional[dict[str, str]]:
-    """Load cached credentials if valid."""
-    if not CREDENTIALS_CACHE_FILE.exists():
-        return None
-    try:
-        data = json.loads(CREDENTIALS_CACHE_FILE.read_text(encoding="utf-8"))
-        token = data.get("token", "")
-        if token:
-            valid, user = validate_token(token)
-            if valid:
-                return {
-                    "token": token,
-                    "username": user or data.get("username", ""),
-                    "source": "cached_file",
-                }
-    except Exception as exc:
-        logger.debug("Failed to load cached credentials: %s", exc)
+    """Load cached credentials if valid from all common storage locations."""
+    candidates = [
+        CREDENTIALS_CACHE_FILE,
+        Path(os.path.expanduser("~/Hashtag-core/data/github_credentials.json")),
+        Path(os.path.expanduser("~/Executor/data/github_credentials.json")),
+        Path(__file__).resolve().parent.parent / "data" / "github_credentials.json",
+        Path(__file__).resolve().parent.parent.parent / "Hashtag-core" / "data" / "github_credentials.json",
+        Path(r"C:\Users\ksdav\OneDrive\Documents\GitHub\Hashtag-core\data\github_credentials.json"),
+        Path(r"C:\Users\ksdav\OneDrive\Documents\Hashtag-the-Executor-Body-V1.2\Hashtag-the-Executor\data\github_credentials.json"),
+    ]
+    for p in candidates:
+        if p.exists():
+            try:
+                data = json.loads(p.read_text(encoding="utf-8"))
+                token = data.get("token", "")
+                if token:
+                    valid, user = validate_token(token)
+                    if valid:
+                        return {
+                            "token": token,
+                            "username": user or data.get("username", ""),
+                            "source": f"cached_file ({p.name})",
+                        }
+            except Exception as exc:
+                logger.debug("Failed to load cached credentials from %s: %s", p, exc)
     return None
 
 
