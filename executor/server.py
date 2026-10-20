@@ -1,7 +1,7 @@
 """Local Hashtag Executor Body HTTP interface."""
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, Response
 from pydantic import BaseModel, Field
 import requests
 import uuid
@@ -730,18 +730,18 @@ def console_permission_decide(payload:dict):
 def console_ui_view():
     return CONSOLE_HTML
 
-@app.get("/studio", response_class=HTMLResponse)
-@app.get("/github-studio", response_class=HTMLResponse)
+@app.get("/studio")
+@app.get("/github-studio")
 def studio_ui_view():
-    return STUDIO_HTML
+    return RedirectResponse("https://core.hashtagai.online/studio", status_code=307)
 
 from .knowledge_ui import KNOWLEDGE_DASHBOARD_HTML
 import urllib.parse
 
-@app.get("/knowledge", response_class=HTMLResponse)
-@app.get("/intelligence", response_class=HTMLResponse)
+@app.get("/knowledge")
+@app.get("/intelligence")
 def knowledge_dashboard_view():
-    return KNOWLEDGE_DASHBOARD_HTML
+    return RedirectResponse("https://core.hashtagai.online/knowledge", status_code=307)
 
 @app.get("/v1/knowledge/status")
 def knowledge_status_proxy():
