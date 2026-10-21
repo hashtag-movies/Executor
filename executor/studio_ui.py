@@ -916,13 +916,13 @@ STUDIO_HTML = """<!doctype html>
   // 5. Line numbers and editor change tracking
   function updateLineNumbers() {
     var val = $("code-editor").value;
-    var lines = val.split("\n").length;
+    var lines = val.split(String.fromCharCode(10)).length;
     var numHtml = "";
     for (var i = 1; i <= lines; i++) {
       numHtml += i + "<br>";
     }
     $("line-numbers").innerHTML = numHtml;
-    $("editor-meta").textContent = "Lines: " + lines + " · Chars: " + val.length;
+    $("editor-meta").textContent = "Lines: " + lines + " | Chars: " + val.length;
   }
 
   function markDirty() {
@@ -1023,7 +1023,7 @@ STUDIO_HTML = """<!doctype html>
     }).then(function(res) {
       $("commit-modal").classList.remove("open");
       markClean();
-      alert("✓ Successfully committed to GitHub!\n\nCommit SHA: " + (res.commit ? res.commit.sha.substring(0, 8) : "ok"));
+      alert("Successfully committed to GitHub! Commit SHA: " + (res.commit ? res.commit.sha.substring(0, 8) : "ok"));
       btn.disabled = false;
       btn.innerHTML = '<span>Confirm & Push Commit</span>';
       loadProjectTree();
