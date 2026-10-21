@@ -755,6 +755,27 @@ def console_ui_view():
 def studio_ui_view():
     return HTMLResponse(STUDIO_HTML, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
+@app.get("/ai", response_class=HTMLResponse)
+@app.get("/chat", response_class=HTMLResponse)
+def ai_chat_view():
+    try:
+        r = requests.get(CORE_URL + "/ai", timeout=15)
+        return HTMLResponse(r.text, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+    except Exception:
+        return HTMLResponse("<h1>Hashtag AI: Core Master Body unavailable</h1>")
+
+@app.post("/v1/ai/chat")
+def ai_chat_proxy(payload: dict):
+    return _core("/v1/ai/chat", payload=payload, timeout=45)
+
+@app.get("/v1/ai/status")
+def ai_status_proxy():
+    return _core("/v1/ai/status", timeout=15)
+
+@app.get("/v1/ai/bodies")
+def ai_bodies_proxy():
+    return _core("/v1/ai/bodies", timeout=15)
+
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 
 @app.get("/favicon.ico")

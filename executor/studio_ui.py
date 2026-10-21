@@ -544,6 +544,7 @@ STUDIO_HTML = """<!doctype html>
       </button>
       <button id="delete-btn" class="btn btn-danger" style="display:none" title="Delete file from GitHub">🗑️ Delete</button>
       <button id="toggle-preview-btn" class="btn" title="Toggle Live Web Preview">👁️ Preview</button>
+      <a href="/ai" class="btn" target="_blank" style="border-color:rgba(88,166,255,0.4);color:#58a6ff;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
       <button id="toggle-ai-btn" class="btn" style="color:var(--accent)" title="Hashtag AI Co-Pilot">🤖 AI Co-Pilot</button>
       <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
     </div>
