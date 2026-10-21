@@ -742,10 +742,10 @@ def console_permission_decide(payload:dict):
 def console_ui_view():
     return CONSOLE_HTML
 
-@app.get("/studio")
-@app.get("/github-studio")
+@app.get("/studio", response_class=HTMLResponse)
+@app.get("/github-studio", response_class=HTMLResponse)
 def studio_ui_view():
-    return RedirectResponse("https://core.hashtagai.online/studio", status_code=307)
+    return HTMLResponse(STUDIO_HTML)
 
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 
@@ -772,10 +772,10 @@ def serve_asset(filename: str):
 from .knowledge_ui import KNOWLEDGE_DASHBOARD_HTML
 import urllib.parse
 
-@app.get("/knowledge")
-@app.get("/intelligence")
+@app.get("/knowledge", response_class=HTMLResponse)
+@app.get("/intelligence", response_class=HTMLResponse)
 def knowledge_dashboard_view():
-    return RedirectResponse("https://core.hashtagai.online/knowledge", status_code=307)
+    return HTMLResponse(KNOWLEDGE_DASHBOARD_HTML)
 
 @app.get("/v1/knowledge/status")
 def knowledge_status_proxy():

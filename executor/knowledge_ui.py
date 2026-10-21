@@ -15,6 +15,7 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hashtag Omniscient Knowledge & Intelligence Dashboard</title>
+  <link rel="icon" type="image/jpeg" href="/favicon.ico">
   <style>
     :root {
       --bg: #090d16;
@@ -75,6 +76,10 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
     .fill-reddit { background: #ff4500; }
     .fill-hn { background: #ff6600; }
     .fill-ai { background: #a371f7; }
+    .fill-dev { background: #00e676; }
+    .fill-codepen { background: #ffea00; }
+    .fill-w3 { background: #04aa6d; }
+    .fill-bootstrap { background: #7952b3; }
 
     /* Domain Badges */
     .domain-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
@@ -142,7 +147,9 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
     <!-- Header -->
     <header>
       <div class="brand">
-        <div class="logo-badge">#</div>
+        <div class="logo-badge" style="background:transparent;box-shadow:none;overflow:hidden;padding:0;border:1px solid rgba(88,166,255,0.3);">
+          <img src="/assets/hashtag_logo.jpg" alt="Hashtag" style="width:100%;height:100%;border-radius:12px;object-fit:cover;box-shadow:0 0 20px var(--accent-glow);">
+        </div>
         <div class="title-group">
           <h1>Hashtag Omniscient Intelligence <span class="status-pill"><span class="pulse-dot"></span> Live Continuous Learning</span> <span class="status-pill" style="background: rgba(88, 166, 255, 0.15); color: var(--accent); border-color: rgba(88, 166, 255, 0.3);"><span class="pulse-dot" style="background: var(--accent);"></span> 24/7 Anti-Sleep Active</span></h1>
           <p>Autonomous Knowledge Ingestion, Sandbox Verification, and Dynamic Body Hot-Evolution</p>
@@ -282,6 +289,22 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
         <div class="source-row">
           <div class="source-header"><span>🤖 AI Federation Mesh (Distilled Model Logic)</span><span id="src-ai-pct">--%</span></div>
           <div class="source-bar-bg"><div id="bar-ai" class="source-bar-fill fill-ai" style="width: 0%;"></div></div>
+        </div>
+        <div class="source-row">
+          <div class="source-header"><span>💻 DEV Community (dev.to Tutorials & Code Guides)</span><span id="src-dev-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-dev" class="source-bar-fill fill-dev" style="width: 0%;"></div></div>
+        </div>
+        <div class="source-row">
+          <div class="source-header"><span>🎨 CodePen (UI Components & Creative Code)</span><span id="src-codepen-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-codepen" class="source-bar-fill fill-codepen" style="width: 0%;"></div></div>
+        </div>
+        <div class="source-row">
+          <div class="source-header"><span>📖 W3Schools (Web & Python Standards Reference)</span><span id="src-w3-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-w3" class="source-bar-fill fill-w3" style="width: 0%;"></div></div>
+        </div>
+        <div class="source-row">
+          <div class="source-header"><span>⚡ Bootstrap 5 (Responsive Layout Systems)</span><span id="src-bootstrap-pct">--%</span></div>
+          <div class="source-bar-bg"><div id="bar-bootstrap" class="source-bar-fill fill-bootstrap" style="width: 0%;"></div></div>
         </div>
 
         <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
@@ -475,6 +498,10 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
       var reddit = sources.reddit || { count: 0, percentage: 0 };
       var hn = sources.hackernews || { count: 0, percentage: 0 };
       var ai = sources.ai_federation || { count: 0, percentage: 0 };
+      var dev = sources.dev_community || { count: 0, percentage: 0 };
+      var codepen = sources.codepen || { count: 0, percentage: 0 };
+      var w3 = sources.w3schools || { count: 0, percentage: 0 };
+      var bootstrap = sources.bootstrap || { count: 0, percentage: 0 };
 
       document.getElementById('src-wiki-pct').textContent = wiki.percentage + "% (" + wiki.count + ")";
       document.getElementById('bar-wiki').style.width = wiki.percentage + "%";
@@ -487,6 +514,23 @@ KNOWLEDGE_DASHBOARD_HTML = """<!DOCTYPE html>
 
       document.getElementById('src-ai-pct').textContent = ai.percentage + "% (" + ai.count + ")";
       document.getElementById('bar-ai').style.width = ai.percentage + "%";
+
+      if (document.getElementById('src-dev-pct')) {
+        document.getElementById('src-dev-pct').textContent = dev.percentage + "% (" + dev.count + ")";
+        document.getElementById('bar-dev').style.width = dev.percentage + "%";
+      }
+      if (document.getElementById('src-codepen-pct')) {
+        document.getElementById('src-codepen-pct').textContent = codepen.percentage + "% (" + codepen.count + ")";
+        document.getElementById('bar-codepen').style.width = codepen.percentage + "%";
+      }
+      if (document.getElementById('src-w3-pct')) {
+        document.getElementById('src-w3-pct').textContent = w3.percentage + "% (" + w3.count + ")";
+        document.getElementById('bar-w3').style.width = w3.percentage + "%";
+      }
+      if (document.getElementById('src-bootstrap-pct')) {
+        document.getElementById('src-bootstrap-pct').textContent = bootstrap.percentage + "% (" + bootstrap.count + ")";
+        document.getElementById('bar-bootstrap').style.width = bootstrap.percentage + "%";
+      }
     }
 
     function renderDomains(domains) {
