@@ -776,14 +776,17 @@ STUDIO_HTML = """<!doctype html>
 
     function fetchRepos(endpoint, fallbackFn) {
       return api(endpoint).then(function(res) {
-        if (res && res.repositories && res.repositories.length) {
-          try { localStorage.setItem("hashtag_cached_repos", JSON.stringify(res.repositories)); } catch(e) {}
-          renderRepoList(res.repositories, res.current);
+        var repos = res ? (res.repositories || res.repos || (Array.isArray(res) ? res : null)) : null;
+        if (repos && repos.length) {
+          try { localStorage.setItem("hashtag_cached_repos", JSON.stringify(repos)); } catch(e) {}
+          renderRepoList(repos, res.current);
           loadProjectTree();
           return true;
         }
+        if (fallbackFn) return fallbackFn();
         return false;
       }).catch(function(err) {
+        console.warn("fetchRepos error on " + endpoint + ":", err);
         if (fallbackFn) return fallbackFn();
         return false;
       });
