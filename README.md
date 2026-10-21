@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/hashtag_banner.jpg" alt="Hashtag AI Banner" width="100%" style="border-radius:12px;">
+</p>
+
 # Hashtag the Executor — Body V1.2
 
 The first real **Hashtag Body**. Hashtag-core is the brain; this process is the hands.

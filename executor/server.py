@@ -735,6 +735,28 @@ def console_ui_view():
 def studio_ui_view():
     return RedirectResponse("https://core.hashtagai.online/studio", status_code=307)
 
+ASSETS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+
+@app.get("/favicon.ico")
+def favicon():
+    fav_path = os.path.join(ASSETS_DIR, "hashtag_logo.jpg")
+    if os.path.isfile(fav_path):
+        with open(fav_path, "rb") as f:
+            data = f.read()
+        return Response(content=data, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})
+    return Response(status_code=404)
+
+@app.get("/assets/{filename}")
+def serve_asset(filename: str):
+    safe_name = os.path.basename(filename)
+    asset_path = os.path.join(ASSETS_DIR, safe_name)
+    if os.path.isfile(asset_path):
+        media_type = "image/jpeg" if safe_name.lower().endswith((".jpg", ".jpeg")) else "image/png"
+        with open(asset_path, "rb") as f:
+            data = f.read()
+        return Response(content=data, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+    return Response(status_code=404)
+
 from .knowledge_ui import KNOWLEDGE_DASHBOARD_HTML
 import urllib.parse
 
