@@ -839,13 +839,43 @@ def system_sync_endpoint():
     def _async_sync():
         time.sleep(1)
         try:
-            import subprocess
-            subprocess.run(["git", "pull", "origin", "main"], timeout=30)
-            os._exit(0)
+            import subprocess, sys
+            repo_dir = Path(__file__).resolve().parent.parent
+            subprocess.run(["git", "fetch", "origin", "main"], cwd=str(repo_dir), timeout=20)
+            subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=str(repo_dir), timeout=20)
+            time.sleep(1)
+            os.execv(sys.executable, [sys.executable] + sys.argv)
         except Exception as ex:
             logger.error("Sync error: %s", ex)
     threading.Thread(target=_async_sync, daemon=True).start()
-    return {"ok": True, "message": "Pulling latest changes and reloading Executor..."}
+    return {"ok": True, "message": "Pulling latest changes and reloading Executor in-place..."}
+
+def _start_autonomous_executor_sync():
+    """Continuously checks GitHub for updates every 30s and restarts in-place if new commits exist."""
+    def _sync_worker():
+        time.sleep(25)
+        repo_dir = Path(__file__).resolve().parent.parent
+        git_dir = repo_dir / ".git"
+        if not git_dir.is_dir():
+            return
+        import subprocess, sys
+        while True:
+            try:
+                time.sleep(30)
+                res = subprocess.run(["git", "fetch", "origin", "main"], cwd=str(repo_dir), capture_output=True, timeout=20)
+                if res.returncode == 0:
+                    local_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=str(repo_dir), text=True, timeout=10).strip()
+                    remote_sha = subprocess.check_output(["git", "rev-parse", "origin/main"], cwd=str(repo_dir), text=True, timeout=10).strip()
+                    if local_sha and remote_sha and local_sha != remote_sha:
+                        logger.info("Autonomous Executor Sync: Updating to %s and reloading...", remote_sha[:8])
+                        subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=str(repo_dir), timeout=20)
+                        time.sleep(1)
+                        os.execv(sys.executable, [sys.executable] + sys.argv)
+            except Exception as e:
+                pass
+    threading.Thread(target=_sync_worker, daemon=True, name="AutonomousExecutorSync").start()
+
+_start_autonomous_executor_sync()
 
 if __name__ == "__main__":
     import uvicorn
