@@ -745,7 +745,7 @@ def console_ui_view():
 @app.get("/studio", response_class=HTMLResponse)
 @app.get("/github-studio", response_class=HTMLResponse)
 def studio_ui_view():
-    return HTMLResponse(STUDIO_HTML)
+    return HTMLResponse(STUDIO_HTML, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 
