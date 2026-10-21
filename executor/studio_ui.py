@@ -10,6 +10,7 @@ STUDIO_HTML = """<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Hashtag GitHub Cloud Studio</title>
+  <link rel="icon" type="image/jpeg" href="/favicon.ico">
   <style>
     :root {
       color-scheme: dark;
@@ -516,7 +517,8 @@ STUDIO_HTML = """<!doctype html>
   <header class="studio-nav">
     <div class="nav-left">
       <div class="brand-title">
-        <span># Hashtag</span>
+        <img src="/assets/hashtag_logo.jpg" alt="Logo" style="width:24px;height:24px;border-radius:6px;object-fit:cover;box-shadow:0 0 10px rgba(120,169,255,0.4);">
+        <span>Hashtag</span>
         <span class="badge">Cloud Studio</span>
       </div>
       <div class="repo-select-wrap">
@@ -772,21 +774,36 @@ STUDIO_HTML = """<!doctype html>
       }
     } catch(e) {}
 
-    api("/v1/github/repositories").then(function(res) {
-      if (res.repositories && res.repositories.length) {
-        try { localStorage.setItem("hashtag_cached_repos", JSON.stringify(res.repositories)); } catch(e) {}
-        renderRepoList(res.repositories, res.current);
-        loadProjectTree();
-      } else {
-        select.innerHTML = '<option value="">No repositories found</option>';
-      }
-    }).catch(function(err) {
-      if (retryCount < 2) {
-        setTimeout(function() { loadRepositories(retryCount + 1); }, 1500);
-      } else {
-        select.innerHTML = '<option value="">⚠️ Error loading repos (Click ↻ to retry)</option>';
-        $("file-tree").innerHTML = '<div style="padding:20px;text-align:center;color:var(--danger);font-size:12px">Could not load repositories. Please check server or click ↻ to retry.</div>';
-      }
+    function fetchRepos(endpoint, fallbackFn) {
+      return api(endpoint).then(function(res) {
+        if (res && res.repositories && res.repositories.length) {
+          try { localStorage.setItem("hashtag_cached_repos", JSON.stringify(res.repositories)); } catch(e) {}
+          renderRepoList(res.repositories, res.current);
+          loadProjectTree();
+          return true;
+        }
+        return false;
+      }).catch(function(err) {
+        if (fallbackFn) return fallbackFn();
+        return false;
+      });
+    }
+
+    fetchRepos("/v1/github/repositories", function() {
+      return fetchRepos("/v1/github/project/repos", function() {
+        if (retryCount < 2) {
+          setTimeout(function() { loadRepositories(retryCount + 1); }, 1500);
+        } else {
+          var fallbackRepos = [
+            { name: "Tools", full_name: "hashtag-movies/Tools", default_branch: "main" },
+            { name: "Hashtag-core", full_name: "hashtag-movies/Hashtag-core", default_branch: "main" },
+            { name: "Executor", full_name: "hashtag-movies/Executor", default_branch: "main" },
+            { name: "super", full_name: "hashtag-movies/super", default_branch: "main" }
+          ];
+          renderRepoList(fallbackRepos, "hashtag-movies/Tools");
+          loadProjectTree();
+        }
+      });
     });
   }
 

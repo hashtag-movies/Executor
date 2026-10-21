@@ -562,6 +562,9 @@ def console_state():
 
 
 def get_executor_public_url(request: Request = None) -> str:
+    core_url = os.getenv("CORE_URL", "http://127.0.0.1:8775")
+    if "127.0.0.1" in core_url or "localhost" in core_url:
+        return f"http://127.0.0.1:{os.getenv('PORT', '8780')}"
     url = os.getenv("EXECUTOR_PUBLIC_URL", "") or os.getenv("RENDER_EXTERNAL_URL", "")
     if not url and request:
         try:
@@ -580,10 +583,12 @@ def get_executor_public_url(request: Request = None) -> str:
 
 @app.post("/v1/console/register")
 def console_register(request: Request = None):
-    base_url = get_executor_public_url(request)
-    return _core("/v1/body/register", {
-        "base_url": base_url,
-    }, timeout=20)
+    base_url = f"http://127.0.0.1:{os.getenv('PORT', '8780')}"
+    try:
+        return _core("/v1/body/register", {"base_url": base_url}, timeout=10)
+    except Exception:
+        pub_url = get_executor_public_url(request)
+        return _core("/v1/body/register", {"base_url": pub_url}, timeout=20)
 
 def _find_permission_request(result: dict):
     if not isinstance(result, dict):
@@ -643,6 +648,13 @@ def console_request(payload: dict, request: Request = None):
                 raise HTTPException(status_code=500, detail=str(e2))
         else:
             raise HTTPException(status_code=500, detail=str(e))
+    # AUTO-HEAL: If Core returned JSON indicating body not registered, re-register and retry
+    if isinstance(result, dict) and not result.get("ok") and "Body not registered" in str(result.get("error")):
+        try:
+            console_register(request)
+            result = _core("/v1/request", q)
+        except Exception:
+            pass
     pending_id = _remember_console_pending(result, q) if _is_permission_pause(result) else None
     if pending_id:
         result["console_permission_request_id"] = pending_id
@@ -806,6 +818,34 @@ def autonomous_capabilities_proxy():
 @app.post("/v1/autonomous/learn-and-execute")
 def autonomous_learn_and_execute_proxy(payload: dict):
     return _core("/v1/autonomous/learn-and-execute", payload, timeout=30)
+
+import threading
+import time
+
+def _auto_register_loop():
+    time.sleep(3)
+    while True:
+        try:
+            _core("/v1/body/register", {"base_url": f"http://127.0.0.1:{os.getenv('PORT', '8780')}"}, timeout=8)
+        except Exception:
+            pass
+        time.sleep(25)
+
+threading.Thread(target=_auto_register_loop, daemon=True, name="ExecutorAutoRegisterWithCore").start()
+
+@app.get("/v1/system/sync")
+@app.post("/v1/system/sync")
+def system_sync_endpoint():
+    def _async_sync():
+        time.sleep(1)
+        try:
+            import subprocess
+            subprocess.run(["git", "pull", "origin", "main"], timeout=30)
+            os._exit(0)
+        except Exception as ex:
+            logger.error("Sync error: %s", ex)
+    threading.Thread(target=_async_sync, daemon=True).start()
+    return {"ok": True, "message": "Pulling latest changes and reloading Executor..."}
 
 if __name__ == "__main__":
     import uvicorn
