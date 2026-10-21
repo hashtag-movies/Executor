@@ -1,5 +1,13 @@
 """Local Hashtag Executor Body HTTP interface."""
 
+import sys
+from pathlib import Path
+if __package__ is None or __package__ == "":
+    parent_dir = str(Path(__file__).resolve().parent.parent)
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+    __package__ = "executor"
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, Response
 from pydantic import BaseModel, Field
@@ -844,7 +852,7 @@ def system_sync_endpoint():
             subprocess.run(["git", "fetch", "origin", "main"], cwd=str(repo_dir), timeout=20)
             subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=str(repo_dir), timeout=20)
             time.sleep(1)
-            os.execv(sys.executable, [sys.executable] + sys.argv)
+            os.execv(sys.executable, [sys.executable, "-m", "executor.server"])
         except Exception as ex:
             logger.error("Sync error: %s", ex)
     threading.Thread(target=_async_sync, daemon=True).start()
@@ -870,7 +878,7 @@ def _start_autonomous_executor_sync():
                         logger.info("Autonomous Executor Sync: Updating to %s and reloading...", remote_sha[:8])
                         subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=str(repo_dir), timeout=20)
                         time.sleep(1)
-                        os.execv(sys.executable, [sys.executable] + sys.argv)
+                        os.execv(sys.executable, [sys.executable, "-m", "executor.server"])
             except Exception as e:
                 pass
     threading.Thread(target=_sync_worker, daemon=True, name="AutonomousExecutorSync").start()
