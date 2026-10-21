@@ -489,7 +489,7 @@ def execute(req: OperationRequest):
         )
 
 
-CORE_URL = os.getenv("CORE_URL", "https://core.hashtagai.online").rstrip("/")
+CORE_URL = os.getenv("CORE_URL", "http://127.0.0.1:8775").rstrip("/")
 
 # Console-side pending requests. Core's legacy single-operation recovery
 # path does not create a checkpoint, so the Console keeps the original
