@@ -122,12 +122,19 @@ async def correlation_middleware(request: Request, call_next):
         task_id_var.set(generate_id("task_"))
     
     # Add request info to extra fields
-    extra_fields_var.set({
+    curr_extra = {}
+    try:
+        val = extra_fields_var.get()
+        if isinstance(val, dict):
+            curr_extra = val.copy()
+    except Exception:
+        curr_extra = {}
+    curr_extra.update({
         "request_path": str(request.url.path),
         "request_method": request.method,
         "client_ip": request.client.host if request.client else "unknown",
-        **extra_fields_var.get(),
     })
+    extra_fields_var.set(curr_extra)
     
     try:
         response = await call_next(request)
