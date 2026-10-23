@@ -4,7 +4,7 @@ Allows developers to build, edit, preview, and commit projects directly to GitHu
 without ever needing local PC setup, git installations, or cloning.
 """
 
-STUDIO_HTML = """<!doctype html>
+STUDIO_HTML = r"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -367,7 +367,207 @@ STUDIO_HTML = """<!doctype html>
       flex-direction: column;
       height: 100%;
       min-height: 0;
+      background: #090d16;
+      overflow: hidden;
+    }
+    .preview-container.is-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99999 !important;
+      background: #070b14 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    .preview-container.is-fullscreen .preview-toolbar {
+      position: fixed !important;
+      top: 14px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      z-index: 100000 !important;
+      background: rgba(15, 23, 42, 0.94) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(120, 169, 255, 0.28) !important;
+      border-radius: 9999px !important;
+      padding: 5px 14px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.2) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      width: auto !important;
+      max-width: 95vw !important;
+      opacity: 1 !important;
+    }
+    .preview-container.is-fullscreen .dev-group {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 3px !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      padding: 2px 4px !important;
+      border-radius: 9999px !important;
+    }
+    .preview-container.is-fullscreen .preview-viewport-wrap {
+      flex: 1;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #070b14;
+      overflow: auto;
+      padding: 68px 16px 20px 16px;
+      box-sizing: border-box;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .preview-container.is-fullscreen .preview-frame-holder:not(.device-tablet):not(.device-mobile) {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.device-tablet {
+      width: 768px !important;
+      height: 1024px !important;
+      max-width: 96vw !important;
+      max-height: calc(100vh - 84px) !important;
+      border-radius: 28px !important;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 0 12px #1e293b, 0 0 0 13px rgba(255,255,255,0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      overflow: hidden !important;
+      flex-shrink: 0;
+      margin: auto;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.landscape.device-tablet {
+      width: 1024px !important;
+      height: 768px !important;
+      max-width: 96vw !important;
+      max-height: calc(100vh - 84px) !important;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.device-mobile {
+      width: 375px !important;
+      height: 812px !important;
+      max-width: 92vw !important;
+      max-height: calc(100vh - 84px) !important;
+      border-radius: 38px !important;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 0 12px #1e293b, 0 0 0 13px rgba(255,255,255,0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      overflow: hidden !important;
+      flex-shrink: 0;
+      margin: auto;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.landscape.device-mobile {
+      width: 812px !important;
+      height: 375px !important;
+      max-width: 96vw !important;
+      max-height: calc(100vh - 84px) !important;
+    }
+    .preview-toolbar {
+      background: var(--panel2);
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      min-height: 38px;
+    }
+    .preview-toolbar-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .dev-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .dev-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .dev-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+    .dev-btn.active { color: #fff; background: var(--accent); font-weight: 600; }
+    
+    .preview-container:not(.is-fullscreen) .dev-btn-label {
+      display: none;
+    }
+    .preview-container.is-fullscreen .dev-btn-label {
+      display: inline !important;
+    }
+    
+    .preview-viewport-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0b0f19;
+      overflow: auto;
+      padding: 12px;
+    }
+    .preview-frame-holder {
+      width: 100%;
+      height: 100%;
       background: #fff;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      position: relative;
+    }
+    .preview-frame-holder.device-tablet {
+      width: 768px;
+      height: 1024px;
+      max-width: 100%;
+      max-height: 88vh;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b;
+      overflow: hidden;
+      margin: auto;
+    }
+    .preview-frame-holder.device-mobile {
+      width: 375px;
+      height: 812px;
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b;
+      overflow: hidden;
+      margin: auto;
+    }
+    .preview-frame-holder.landscape.device-tablet {
+      width: 1024px;
+      height: 768px;
+      max-width: 100%;
+      max-height: 88vh;
+    }
+    .preview-frame-holder.landscape.device-mobile {
+      width: 812px;
+      height: 375px;
+      max-width: 100%;
+      max-height: 85vh;
     }
     .preview-frame {
       width: 100%;
@@ -529,6 +729,9 @@ STUDIO_HTML = """<!doctype html>
         <button id="refresh-repo-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh files">↻</button>
       </div>
       <button id="new-repo-btn" class="btn" title="Create New Repository in GitHub">+ New Repo</button>
+      <button id="btn-gh-account" class="btn" title="Connect / Manage GitHub Account on this Device" style="display:inline-flex;align-items:center;gap:5px;border-color:rgba(120,169,255,0.35);font-size:11px">
+        <span id="gh-nav-label">🐙 Connect GitHub</span>
+      </button>
     </div>
 
     <div class="nav-center">
@@ -544,6 +747,7 @@ STUDIO_HTML = """<!doctype html>
       </button>
       <button id="delete-btn" class="btn btn-danger" style="display:none" title="Delete file from GitHub">🗑️ Delete</button>
       <button id="toggle-preview-btn" class="btn" title="Toggle Live Web Preview">👁️ Preview</button>
+      <button id="nav-fullscreen-btn" class="btn" title="Full Screen Preview (F)" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.4);color:#38bdf8">⛶ Fullscreen</button>
       <a href="/ai" class="btn" target="_blank" style="border-color:rgba(88,166,255,0.4);color:#58a6ff;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
       <button id="toggle-ai-btn" class="btn" style="color:var(--accent)" title="Hashtag AI Co-Pilot">🤖 AI Co-Pilot</button>
       <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
@@ -570,10 +774,16 @@ STUDIO_HTML = """<!doctype html>
 
     <!-- CENTER: CODE EDITOR -->
     <section class="editor-panel">
-      <div id="editor-tabs" class="editor-tabs">
-        <div class="editor-tab active" id="tab-primary">
-          <span id="tab-name">untitled</span>
-          <span id="tab-dirty" style="display:none;color:var(--warning)">●</span>
+      <div id="editor-tabs" class="editor-tabs" style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center">
+          <div class="editor-tab active" id="tab-primary">
+            <span id="tab-name">untitled</span>
+            <span id="tab-dirty" style="display:none;color:var(--warning)">●</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding-right:10px">
+          <button id="btn-format-code" class="btn" title="Beautify / Format HTML, CSS, JS code" style="padding:2px 8px;font-size:11px">✨ Format</button>
+          <button id="btn-toggle-wrap" class="btn" title="Toggle Word Wrap" style="padding:2px 8px;font-size:11px">Wrap: OFF</button>
         </div>
       </div>
       <div class="editor-body-wrap">
@@ -591,11 +801,28 @@ STUDIO_HTML = """<!doctype html>
 
       <!-- PREVIEW TAB -->
       <div id="view-preview" class="preview-container">
-        <div style="background:var(--panel2);padding:6px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:11px;color:var(--muted);font-weight:600">Local In-Browser DOM Sandbox</span>
-          <button id="refresh-preview-btn" class="btn" style="padding:2px 8px;font-size:10px">↻ Re-render</button>
+        <div class="preview-toolbar">
+          <div class="dev-group">
+            <button id="dev-desktop" class="dev-btn active" title="Desktop Screen (100% Fluid)">🖥️ <span class="dev-btn-label">Desktop</span></button>
+            <button id="dev-tablet" class="dev-btn" title="Tablet Screen (768x1024)">📟 <span class="dev-btn-label">Tablet</span></button>
+            <button id="dev-mobile" class="dev-btn" title="Mobile Screen (375x812)">📱 <span class="dev-btn-label">Mobile</span></button>
+            <button id="dev-rotate" class="dev-btn" title="Rotate Screen Orientation">🔄 <span class="dev-btn-label">Rotate</span></button>
+          </div>
+          <div class="preview-toolbar-actions">
+            <span id="preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
+            <button id="preview-fullscreen-btn" class="btn btn-primary" title="Full Screen Preview (F)" style="padding:2px 8px;font-size:11px;font-weight:600">⛶ Fullscreen</button>
+            <button id="preview-popout-btn" class="btn" title="Open in New Real Browser Tab" style="padding:2px 8px;font-size:11px">↗ Pop Out</button>
+            <button id="refresh-preview-btn" class="btn" style="padding:2px 8px;font-size:10px" title="Re-render">↻</button>
+          </div>
         </div>
-        <iframe id="preview-frame" class="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+        <div class="preview-viewport-wrap">
+          <div id="preview-frame-holder" class="preview-frame-holder">
+            <iframe id="preview-frame" class="preview-frame" 
+              sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation"
+              referrerpolicy="no-referrer-when-downgrade"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+          </div>
+        </div>
       </div>
 
       <!-- AI ASSISTANT TAB -->
@@ -671,6 +898,54 @@ STUDIO_HTML = """<!doctype html>
   </div>
 </div>
 
+
+<!-- GITHUB AUTH MODAL -->
+<div id="github-auth-modal" class="modal-backdrop">
+  <div class="modal" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;display:flex;align-items:center;gap:8px"><span>🐙</span> <span>Connect GitHub Account</span></h3>
+      <span id="gh-auth-status-pill" class="badge" style="background:rgba(255,255,255,0.08);color:var(--muted)">Not Connected</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 14px 0;line-height:1.5">
+      Connect your personal GitHub account to browse, edit, preview, and commit repositories.
+      <b>Your token is stored only in this computer's browser (<code style="color:var(--accent)">localStorage</code>) and is never shared across machines or written to server code.</b>
+    </p>
+
+    <div id="gh-profile-card" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(120,169,255,0.25);border-radius:8px;padding:12px;margin-bottom:14px;align-items:center;gap:12px">
+      <img id="gh-avatar-img" src="" alt="Avatar" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--border)">
+      <div style="flex:1">
+        <div id="gh-user-name" style="font-size:13px;font-weight:700;color:#fff"></div>
+        <div id="gh-user-login" style="font-size:11px;color:var(--muted)"></div>
+      </div>
+      <span class="badge" style="background:rgba(63,185,80,0.2);color:#3fb950;border:1px solid rgba(63,185,80,0.4)">Active</span>
+    </div>
+
+    <div>
+      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">
+        Personal Access Token (<a href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=Hashtag+Studio" target="_blank" style="color:var(--accent);text-decoration:underline">Create PAT on GitHub ↗</a>):
+      </label>
+      <div style="position:relative">
+        <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx or github_pat_..." style="padding-right:70px">
+        <button id="gh-toggle-token-btn" type="button" class="btn" style="position:absolute;right:4px;top:4px;bottom:4px;padding:0 8px;font-size:11px">Show</button>
+      </div>
+      <div id="gh-auth-error" style="color:var(--danger);font-size:11px;margin-top:6px;display:none"></div>
+      <p style="font-size:11px;color:var(--muted);margin:6px 0 0 0">
+        Requires <code style="color:#58a6ff">repo</code> scope for private repositories & commits.
+      </p>
+    </div>
+
+    <div class="modal-actions" style="margin-top:18px;display:flex;justify-content:space-between;align-items:center">
+      <button id="disconnect-gh-btn" class="btn btn-danger" style="display:none">Disconnect / Log Out</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button id="cancel-gh-auth-btn" class="btn">Cancel</button>
+        <button id="save-gh-token-btn" class="btn btn-primary">
+          <span>Connect Token</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- NEW REPO MODAL -->
 <div id="new-repo-modal" class="modal-backdrop">
   <div class="modal">
@@ -726,8 +1001,12 @@ STUDIO_HTML = """<!doctype html>
     options = options || {};
     var headers = options.headers || {};
     headers["Content-Type"] = "application/json";
+    var userToken = localStorage.getItem("hashtag_studio_gh_token");
+    if (userToken && userToken.trim()) {
+      headers["X-GitHub-Token"] = userToken.trim();
+    }
     var controller = new AbortController();
-    var timeoutId = setTimeout(function() { controller.abort(); }, 12000);
+    var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
     return fetch(url, {
       method: options.method || "GET",
       headers: headers,
@@ -758,62 +1037,68 @@ STUDIO_HTML = """<!doctype html>
     state.repo = select.value;
   }
 
-  // 1. Load User's GitHub Repositories
+  function updateGitHubNavBadge(user) {
+    var btn = $("btn-gh-account");
+    var label = $("gh-nav-label");
+    if (!btn || !label) return;
+    if (user && (user.login || user.username)) {
+      var uname = user.login || user.username;
+      label.innerHTML = '🐙 <b>@' + esc(uname) + '</b>';
+      btn.style.borderColor = "rgba(63,185,80,0.5)";
+      btn.title = "Connected as @" + uname + " on this computer (Click to manage)";
+    } else {
+      label.textContent = "🐙 Connect GitHub";
+      btn.style.borderColor = "rgba(120,169,255,0.35)";
+      btn.title = "Connect your GitHub account on this computer";
+    }
+  }
+
+  // 1. Load User's GitHub Repositories (Strict per-user isolation)
   function loadRepositories(retryCount) {
     retryCount = retryCount || 0;
+    var userToken = localStorage.getItem("hashtag_studio_gh_token");
     var select = $("repo-select");
-    
-    // Instant cache render
-    try {
-      var cached = localStorage.getItem("hashtag_cached_repos");
-      if (cached) {
-        var parsed = JSON.parse(cached);
-        if (parsed && parsed.length && select && (!select.value || select.value === "")) {
-          renderRepoList(parsed);
-          if (!state.tree || !state.tree.length) loadProjectTree();
-        }
-      }
-    } catch(e) {}
 
-    function fetchRepos(endpoint, fallbackFn) {
-      return api(endpoint).then(function(res) {
-        var repos = res ? (res.repositories || res.repos || (Array.isArray(res) ? res : null)) : null;
-        if (repos && repos.length) {
-          try { localStorage.setItem("hashtag_cached_repos", JSON.stringify(repos)); } catch(e) {}
-          renderRepoList(repos, res.current);
-          loadProjectTree();
-          return true;
-        }
-        if (fallbackFn) return fallbackFn();
-        return false;
-      }).catch(function(err) {
-        console.warn("fetchRepos error on " + endpoint + ":", err);
-        if (fallbackFn) return fallbackFn();
-        return false;
-      });
+    if (!userToken || !userToken.trim()) {
+      if (select) select.innerHTML = '<option value="">🐙 Connect GitHub Account...</option>';
+      state.repo = "";
+      state.tree = [];
+      updateGitHubNavBadge(null);
+      renderFileTree([]);
+      $("sync-status").textContent = "No GitHub Connected";
+      return;
     }
 
-    fetchRepos("/v1/github/repositories", function() {
-      return fetchRepos("/v1/github/project/repos", function() {
-        if (retryCount < 2) {
-          setTimeout(function() { loadRepositories(retryCount + 1); }, 1500);
-        } else {
-          var fallbackRepos = [
-            { name: "Tools", full_name: "hashtag-movies/Tools", default_branch: "main" },
-            { name: "Hashtag-core", full_name: "hashtag-movies/Hashtag-core", default_branch: "main" },
-            { name: "Executor", full_name: "hashtag-movies/Executor", default_branch: "main" },
-            { name: "super", full_name: "hashtag-movies/super", default_branch: "main" }
-          ];
-          renderRepoList(fallbackRepos, "hashtag-movies/Tools");
-          loadProjectTree();
-        }
-      });
+    $("sync-status").textContent = "Fetching repositories...";
+    api("/v1/github/project/repos").then(function(res) {
+      var repos = res && (res.repositories || res.repos || (Array.isArray(res) ? res : []));
+      if (res && res.user && (res.user.login || res.user.username)) {
+        updateGitHubNavBadge(res.user);
+      }
+      if (repos && repos.length) {
+        renderRepoList(repos, res.current);
+        loadProjectTree();
+      } else {
+        if (select) select.innerHTML = '<option value="">(No repositories found)</option>';
+        state.repo = "";
+        renderFileTree([]);
+        $("sync-status").textContent = "Connected (0 repos)";
+      }
+    }).catch(function(err) {
+      console.warn("loadRepositories error:", err);
+      $("sync-status").textContent = "GitHub Auth Error";
+      if (select) select.innerHTML = '<option value="">GitHub Auth Error - Reconnect</option>';
+      renderFileTree([]);
     });
   }
 
   // 2. Load Recursive Project Tree
   function loadProjectTree() {
     var treeEl = $("file-tree");
+    if (!state.repo) {
+      renderFileTree([]);
+      return;
+    }
     treeEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px"><span class="spinner"></span> Loading GitHub files...</div>';
     $("sync-status").textContent = "Fetching tree...";
 
@@ -842,7 +1127,19 @@ STUDIO_HTML = """<!doctype html>
     var treeEl = $("file-tree");
     var filter = ($("file-search").value || "").toLowerCase().trim();
     if (!items || !items.length) {
-      treeEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Repository is empty. Click "+ New File" to start!</div>';
+      var userToken = localStorage.getItem("hashtag_studio_gh_token");
+      if (!userToken || !userToken.trim()) {
+        treeEl.innerHTML = '<div style="padding:32px 16px;text-align:center;color:var(--muted);font-size:12px;line-height:1.6">'
+          + '<div style="font-size:28px;margin-bottom:10px">🐙</div>'
+          + '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px">No GitHub Account Connected</div>'
+          + '<div style="margin-bottom:14px">Connect your GitHub Personal Access Token to browse and edit repositories on this computer.</div>'
+          + '<button id="empty-connect-gh-btn" class="btn btn-primary" style="font-size:11px">Connect GitHub</button>'
+          + '</div>';
+        var b = $("empty-connect-gh-btn");
+        if (b) b.onclick = openGitHubAuthModal;
+      } else {
+        treeEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Repository is empty. Click "+ New File" to start!</div>';
+      }
       return;
     }
 
@@ -943,9 +1240,7 @@ STUDIO_HTML = """<!doctype html>
   $("code-editor").addEventListener("input", function() {
     markDirty();
     updateLineNumbers();
-    if (state.activePath.endsWith(".html") || state.activePath.endsWith(".htm")) {
-      updatePreviewDebounced();
-    }
+    updatePreviewDebounced();
   });
 
   $("code-editor").addEventListener("keydown", function(e) {
@@ -969,26 +1264,130 @@ STUDIO_HTML = """<!doctype html>
     $("line-numbers").scrollTop = this.scrollTop;
   });
 
-  // 6. Live Web Preview
+  // 6. Live Web Preview - High-Speed Direct DOM & Resource Resolution Engine
   var previewTimer = null;
+  var previewBlobUrl = null;
+
   function updatePreviewDebounced() {
     clearTimeout(previewTimer);
-    previewTimer = setTimeout(updatePreview, 400);
+    previewTimer = setTimeout(updatePreview, 250);
   }
 
   function updatePreview() {
-    if (!state.activePath) return;
     var frame = $("preview-frame");
-    var content = $("code-editor").value;
+    if (!frame) return;
 
-    if (state.activePath.endsWith(".html") || state.activePath.endsWith(".htm")) {
-      frame.srcdoc = content;
-    } else {
-      frame.srcdoc = '<!doctype html><html><body style="font-family:sans-serif;background:#0d1424;color:#edf4ff;padding:24px;">'
-                   + '<h3>📄 Preview for ' + esc(state.activePath) + '</h3>'
-                   + '<pre style="background:#070b14;padding:14px;border-radius:8px;overflow:auto;color:#78a9ff">' + esc(content) + '</pre>'
-                   + '</body></html>';
+    var content = $("code-editor").value || "";
+    var path = (state.activePath || "index.html").toLowerCase();
+
+    // Check if Markdown file
+    if (path.endsWith(".md") || path.endsWith(".markdown")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+                   + '<style>body{font-family:system-ui,-apple-system,sans-serif;background:#0d1424;color:#edf4ff;padding:28px 36px;line-height:1.6;max-width:860px;margin:0 auto}pre{background:#070b14;padding:14px;border-radius:8px;overflow:auto;color:#78a9ff;border:1px solid rgba(255,255,255,0.08)}h1,h2,h3{color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px}code{background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#38bdf8}table{border-collapse:collapse;width:100%}th,td{border:1px solid rgba(255,255,255,0.15);padding:8px 12px;text-align:left}</style>'
+                   + '</head><body>' + (typeof renderStudioMarkdown === "function" ? renderStudioMarkdown(content) : ('<pre>' + esc(content) + '</pre>')) + '</body></html>';
+      return;
     }
+
+    // Check if CSS file
+    if (path.endsWith(".css")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' + content + '</style>'
+                   + '<style>body{font-family:system-ui,sans-serif;padding:30px;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;gap:16px;align-items:center}.demo-box{padding:24px;border-radius:12px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);max-width:500px;text-align:center}button{padding:8px 16px;border-radius:8px;cursor:pointer}</style>'
+                   + '</head><body><div class="demo-box"><h2>🎨 CSS Live Testbed</h2><p>Previewing <code>' + esc(state.activePath || "styles.css") + '</code> styles live.</p><button>Sample Button</button></div></body></html>';
+      return;
+    }
+
+    // Check if standalone JavaScript file
+    if (path.endsWith(".js") || path.endsWith(".ts")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+                   + '<style>body{font-family:monospace;background:#0d1424;color:#78a9ff;padding:20px;margin:0}#console-log{background:#070b14;padding:16px;border-radius:8px;border:1px solid rgba(120,169,255,0.2);min-height:220px;white-space:pre-wrap}.log-line{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)}.log-err{color:#f87171}</style>'
+                   + '</head><body><h3 style="color:#fff;margin-top:0">⚡ Live JavaScript Console (' + esc(state.activePath || "script.js") + ')</h3><div id="console-log"></div>'
+                   + '<script>'
+                   + 'var logEl = document.getElementById("console-log");'
+                   + 'function log(msg, isErr) { var d = document.createElement("div"); d.className = "log-line" + (isErr ? " log-err" : ""); d.textContent = (isErr ? "❌ " : "▶ ") + msg; logEl.appendChild(d); }'
+                   + 'console.log = function() { var args = Array.prototype.slice.call(arguments); log(args.map(function(a){ return typeof a === "object" ? JSON.stringify(a) : a; }).join(" ")); };'
+                   + 'console.error = function() { var args = Array.prototype.slice.call(arguments); log(args.map(function(a){ return typeof a === "object" ? JSON.stringify(a) : a; }).join(" "), true); };'
+                   + 'window.onerror = function(m, u, l) { log(m + " (line " + l + ")", true); };'
+                   + 'try { ' + content + ' } catch(e) { log(e.stack || e.message, true); }'
+                   + '<\/script></body></html>';
+      return;
+    }
+
+    // Default: Full HTML Live Document Rendering
+    var processedContent = processHtmlForPreview(content, state.activePath, state.repo, state.branch);
+    
+    // Direct synchronous srcdoc assignment - works in all modern browsers with zero blob leaks
+    frame.removeAttribute("src");
+    frame.srcdoc = processedContent;
+    frame.style.opacity = "1";
+  }
+
+  function processHtmlForPreview(html, activePath, repo, branch) {
+    if (!html || !html.trim()) {
+      return "<!doctype html><html><body style='background:#0f172a;color:#94a3b8;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h3>👁️ Live Web Preview</h3><p>Enter HTML code in the editor or select a file to preview.</p></div></body></html>";
+    }
+
+    var processed = html;
+    var dirPath = "";
+    if (activePath && activePath.includes("/")) {
+      dirPath = activePath.substring(0, activePath.lastIndexOf("/") + 1);
+    }
+
+    // Resolve relative assets using jsDelivr CDN (proper MIME types for CSS/images)
+    if (repo && branch) {
+      var cdnBase = "https://cdn.jsdelivr.net/gh/" + repo + "@" + branch + "/" + dirPath;
+
+      // 1. Resolve relative CSS stylesheets
+      processed = processed.replace(/<link([^>]+)href\s*=\s*["']([^"']+)["']([^>]*)>/gi, function(match, before, href, after) {
+        if (href.startsWith("http://") || href.startsWith("https://") || href.startsWith("//") || href.startsWith("data:") || href.startsWith("#")) {
+          return match;
+        }
+        var cleanHref = href.replace(/^\.\//, "");
+        return '<link' + before + 'href="' + cdnBase + cleanHref + '"' + after + '>';
+      });
+
+      // 2. Resolve relative image sources
+      processed = processed.replace(/<img([^>]+)src\s*=\s*["']([^"']+)["']([^>]*)>/gi, function(match, before, src, after) {
+        if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("//") || src.startsWith("data:") || src.startsWith("#")) {
+          return match;
+        }
+        var cleanSrc = src.replace(/^\.\//, "");
+        return '<img' + before + 'src="' + cdnBase + cleanSrc + '"' + after + '>';
+      });
+
+      // 3. Resolve relative CSS background url(...)
+      processed = processed.replace(/url\(["']?([^"')]+)["']?\)/gi, function(match, url) {
+        if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//") || url.startsWith("data:") || url.startsWith("#")) {
+          return match;
+        }
+        var cleanUrl = url.replace(/^\.\//, "");
+        return 'url("' + cdnBase + cleanUrl + '")';
+      });
+    }
+
+    // Inject non-intrusive runtime error HUD inside preview iframe
+    var errHudScript = '<script>'
+      + 'window.addEventListener("error", function(e) {'
+      + '  var b = document.getElementById("__studio_err_banner__");'
+      + '  if (!b) {'
+      + '    b = document.createElement("div");'
+      + '    b.id = "__studio_err_banner__";'
+      + '    b.style.cssText = "position:fixed;bottom:10px;left:10px;right:10px;background:rgba(239,68,68,0.92);color:#fff;padding:8px 14px;border-radius:8px;font-family:system-ui,monospace;font-size:12px;z-index:999999;box-shadow:0 4px 14px rgba(0,0,0,0.5);display:flex;justify-content:space-between;align-items:center;";'
+      + '    (document.body || document.documentElement).appendChild(b);'
+      + '  }'
+      + '  b.innerHTML = "<span>⚠️ <b>Runtime Error:</b> " + (e.message || "Script execution error") + " (line " + (e.lineno || "?") + ")</span><button onclick=\'this.parentElement.remove()\' style=\'background:none;border:none;color:#fff;font-weight:bold;cursor:pointer;font-size:15px;padding:0 4px\'>✕</button>";'
+      + '});'
+      + '<\/script>';
+
+    if (processed.includes("</body>")) {
+      processed = processed.replace("</body>", errHudScript + "</body>");
+    } else {
+      processed += errHudScript;
+    }
+
+    return processed;
   }
 
   // 7. Commit & Push Directly to GitHub
@@ -1150,6 +1549,7 @@ STUDIO_HTML = """<!doctype html>
     $("tab-btn-ai").classList.remove("active");
     $("view-preview").style.display = "flex";
     $("view-ai").style.display = "none";
+    updatePreview();
   };
   $("tab-btn-ai").onclick = function() {
     $("tab-btn-ai").classList.add("active");
@@ -1173,6 +1573,157 @@ STUDIO_HTML = """<!doctype html>
     }
   };
 
+  // --- CODE BEAUTIFIER / FORMATTER ---
+  function formatCurrentCode() {
+    var editor = $("code-editor");
+    var code = editor.value;
+    if (!code.trim()) return;
+
+    var ext = (state.activePath || "").split(".").pop().toLowerCase();
+    var formatted = code;
+
+    if (ext === "html" || ext === "htm" || (!ext && code.includes("<html"))) {
+      formatted = formatHtml(code);
+    } else if (ext === "json") {
+      try { formatted = JSON.stringify(JSON.parse(code), null, 2); } catch(e) {}
+    } else {
+      formatted = formatHtml(code);
+    }
+
+    if (formatted !== code) {
+      editor.value = formatted;
+      markDirty();
+      updateLineNumbers();
+      updatePreview();
+    }
+  }
+
+  function formatHtml(html) {
+    var tab = "  ";
+    var result = "";
+    var indent = 0;
+    var clean = html.replace(/>\\s*</g, ">\n<").trim();
+    var lines = clean.split("\n");
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) continue;
+
+      if (line.match(/^<\/[^>]+>/)) {
+        indent = Math.max(0, indent - 1);
+      }
+
+      var pad = "";
+      for (var s = 0; s < indent; s++) pad += tab;
+      result += pad + line + "\n";
+
+      if (line.match(/^<[^\/!][^>]*[^\/]>/) && 
+          !line.match(/<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)/i) &&
+          !line.match(/^<([^>]+)>.*<\/\1>$/)) {
+        indent++;
+      }
+    }
+    return result.trim();
+  }
+
+  $("btn-format-code").onclick = formatCurrentCode;
+
+  // --- WORD WRAP TOGGLE ---
+  var isWrapped = false;
+  $("btn-toggle-wrap").onclick = function() {
+    isWrapped = !isWrapped;
+    var editor = $("code-editor");
+    if (isWrapped) {
+      editor.style.whiteSpace = "pre-wrap";
+      editor.style.wordBreak = "break-word";
+      this.textContent = "Wrap: ON";
+      this.style.color = "var(--accent)";
+    } else {
+      editor.style.whiteSpace = "pre";
+      editor.style.wordBreak = "normal";
+      this.textContent = "Wrap: OFF";
+      this.style.color = "";
+    }
+  };
+
+  // --- RESPONSIVE DEVICE PREVIEW CONTROLS ---
+  var currentDevice = "desktop";
+  var isLandscape = false;
+
+  function setPreviewDevice(device) {
+    currentDevice = device;
+    var holder = $("preview-frame-holder");
+    holder.className = "preview-frame-holder";
+
+    $("dev-desktop").classList.remove("active");
+    $("dev-tablet").classList.remove("active");
+    $("dev-mobile").classList.remove("active");
+
+    if (device === "desktop") {
+      $("dev-desktop").classList.add("active");
+      $("preview-dim-badge").textContent = "100% Fluid";
+      // Reset landscape for desktop
+      isLandscape = false;
+      $("dev-rotate").classList.remove("active");
+      $("dev-rotate").style.color = "";
+    } else if (device === "tablet") {
+      $("dev-tablet").classList.add("active");
+      holder.classList.add("device-tablet");
+      if (isLandscape) holder.classList.add("landscape");
+      $("preview-dim-badge").textContent = isLandscape ? "1024 × 768 · Tablet" : "768 × 1024 · Tablet";
+      $("dev-rotate").classList.toggle("active", isLandscape);
+      $("dev-rotate").style.color = isLandscape ? "var(--accent)" : "";
+    } else if (device === "mobile") {
+      $("dev-mobile").classList.add("active");
+      holder.classList.add("device-mobile");
+      if (isLandscape) holder.classList.add("landscape");
+      $("preview-dim-badge").textContent = isLandscape ? "812 × 375 · Mobile" : "375 × 812 · Mobile";
+      $("dev-rotate").classList.toggle("active", isLandscape);
+      $("dev-rotate").style.color = isLandscape ? "var(--accent)" : "";
+    }
+  }
+
+  $("dev-desktop").onclick = function() { setPreviewDevice("desktop"); };
+  $("dev-tablet").onclick = function() { setPreviewDevice("tablet"); };
+  $("dev-mobile").onclick = function() { setPreviewDevice("mobile"); };
+  $("dev-rotate").onclick = function() {
+    if (currentDevice === "desktop") return;
+    isLandscape = !isLandscape;
+    setPreviewDevice(currentDevice);
+    // Update rotate button visual state
+    if (isLandscape) {
+      $("dev-rotate").classList.add("active");
+      $("dev-rotate").style.color = "var(--accent)";
+    } else {
+      $("dev-rotate").classList.remove("active");
+      $("dev-rotate").style.color = "";
+    }
+  };
+
+  // --- STUDIO CO-PILOT CHAT & MARKDOWN ---
+  function renderStudioMarkdown(md) {
+    if (!md) return "";
+    var html = esc(md);
+    var codeBlockIdx = 0;
+    html = html.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(m, lang, code) {
+      var id = "copilot_code_" + (++codeBlockIdx);
+      var rawCode = code.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+      window["_codeBlock_" + id] = rawCode;
+      return '<div style="background:rgba(0,0,0,0.45);border:1px solid var(--border);border-radius:8px;margin:8px 0;overflow:hidden">' +
+             '<div style="background:rgba(255,255,255,0.06);padding:4px 10px;display:flex;justify-content:space-between;align-items:center">' +
+             '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600">' + (lang || 'code') + '</span>' +
+             '<div style="display:flex;gap:6px">' +
+             '<button class="btn" style="padding:2px 8px;font-size:10.5px" onclick="copyStudioSnippet(\'' + id + '\', this)">Copy</button>' +
+             '<button class="btn btn-primary" style="padding:2px 8px;font-size:10.5px" onclick="applySnippetToEditor(\'' + id + '\')">⚡ Apply to Editor</button>' +
+             '</div></div>' +
+             '<pre style="padding:10px 12px;margin:0;overflow-x:auto;font-family:monospace;font-size:11.5px"><code id="' + id + '">' + code + '</code></pre></div>';
+    });
+    html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-family:monospace">$1</code>');
+    html = html.replace(/\*\*([^\*]+)\*\*/g, '<b>$1</b>');
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
+
   function sendAiPrompt() {
     var promptEl = $("ai-prompt");
     var txt = promptEl.value.trim();
@@ -1187,43 +1738,298 @@ STUDIO_HTML = """<!doctype html>
 
     var botBubble = document.createElement("div");
     botBubble.className = "ai-msg assistant";
-    botBubble.innerHTML = '<span class="spinner"></span> Hashtag is planning & coding in GitHub...';
+    botBubble.innerHTML = '<span class="spinner"></span> Hashtag AI is analyzing & generating...';
     chat.appendChild(botBubble);
     chat.scrollTop = chat.scrollHeight;
 
+    var activeCode = $("code-editor").value;
     api("/v1/console/request", {
       method: "POST",
       body: {
         request: txt,
-        body_id: "hashtag-executor",
-        context: { target_repo: state.repo, repository: state.repo }
+        message: txt,
+        body_id: "cloud-studio",
+        context: {
+          target_repo: state.repo,
+          repository: state.repo,
+          active_path: state.activePath,
+          active_file: state.activePath,
+          file_content: activeCode
+        }
       }
     }).then(function(res) {
       var summary = "✓ Done! Hashtag processed the request.";
-      if (res.plan && res.plan.message) summary = res.plan.message;
-      if (res.execution && res.execution.result) {
+      if (res.response) summary = res.response;
+      else if (res.plan && res.plan.message) summary = res.plan.message;
+      else if (res.execution && res.execution.result) {
         var r = res.execution.result;
         if (typeof r.text === "string") summary = r.text;
         else if (r.message) summary = r.message;
       }
-      botBubble.innerHTML = '<b>Hashtag Brain:</b><br>' + esc(summary);
+      botBubble.innerHTML = '<b>Hashtag AI Co-Pilot:</b><br><br>' + renderStudioMarkdown(summary);
       chat.scrollTop = chat.scrollHeight;
-      // Reload tree in case files were created or modified
       loadProjectTree();
-      if (state.activePath) openFile(state.activePath);
     }).catch(function(err) {
       botBubble.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
       chat.scrollTop = chat.scrollHeight;
     });
   }
 
-  // File filter input
-  $("file-search").oninput = function() {
-    renderFileTree(state.tree);
+
+  // Fullscreen Preview Handlers
+  var fullscreenState = {
+    isFullscreen: false,
+    toolbarHideTimer: null
+  };
+
+  function updateFullscreenButtons(isFullscreen) {
+    var fBtn = $("preview-fullscreen-btn");
+    var nBtn = $("nav-fullscreen-btn");
+    if (fBtn) {
+      fBtn.textContent = isFullscreen ? "✕ Exit" : "⛶ Fullscreen";
+      fBtn.style.color = isFullscreen ? "var(--danger)" : "";
+    }
+    if (nBtn) {
+      nBtn.textContent = isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen";
+      nBtn.style.color = isFullscreen ? "var(--danger)" : "#38bdf8";
+    }
+  }
+
+  function enterFullscreen() {
+    var prev = $("view-preview");
+    if (!prev) return;
+    
+    // Ensure preview pane is open and active
+    var ws = $("workspace");
+    if (ws) ws.classList.remove("preview-closed");
+    $("tab-btn-preview").classList.add("active");
+    $("tab-btn-ai").classList.remove("active");
+    $("view-preview").style.display = "flex";
+    $("view-ai").style.display = "none";
+    updatePreview();
+
+    var req = prev.requestFullscreen || prev.webkitRequestFullscreen || prev.mozRequestFullScreen || prev.msRequestFullscreen;
+    if (req) {
+      req.call(prev).then(function() {
+        fullscreenState.isFullscreen = true;
+        prev.classList.add("is-fullscreen");
+        updateFullscreenButtons(true);
+      }).catch(function(err) {
+        console.warn("Native fullscreen failed, fallback to CSS fullscreen:", err);
+        fallbackFullscreen();
+      });
+    } else {
+      fallbackFullscreen();
+    }
+  }
+
+  function fallbackFullscreen() {
+    var prev = $("view-preview");
+    fullscreenState.isFullscreen = true;
+    if (prev) prev.classList.add("is-fullscreen");
+    updateFullscreenButtons(true);
+  }
+
+  function exitFullscreen() {
+    var prev = $("view-preview");
+    var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if (document.fullscreenElement && exit) {
+      exit.call(document).then(function() {
+        cleanupFullscreen();
+      }).catch(function() {
+        cleanupFullscreen();
+      });
+    } else {
+      cleanupFullscreen();
+    }
+  }
+
+  function cleanupFullscreen() {
+    var prev = $("view-preview");
+    fullscreenState.isFullscreen = false;
+    if (prev) {
+      prev.classList.remove("is-fullscreen");
+    }
+    updateFullscreenButtons(false);
+  }
+
+  function toggleFullscreen() {
+    if (fullscreenState.isFullscreen) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  }
+
+  document.addEventListener("fullscreenchange", function() {
+    if (!document.fullscreenElement && fullscreenState.isFullscreen) {
+      cleanupFullscreen();
+    }
+  });
+
+  document.addEventListener("keydown", function(e) {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+    if (e.key === "f" || e.key === "F") {
+      e.preventDefault();
+      toggleFullscreen();
+    } else if (e.key === "Escape" && fullscreenState.isFullscreen) {
+      exitFullscreen();
+    }
+  });
+
+  $("preview-fullscreen-btn").onclick = toggleFullscreen;
+  var navFs = $("nav-fullscreen-btn");
+  if (navFs) navFs.onclick = toggleFullscreen;
+
+  // Pop-out preview - clean new tab launch
+  $("preview-popout-btn").onclick = function() {
+    var content = $("code-editor").value || "<!DOCTYPE html><html><body><h1>No preview content</h1></body></html>";
+    var processed = processHtmlForPreview(content, state.activePath, state.repo, state.branch);
+    var blob = new Blob([processed], { type: "text/html; charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  };
+
+  window.copyStudioSnippet = function(id, btn) {
+    var code = window["_codeBlock_" + id];
+    if (!code) {
+      var el = $(id);
+      code = el ? (el.innerText || el.textContent) : "";
+    }
+    navigator.clipboard.writeText(code).then(function() {
+      var orig = btn.textContent;
+      btn.textContent = "Copied!";
+      btn.style.color = "#3fb950";
+      setTimeout(function() { btn.textContent = orig; btn.style.color = ""; }, 2000);
+    });
+  };
+
+  window.applySnippetToEditor = function(id) {
+    var code = window["_codeBlock_" + id];
+    if (!code) {
+      var el = $(id);
+      code = el ? (el.innerText || el.textContent) : "";
+    }
+    if (code) {
+      $("code-editor").value = code;
+      markDirty();
+      updateLineNumbers();
+      updatePreview();
+      alert("✓ Applied code directly into the editor!");
+    }
+  };
+
+  // Expose processHtmlForPreview globally for popout button
+  window.processHtmlForPreview = processHtmlForPreview;
+
+  // Cleanup blob URLs on page unload
+  window.addEventListener("beforeunload", function() {
+    if (previewBlobUrl) {
+      URL.revokeObjectURL(previewBlobUrl);
+    }
+  });
+
+
+  // --- GITHUB AUTH MODAL LOGIC ---
+  function openGitHubAuthModal() {
+    var modal = $("github-auth-modal");
+    if (!modal) return;
+    var currentToken = localStorage.getItem("hashtag_studio_gh_token") || "";
+    var tokenInput = $("gh-token-input");
+    if (tokenInput) tokenInput.value = currentToken;
+    $("gh-auth-error").style.display = "none";
+    
+    if (currentToken) {
+      $("gh-auth-status-pill").textContent = "Validating...";
+      $("disconnect-gh-btn").style.display = "inline-flex";
+      api("/v1/github/status").then(function(d) {
+        if (d && d.connected) {
+          $("gh-auth-status-pill").textContent = "Connected";
+          $("gh-auth-status-pill").style.color = "#3fb950";
+          $("gh-profile-card").style.display = "flex";
+          $("gh-avatar-img").src = d.avatar_url || "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png";
+          $("gh-user-name").textContent = d.name || d.username;
+          $("gh-user-login").textContent = "@" + d.username;
+        } else {
+          $("gh-auth-status-pill").textContent = "Invalid Token";
+          $("gh-auth-status-pill").style.color = "var(--danger)";
+          $("gh-profile-card").style.display = "none";
+        }
+      }).catch(function() {
+        $("gh-auth-status-pill").textContent = "Saved";
+        $("gh-profile-card").style.display = "none";
+      });
+    } else {
+      $("gh-auth-status-pill").textContent = "Not Connected";
+      $("gh-auth-status-pill").style.color = "var(--muted)";
+      $("gh-profile-card").style.display = "none";
+      $("disconnect-gh-btn").style.display = "none";
+    }
+    modal.classList.add("open");
+  }
+
+  function closeGitHubAuthModal() {
+    var modal = $("github-auth-modal");
+    if (modal) modal.classList.remove("open");
+  }
+
+  function saveGitHubToken() {
+    var val = ($("gh-token-input").value || "").trim();
+    if (!val) {
+      var err = $("gh-auth-error");
+      err.textContent = "Please enter your GitHub Personal Access Token.";
+      err.style.display = "block";
+      return;
+    }
+    localStorage.setItem("hashtag_studio_gh_token", val);
+    $("gh-auth-error").style.display = "none";
+    $("save-gh-token-btn").textContent = "Connecting...";
+    
+    api("/v1/github/status").then(function(d) {
+      $("save-gh-token-btn").textContent = "Connect Token";
+      if (d && d.connected) {
+        updateGitHubNavBadge(d);
+        closeGitHubAuthModal();
+        loadRepositories(0);
+      } else {
+        var err = $("gh-auth-error");
+        err.textContent = "GitHub rejected this token. Check token scope & validity.";
+        err.style.display = "block";
+      }
+    }).catch(function(e) {
+      $("save-gh-token-btn").textContent = "Connect Token";
+      var err = $("gh-auth-error");
+      err.textContent = "Error: " + (e.message || "Failed validating token");
+      err.style.display = "block";
+    });
+  }
+
+  function disconnectGitHub() {
+    localStorage.removeItem("hashtag_studio_gh_token");
+    localStorage.removeItem("hashtag_cached_repos");
+    $("gh-token-input").value = "";
+    closeGitHubAuthModal();
+    loadRepositories(0);
+  }
+
+  $("btn-gh-account").onclick = openGitHubAuthModal;
+  $("cancel-gh-auth-btn").onclick = closeGitHubAuthModal;
+  $("save-gh-token-btn").onclick = saveGitHubToken;
+  $("disconnect-gh-btn").onclick = disconnectGitHub;
+  $("gh-toggle-token-btn").onclick = function() {
+    var input = $("gh-token-input");
+    if (input.type === "password") {
+      input.type = "text";
+      this.textContent = "Hide";
+    } else {
+      input.type = "password";
+      this.textContent = "Show";
+    }
   };
 
   // Init
   loadRepositories();
+  updatePreview();
 })();
 </script>
 </body>

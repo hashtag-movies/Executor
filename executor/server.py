@@ -8,6 +8,22 @@ if __package__ is None or __package__ == "":
         sys.path.insert(0, parent_dir)
     __package__ = "executor"
 
+import logging
+from hashtag.structured_logging import (
+    setup_structured_logging,
+    get_logger,
+    LogContext,
+    generate_id,
+    extract_correlation_ids,
+    request_id_var,
+    task_id_var,
+    operation_id_var,
+    session_id_var,
+    user_id_var,
+    body_id_var,
+    extra_fields_var,
+)
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, Response
 from pydantic import BaseModel, Field
@@ -15,6 +31,30 @@ import requests
 import uuid
 import json
 import os
+
+# Setup structured logging for Executor
+_log_level = os.getenv("HASHTAG_LOG_LEVEL", "INFO")
+_log_json = os.getenv("HASHTAG_LOG_JSON", "1").lower() in ("1", "true", "yes")
+_log_file = os.getenv("HASHTAG_LOG_FILE")
+_log_pretty = os.getenv("HASHTAG_LOG_PRETTY", "0").lower() in ("1", "true", "yes")
+
+setup_structured_logging(
+    level=_log_level,
+    json_output=_log_json,
+    pretty=_log_pretty,
+    log_file=_log_file,
+    console=True,
+)
+
+logger = get_logger("executor.server")
+
+logger.info("Hashtag Executor server starting", extra={
+    "event": "executor_start",
+    "version": "1.3.0",
+    "log_level": _log_level,
+    "json_output": _log_json,
+    "log_file": _log_file,
+})
 
 from .body import HashtagBody
 from .permissions import PermissionDecision, PermissionScope
@@ -28,6 +68,59 @@ app = FastAPI(
     title="Hashtag the Executor",
     version="1.3.0",
 )
+
+# Correlation ID middleware for FastAPI
+@app.middleware("http")
+async def correlation_middleware(request: Request, call_next):
+    """Extract correlation IDs from headers and set in context."""
+    # Extract correlation IDs from headers
+    ids = {}
+    for key, var in [
+        ("X-Request-ID", request_id_var),
+        ("X-Task-ID", task_id_var),
+        ("X-Operation-ID", operation_id_var),
+        ("X-Session-ID", session_id_var),
+        ("X-User-ID", user_id_var),
+        ("X-Body-ID", body_id_var),
+    ]:
+        value = request.headers.get(key)
+        if value:
+            ids[key.lower().replace("-", "_")] = value
+            var.set(value)
+    
+    # Generate missing IDs
+    if not request_id_var.get():
+        request_id_var.set(generate_id("req_"))
+    if not task_id_var.get():
+        task_id_var.set(generate_id("task_"))
+    
+    # Add request info to extra fields
+    extra_fields_var.set({
+        "request_path": str(request.url.path),
+        "request_method": request.method,
+        "client_ip": request.client.host if request.client else "unknown",
+        **extra_fields_var.get(),
+    })
+    
+    try:
+        response = await call_next(request)
+    finally:
+        # Clear context vars (optional - they're contextvars so they reset per request)
+        pass
+    
+    # Add correlation IDs to response headers
+    for key, value in {
+        "request_id": request_id_var.get(),
+        "task_id": task_id_var.get(),
+        "operation_id": operation_id_var.get(),
+        "session_id": session_id_var.get(),
+        "user_id": user_id_var.get(),
+        "body_id": body_id_var.get(),
+    }.items():
+        if value:
+            response.headers[f"X-Hashtag-{key.replace('_', '-').title()}"] = value
+    
+    return response
 
 body = HashtagBody()
 
@@ -157,60 +250,69 @@ def capabilities():
     return body.capabilities()
 
 
+
+def _get_request_github_client(request: Request, payload: Optional[dict] = None):
+    token = request.headers.get("X-GitHub-Token")
+    if not token and payload and isinstance(payload, dict):
+        token = payload.get("token") or payload.get("github_token")
+    if not token:
+        auth = request.headers.get("Authorization", "")
+        if auth.lower().startswith("bearer "):
+            candidate = auth[7:].strip()
+            if any(candidate.startswith(p) for p in ("ghp_", "gho_", "github_pat_")):
+                token = candidate
+    if token and str(token).strip():
+        from .github import GitHubClient
+        return GitHubClient(token=str(token).strip()), str(token).strip()
+    return None, None
+
 @app.get("/v1/github/status")
-def github_status():
-    from .github_auth import detect_github_session
-    from .github import GitHubClient
-
-    if not getattr(body, "github", None) or not getattr(body.github, "token", None):
-        sess = detect_github_session()
-        if sess and sess.get("token"):
-            body.github = GitHubClient(token=sess["token"])
-            body.default_owner = sess.get("username") or body.default_owner
-            body.current_target_repo = f"{body.default_owner}/Hashtag-core"
-
+def github_status(request: Request):
+    client, token = _get_request_github_client(request)
+    if not client:
+        return {"connected": False, "username": "", "target_repo": ""}
     try:
-        user = body.github.get_authenticated_user()
+        user = client.get_authenticated_user()
         return {
             "connected": True,
             "username": user.get("login", ""),
-            "target_repo": getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core"),
-            "source": getattr(body.github, "source", "auto_detected"),
+            "name": user.get("name", "") or user.get("login", ""),
+            "avatar_url": user.get("avatar_url", ""),
+            "target_repo": "",
+            "source": "per_user_token",
         }
     except Exception as exc:
-        sess = detect_github_session()
-        if sess and sess.get("token"):
-            body.github = GitHubClient(token=sess["token"])
-            try:
-                user = body.github.get_authenticated_user()
-                return {
-                    "connected": True,
-                    "username": user.get("login", ""),
-                    "target_repo": getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core"),
-                    "source": sess.get("source", "auto_detected"),
-                }
-            except Exception:
-                pass
         return {"connected": False, "error": str(exc)}
 
 
 @app.get("/v1/github/repositories")
-def github_repositories():
+@app.get("/v1/github/project/repos")
+def github_repositories(request: Request):
+    client, token = _get_request_github_client(request)
+    if not client:
+        return {"ok": True, "connected": False, "repositories": [], "current": ""}
     try:
-        repos = body.github._get("user/repos?per_page=100&affiliation=owner,collaborator,organization_member")
+        repos = client._get("user/repos?per_page=100&affiliation=owner,collaborator,organization_member")
         items = []
         for r in repos:
             items.append({
                 "name": r.get("name"),
                 "full_name": r.get("full_name"),
-                "owner": r.get("owner", {}).get("login"),
+                "owner": (r.get("owner") or {}).get("login"),
                 "default_branch": r.get("default_branch", "main"),
                 "private": r.get("private", False),
             })
+        user = {}
+        try:
+            user = client.get_authenticated_user()
+        except Exception:
+            pass
         return {
             "ok": True,
+            "connected": bool(items or user),
             "repositories": items,
-            "current": getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core"),
+            "user": user,
+            "current": items[0]["full_name"] if items else "",
         }
     except Exception as exc:
         return {"ok": False, "error": str(exc), "repositories": []}
@@ -269,13 +371,19 @@ def github_backup(payload: dict):
 
 
 @app.get("/v1/github/project/tree")
-def github_project_tree(repo: str = "", ref: str = "main"):
-    target = repo.strip() or getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
+def github_project_tree(request: Request, repo: str = "", ref: str = "main"):
+    client, _ = _get_request_github_client(request)
+    client = client or getattr(body, "github", None)
+    if not client or not getattr(client, "token", None):
+        raise HTTPException(status_code=401, detail="GitHub account not connected.")
+    target = repo.strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="Repository required.")
     owner, repo_name = body._resolve_owner_repo({"repository": target})
     try:
-        branch_info = body.github.get_branch(owner, repo_name, ref)
+        branch_info = client.get_branch(owner, repo_name, ref)
         tree_sha = branch_info["commit"]["commit"]["tree"]["sha"]
-        tree_data = body.github.get_tree(owner, repo_name, tree_sha=tree_sha, recursive=True)
+        tree_data = client.get_tree(owner, repo_name, tree_sha=tree_sha, recursive=True)
         items = tree_data.get("tree", [])
         return {
             "ok": True,
@@ -290,12 +398,18 @@ def github_project_tree(repo: str = "", ref: str = "main"):
 
 
 @app.get("/v1/github/project/file")
-def github_project_file(path: str, repo: str = "", ref: str = "main"):
-    target = repo.strip() or getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
+def github_project_file(request: Request, path: str, repo: str = "", ref: str = "main"):
+    client, _ = _get_request_github_client(request)
+    client = client or getattr(body, "github", None)
+    if not client or not getattr(client, "token", None):
+        raise HTTPException(status_code=401, detail="GitHub account not connected.")
+    target = repo.strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="Repository required.")
     owner, repo_name = body._resolve_owner_repo({"repository": target})
     try:
-        text = body.github.get_file_text(owner, repo_name, path=path, ref=ref)
-        file_info = body.github.get_file(owner, repo_name, path=path, ref=ref)
+        text = client.get_file_text(owner, repo_name, path=path, ref=ref)
+        file_info = client.get_file(owner, repo_name, path=path, ref=ref)
         sha = file_info.get("sha") if isinstance(file_info, dict) else None
         return {
             "ok": True,
@@ -310,18 +424,24 @@ def github_project_file(path: str, repo: str = "", ref: str = "main"):
 
 
 @app.post("/v1/github/project/file")
-def github_project_write_file(payload: dict):
+def github_project_write_file(request: Request, payload: dict):
+    client, _ = _get_request_github_client(request, payload)
+    client = client or getattr(body, "github", None)
+    if not client or not getattr(client, "token", None):
+        raise HTTPException(status_code=401, detail="GitHub account not connected.")
     path = str(payload.get("path", "")).strip()
     if not path:
         raise HTTPException(status_code=400, detail="path is required")
     content = str(payload.get("content", ""))
     message = str(payload.get("message", "")).strip() or f"Update {path} via Hashtag Cloud Studio"
     branch = str(payload.get("branch", "main")).strip() or "main"
-    repo = str(payload.get("repo", "")).strip() or getattr(body, "current_target_repo", "hashtag-movies/Hashtag-core")
+    repo = str(payload.get("repo", "")).strip()
+    if not repo:
+        raise HTTPException(status_code=400, detail="repo is required")
     owner, repo_name = body._resolve_owner_repo({"repository": repo})
 
     try:
-        res = body.github.write_file(
+        res = client.write_file(
             owner=owner,
             repo=repo_name,
             path=path,
