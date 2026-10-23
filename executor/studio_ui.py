@@ -729,9 +729,6 @@ STUDIO_HTML = r"""<!doctype html>
         <button id="refresh-repo-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh files">↻</button>
       </div>
       <button id="new-repo-btn" class="btn" title="Create New Repository in GitHub">+ New Repo</button>
-      <button id="btn-gh-account" class="btn" title="Connect / Manage GitHub Account on this Device" style="display:inline-flex;align-items:center;gap:5px;border-color:rgba(120,169,255,0.35);font-size:11px">
-        <span id="gh-nav-label">🐙 Connect GitHub</span>
-      </button>
     </div>
 
     <div class="nav-center">
@@ -747,9 +744,7 @@ STUDIO_HTML = r"""<!doctype html>
       </button>
       <button id="delete-btn" class="btn btn-danger" style="display:none" title="Delete file from GitHub">🗑️ Delete</button>
       <button id="toggle-preview-btn" class="btn" title="Toggle Live Web Preview">👁️ Preview</button>
-      <button id="nav-fullscreen-btn" class="btn" title="Full Screen Preview (F)" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.4);color:#38bdf8">⛶ Fullscreen</button>
       <a href="/ai" class="btn" target="_blank" style="border-color:rgba(88,166,255,0.4);color:#58a6ff;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
-      <button id="toggle-ai-btn" class="btn" style="color:var(--accent)" title="Hashtag AI Co-Pilot">🤖 AI Co-Pilot</button>
       <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
     </div>
   </header>
@@ -759,8 +754,13 @@ STUDIO_HTML = r"""<!doctype html>
     <!-- SIDEBAR: FILES -->
     <aside class="sidebar-panel">
       <div class="sidebar-head">
-        <span>Project Explorer</span>
-        <span id="file-count" style="font-weight:600;color:var(--accent)">0 files</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span>Project Explorer</span>
+          <span id="file-count" style="font-weight:600;color:var(--accent)">0 files</span>
+        </div>
+        <button id="sidebar-gh-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(120,169,255,0.3)" title="GitHub Account on this Device">
+          <span id="sidebar-gh-label">🐙 GitHub</span>
+        </button>
       </div>
       <div class="search-filter">
         <input type="text" id="file-search" placeholder="Search files in repository...">
@@ -901,17 +901,14 @@ STUDIO_HTML = r"""<!doctype html>
 
 <!-- GITHUB AUTH MODAL -->
 <div id="github-auth-modal" class="modal-backdrop">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width:500px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h3 style="margin:0;display:flex;align-items:center;gap:8px"><span>🐙</span> <span>Connect GitHub Account</span></h3>
       <span id="gh-auth-status-pill" class="badge" style="background:rgba(255,255,255,0.08);color:var(--muted)">Not Connected</span>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin:0 0 14px 0;line-height:1.5">
-      Connect your personal GitHub account to browse, edit, preview, and commit repositories.
-      <b>Your token is stored only in this computer's browser (<code style="color:var(--accent)">localStorage</code>) and is never shared across machines or written to server code.</b>
-    </p>
 
-    <div id="gh-profile-card" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(120,169,255,0.25);border-radius:8px;padding:12px;margin-bottom:14px;align-items:center;gap:12px">
+    <!-- Active Connected Profile Card -->
+    <div id="gh-profile-card" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(63,185,80,0.3);border-radius:8px;padding:12px;margin-bottom:14px;align-items:center;gap:12px">
       <img id="gh-avatar-img" src="" alt="Avatar" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--border)">
       <div style="flex:1">
         <div id="gh-user-name" style="font-size:13px;font-weight:700;color:#fff"></div>
@@ -920,17 +917,35 @@ STUDIO_HTML = r"""<!doctype html>
       <span class="badge" style="background:rgba(63,185,80,0.2);color:#3fb950;border:1px solid rgba(63,185,80,0.4)">Active</span>
     </div>
 
+    <!-- Browser Session Notice -->
+    <div style="background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.25);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.5">
+      <div style="font-weight:600;color:#58a6ff;margin-bottom:4px">🌐 Browser Login vs Same-Origin Isolation</div>
+      <div style="color:var(--muted)">
+        If you are already logged into GitHub in this browser, <b>"1-Click Browser Authorize"</b> loads the pre-configured authorization immediately. If not logged in, GitHub will prompt for your username/password.
+      </div>
+    </div>
+
+    <!-- 1-Click Browser Connect Button -->
+    <div style="margin-bottom:14px">
+      <button id="gh-browser-auth-btn" type="button" class="btn btn-primary" style="width:100%;padding:10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">
+        <span>⚡ 1-Click Browser Authorize</span>
+      </button>
+    </div>
+
     <div>
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">
-        Personal Access Token (<a href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=Hashtag+Studio" target="_blank" style="color:var(--accent);text-decoration:underline">Create PAT on GitHub ↗</a>):
-      </label>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <label style="font-size:11px;color:var(--muted)">
+          GitHub Personal Access Token:
+        </label>
+        <button id="gh-paste-token-btn" type="button" class="btn" style="padding:1px 8px;font-size:10px" title="Paste from clipboard and connect">📋 Paste & Connect</button>
+      </div>
       <div style="position:relative">
         <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx or github_pat_..." style="padding-right:70px">
         <button id="gh-toggle-token-btn" type="button" class="btn" style="position:absolute;right:4px;top:4px;bottom:4px;padding:0 8px;font-size:11px">Show</button>
       </div>
       <div id="gh-auth-error" style="color:var(--danger);font-size:11px;margin-top:6px;display:none"></div>
       <p style="font-size:11px;color:var(--muted);margin:6px 0 0 0">
-        Requires <code style="color:#58a6ff">repo</code> scope for private repositories & commits.
+        Requires <code style="color:#58a6ff">repo</code> scope for private repositories & direct commits. Stored only in this device's browser.
       </p>
     </div>
 
@@ -1038,18 +1053,37 @@ STUDIO_HTML = r"""<!doctype html>
   }
 
   function updateGitHubNavBadge(user) {
+    var sBtn = $("sidebar-gh-btn");
+    var sLabel = $("sidebar-gh-label");
+    if (sLabel) {
+      if (user && (user.login || user.username)) {
+        var uname = user.login || user.username;
+        sLabel.innerHTML = '🐙 <b>@' + esc(uname) + '</b>';
+        if (sBtn) {
+          sBtn.style.borderColor = "rgba(63,185,80,0.5)";
+          sBtn.title = "Connected as @" + uname + " (Click to manage)";
+        }
+      } else {
+        sLabel.textContent = "🐙 Connect";
+        if (sBtn) {
+          sBtn.style.borderColor = "rgba(120,169,255,0.35)";
+          sBtn.title = "Connect your GitHub account";
+        }
+      }
+    }
     var btn = $("btn-gh-account");
     var label = $("gh-nav-label");
-    if (!btn || !label) return;
-    if (user && (user.login || user.username)) {
-      var uname = user.login || user.username;
-      label.innerHTML = '🐙 <b>@' + esc(uname) + '</b>';
-      btn.style.borderColor = "rgba(63,185,80,0.5)";
-      btn.title = "Connected as @" + uname + " on this computer (Click to manage)";
-    } else {
-      label.textContent = "🐙 Connect GitHub";
-      btn.style.borderColor = "rgba(120,169,255,0.35)";
-      btn.title = "Connect your GitHub account on this computer";
+    if (btn && label) {
+      if (user && (user.login || user.username)) {
+        var uname = user.login || user.username;
+        label.innerHTML = '🐙 <b>@' + esc(uname) + '</b>';
+        btn.style.borderColor = "rgba(63,185,80,0.5)";
+        btn.title = "Connected as @" + uname + " on this computer (Click to manage)";
+      } else {
+        label.textContent = "🐙 Connect GitHub";
+        btn.style.borderColor = "rgba(120,169,255,0.35)";
+        btn.title = "Connect your GitHub account on this computer";
+      }
     }
   }
 
@@ -1533,6 +1567,10 @@ STUDIO_HTML = r"""<!doctype html>
 
   // 11. Switch Repository
   $("repo-select").onchange = function() {
+    if (!this.value) {
+      openGitHubAuthModal();
+      return;
+    }
     state.repo = this.value;
     state.activePath = "";
     $("delete-btn").style.display = "none";
@@ -2012,10 +2050,38 @@ STUDIO_HTML = r"""<!doctype html>
     loadRepositories(0);
   }
 
-  $("btn-gh-account").onclick = openGitHubAuthModal;
+  var bGh = $("btn-gh-account");
+  if (bGh) bGh.onclick = openGitHubAuthModal;
+  var sGh = $("sidebar-gh-btn");
+  if (sGh) sGh.onclick = openGitHubAuthModal;
   $("cancel-gh-auth-btn").onclick = closeGitHubAuthModal;
   $("save-gh-token-btn").onclick = saveGitHubToken;
   $("disconnect-gh-btn").onclick = disconnectGitHub;
+  var bBrowser = $("gh-browser-auth-btn");
+  if (bBrowser) {
+    bBrowser.onclick = function() {
+      var url = "https://github.com/settings/tokens/new?scopes=repo,read:user&description=Hashtag+Studio+Token";
+      window.open(url, "_blank");
+    };
+  }
+  var bPaste = $("gh-paste-token-btn");
+  if (bPaste) {
+    bPaste.onclick = function() {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(function(text) {
+          text = (text || "").trim();
+          if (text) {
+            $("gh-token-input").value = text;
+            saveGitHubToken();
+          }
+        }).catch(function() {
+          $("gh-token-input").focus();
+        });
+      } else {
+        $("gh-token-input").focus();
+      }
+    };
+  }
   $("gh-toggle-token-btn").onclick = function() {
     var input = $("gh-token-input");
     if (input.type === "password") {
