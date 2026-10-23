@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import Any, Dict, List, Optional, Tuple, Union
 """Local Hashtag Executor Body HTTP interface."""
 
 import sys
@@ -251,7 +253,7 @@ def capabilities():
 
 
 
-def _get_request_github_client(request: Request, payload: Optional[dict] = None):
+def _get_request_github_client(request: Request, payload: Optional[dict] = None) -> tuple[Any, Optional[str]]:
     token = request.headers.get("X-GitHub-Token")
     if not token and payload and isinstance(payload, dict):
         token = payload.get("token") or payload.get("github_token")
