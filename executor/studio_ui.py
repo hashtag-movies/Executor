@@ -762,8 +762,9 @@ STUDIO_HTML = r"""<!doctype html>
           <span id="sidebar-gh-label">🐙 GitHub</span>
         </button>
       </div>
-      <div class="search-filter">
-        <input type="text" id="file-search" placeholder="Search files in repository...">
+      <div class="search-filter" style="position:relative">
+        <input type="text" id="file-search" placeholder="Search files in repository..." style="padding-right:24px">
+        <button id="clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px" title="Clear Search">✕</button>
       </div>
       <div id="file-tree" class="file-tree">
         <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">
@@ -1158,8 +1159,15 @@ STUDIO_HTML = r"""<!doctype html>
 
   // 3. Render Hierarchical File Tree
   function renderFileTree(items) {
+    items = items || state.tree || [];
     var treeEl = $("file-tree");
-    var filter = ($("file-search").value || "").toLowerCase().trim();
+    var searchEl = $("file-search");
+    var filter = (searchEl && searchEl.value || "").toLowerCase().trim();
+    var clearBtn = $("clear-search-btn");
+    if (clearBtn) {
+      clearBtn.style.display = filter ? "block" : "none";
+    }
+
     if (!items || !items.length) {
       var userToken = localStorage.getItem("hashtag_studio_gh_token");
       if (!userToken || !userToken.trim()) {
@@ -1177,10 +1185,14 @@ STUDIO_HTML = r"""<!doctype html>
       return;
     }
 
+    var matching = 0;
+    var totalBlobs = 0;
     var html = "";
     items.forEach(function(item) {
-      if (filter && !item.path.toLowerCase().includes(filter)) return;
       if (item.type === "tree") return; // Flat list of file paths works reliably for all depths
+      totalBlobs++;
+      if (filter && !item.path.toLowerCase().includes(filter)) return;
+      matching++;
 
       var isAct = (item.path === state.activePath) ? "active" : "";
       var icon = getFileIcon(item.path);
@@ -1189,6 +1201,33 @@ STUDIO_HTML = r"""<!doctype html>
             + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis">' + esc(item.path) + '</span>'
             + '</div>';
     });
+
+    var countEl = $("file-count");
+    if (countEl) {
+      if (filter) {
+        countEl.textContent = matching + " / " + totalBlobs;
+      } else {
+        countEl.textContent = totalBlobs + " files";
+      }
+    }
+
+    if (!html && filter) {
+      treeEl.innerHTML = '<div style="padding:28px 16px;text-align:center;color:var(--muted);font-size:12px">'
+        + '<div style="font-size:20px;margin-bottom:8px">🔍</div>'
+        + 'No files matching "<b style="color:var(--text)">' + esc(filter) + '</b>"'
+        + '<div style="margin-top:10px"><button id="btn-tree-clear-search" class="btn" style="padding:2px 8px;font-size:11px">Clear Search</button></div>'
+        + '</div>';
+      var tClear = $("btn-tree-clear-search");
+      if (tClear) {
+        tClear.onclick = function() {
+          if (searchEl) searchEl.value = "";
+          renderFileTree(state.tree);
+          if (searchEl) searchEl.focus();
+        };
+      }
+      return;
+    }
+
     treeEl.innerHTML = html;
 
     // Attach click handlers
@@ -2092,6 +2131,30 @@ STUDIO_HTML = r"""<!doctype html>
       this.textContent = "Show";
     }
   };
+
+  // File search live filtering
+  var searchInput = $("file-search");
+  if (searchInput) {
+    searchInput.addEventListener("input", function() {
+      renderFileTree(state.tree);
+    });
+    searchInput.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        this.value = "";
+        renderFileTree(state.tree);
+      }
+    });
+  }
+  var clearSearchBtn = $("clear-search-btn");
+  if (clearSearchBtn) {
+    clearSearchBtn.onclick = function() {
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.focus();
+      }
+      renderFileTree(state.tree);
+    };
+  }
 
   // Init
   loadRepositories();
