@@ -91,8 +91,9 @@ STUDIO_HTML = r"""<!doctype html>
       gap: 6px;
     }
     .repo-select-wrap select {
-      background: transparent;
-      border: none;
+      background-color: #000;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       color: var(--text);
       font-size: 12px;
       font-weight: 600;
