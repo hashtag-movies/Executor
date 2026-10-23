@@ -4,27 +4,52 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import sys
 from pathlib import Path
+
+_current_dir = Path(__file__).resolve().parent.parent
+_core_candidates = [
+    _current_dir,
+    _current_dir.parent / "Hashtag-core",
+    Path.home() / "Hashtag-core",
+    Path("/data/data/com.termux/files/home/Hashtag-core"),
+    Path(r"C:\Users\ksdav\OneDrive\Documents\GitHub\Hashtag-core"),
+]
+for _c in _core_candidates:
+    if _c.is_dir() and str(_c) not in sys.path:
+        sys.path.insert(0, str(_c))
+
 if __package__ is None or __package__ == "":
-    parent_dir = str(Path(__file__).resolve().parent.parent)
-    if parent_dir not in sys.path:
-        sys.path.insert(0, parent_dir)
     __package__ = "executor"
 
 import logging
-from hashtag.structured_logging import (
-    setup_structured_logging,
-    get_logger,
-    LogContext,
-    generate_id,
-    extract_correlation_ids,
-    request_id_var,
-    task_id_var,
-    operation_id_var,
-    session_id_var,
-    user_id_var,
-    body_id_var,
-    extra_fields_var,
-)
+try:
+    from hashtag.structured_logging import (
+        setup_structured_logging,
+        get_logger,
+        LogContext,
+        generate_id,
+        extract_correlation_ids,
+        request_id_var,
+        task_id_var,
+        operation_id_var,
+        session_id_var,
+        user_id_var,
+        body_id_var,
+        extra_fields_var,
+    )
+except ImportError:
+    import time
+    def setup_structured_logging(*args, **kwargs): pass
+    def get_logger(name): return logging.getLogger(name)
+    class LogContext:
+        def __init__(self, **kwargs): pass
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+    def generate_id(prefix=""): return f"{prefix}_{int(time.time()*1000)}"
+    def extract_correlation_ids(*args, **kwargs): return {}
+    class _DummyVar:
+        def get(self, default=None): return default
+        def set(self, val): pass
+    request_id_var = task_id_var = operation_id_var = session_id_var = user_id_var = body_id_var = extra_fields_var = _DummyVar()
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, Response
@@ -143,11 +168,12 @@ def health():
 @app.websocket("/v1/connector/ws")
 async def connector_ws(websocket: WebSocket):
     await websocket.accept()
+    connection_id = None
     try:
         raw = await websocket.receive_text()
         data = json.loads(raw)
         info = data.get("info") or {}
-        await pc_connector.connect(websocket, info)
+        connection_id = await pc_connector.connect(websocket, info)
         gh_tok = info.get("github_token")
         if gh_tok:
             try:
@@ -160,13 +186,16 @@ async def connector_ws(websocket: WebSocket):
                     logger.info("GitHub credentials auto-inherited from PC connector: @%s", user)
             except Exception as e:
                 logger.warning("Failed inheriting GitHub token: %s", e)
-        await websocket.send_text(json.dumps({"type": "ack", "status": "linked"}))
+        await websocket.send_text(json.dumps({"type": "ack", "status": "linked", "connection_id": connection_id}))
         while True:
             msg = await websocket.receive_text()
             pc_connector.handle_response(json.loads(msg))
     except (WebSocketDisconnect, Exception) as err:
         logger.info("PC Connector WS disconnected: %s", err)
-        pc_connector.disconnect()
+        if connection_id:
+            await pc_connector.disconnect_async(connection_id)
+        else:
+            await pc_connector.disconnect_async()
 
 
 @app.get("/v1/connector/status")
@@ -174,7 +203,12 @@ def connector_status():
     return {
         "ok": True,
         "connected": pc_connector.is_connected,
+        "connected_count": pc_connector.connected_count,
+        "total_count": pc_connector.total_count,
         "info": pc_connector.system_info,
+        "primary_connection_id": pc_connector._primary_connection_id,
+        "queued_actions": pc_connector.get_queued_actions_count(),
+        "connections": [c.to_dict() for c in pc_connector.list_connections()],
     }
 
 
