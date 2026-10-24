@@ -888,38 +888,51 @@ STUDIO_HTML = r"""<!doctype html>
       box-sizing: border-box;
     }
     .ai-assistant-container {
-      flex: 1;
+      flex: 1 1 0%;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      min-height: 0;
-      padding: 14px 16px 16px 16px;
+      height: calc(100% - 38px);
+      max-height: calc(100% - 38px);
+      min-height: 0 !important;
+      padding: 12px 14px 12px 14px;
       box-sizing: border-box !important;
       overflow: hidden;
       width: 100%;
+      position: relative;
     }
     .ai-chat-messages {
       flex: 1 1 0%;
       min-height: 0 !important;
-      overflow-y: auto !important;
+      overflow-y: scroll !important; /* Always enable vertical scrolling */
       overflow-x: hidden !important;
-      padding: 4px 6px 28px 6px;
+      padding: 4px 6px 20px 6px;
       display: flex;
       flex-direction: column;
       gap: 12px;
       font-size: 12.5px;
       box-sizing: border-box;
       width: 100%;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.5) rgba(15, 23, 42, 0.6);
+      touch-action: pan-y;
     }
     .ai-chat-messages::-webkit-scrollbar {
-      width: 6px;
+      width: 8px !important;
+    }
+    .ai-chat-messages::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 6px;
     }
     .ai-chat-messages::-webkit-scrollbar-thumb {
-      background: rgba(120, 169, 255, 0.25);
-      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.45);
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
     }
     .ai-chat-messages::-webkit-scrollbar-thumb:hover {
-      background: rgba(120, 169, 255, 0.5);
+      background: rgba(56, 189, 248, 0.85);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
     }
     .ai-msg {
       padding: 12px 14px;
@@ -956,20 +969,20 @@ STUDIO_HTML = r"""<!doctype html>
     .ai-composer {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
+      gap: 6px;
+      margin-top: 8px;
       flex-shrink: 0;
       box-sizing: border-box;
       width: 100%;
     }
     .ai-composer textarea {
       width: 100%;
-      height: 68px;
+      height: 54px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
       color: var(--text);
-      padding: 10px 12px;
+      padding: 8px 10px;
       font-size: 12px;
       outline: none;
       resize: none;
@@ -2088,6 +2101,20 @@ STUDIO_HTML = r"""<!doctype html>
 
   // 13. Hashtag AI Co-Pilot integration
   $("ai-send-btn").onclick = sendAiPrompt;
+
+  // Forward mouse wheel scrolling anywhere in the AI panel directly to the messages container
+  var auxAiPanel = $("view-ai");
+  var auxAiChat = $("ai-chat");
+  if (auxAiPanel && auxAiChat) {
+    auxAiPanel.addEventListener("wheel", function(e) {
+      if (e.target && e.target.id === "ai-prompt") return;
+      if (e.target && e.target.closest && e.target.closest("pre")) {
+        var preEl = e.target.closest("pre");
+        if (preEl.scrollHeight > preEl.clientHeight && Math.abs(e.deltaY) > 0) return;
+      }
+      auxAiChat.scrollTop += e.deltaY;
+    }, { passive: true });
+  }
   $("ai-prompt").onkeydown = function(e) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
