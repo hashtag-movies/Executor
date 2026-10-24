@@ -189,13 +189,16 @@ STUDIO_HTML = r"""<!doctype html>
       align-items: center !important;
     }
     body.has-preview-fullscreen .preview-viewport-wrap {
-      flex: 1 !important;
-      height: 100vh !important;
+      position: absolute !important;
+      inset: 0 !important;
       width: 100vw !important;
-      padding-top: 54px !important;
+      height: 100vh !important;
+      padding: 56px 0 0 0 !important;
+      box-sizing: border-box !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
+      overflow: hidden !important;
     }
     body.has-preview-fullscreen .preview-frame-holder:not(.device-tablet):not(.device-mobile) {
       width: 100% !important;
@@ -214,8 +217,10 @@ STUDIO_HTML = r"""<!doctype html>
       transition: grid-template-columns 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
     }
-    .studio-workspace.preview-closed {
-      grid-template-columns: 260px 1fr 0px;
+    .studio-workspace.preview-closed,
+    .studio-workspace.preview-closed.aux-expanded,
+    .studio-workspace.preview-closed.aux-maximized {
+      grid-template-columns: 260px 1fr 0px !important;
     }
     .studio-workspace.preview-closed .aux-panel {
       border-left: none !important;
@@ -234,7 +239,9 @@ STUDIO_HTML = r"""<!doctype html>
       display: flex;
       flex-direction: column;
       height: 100%;
+      min-height: 0;
       overflow: hidden;
+      box-sizing: border-box;
     }
     .sidebar-head {
       padding: 10px 12px;
@@ -247,10 +254,12 @@ STUDIO_HTML = r"""<!doctype html>
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
     .search-filter {
       padding: 8px 10px;
       border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
     .search-filter input {
       width: 100%;
@@ -263,10 +272,22 @@ STUDIO_HTML = r"""<!doctype html>
       outline: none;
     }
     .file-tree {
-      flex: 1;
-      overflow-y: auto;
+      flex: 1 1 0%;
+      min-height: 0 !important;
+      overflow-y: auto !important;
       overflow-x: hidden;
       padding: 6px 4px;
+      box-sizing: border-box;
+    }
+    .file-tree::-webkit-scrollbar {
+      width: 6px;
+    }
+    .file-tree::-webkit-scrollbar-thumb {
+      background: rgba(120, 169, 255, 0.25);
+      border-radius: 4px;
+    }
+    .file-tree::-webkit-scrollbar-thumb:hover {
+      background: rgba(120, 169, 255, 0.5);
     }
     .tree-item {
       display: flex;
@@ -354,7 +375,10 @@ STUDIO_HTML = r"""<!doctype html>
       flex: 1;
       display: flex;
       min-height: 0;
+      min-width: 0;
+      overflow: hidden;
       position: relative;
+      box-sizing: border-box;
     }
     .line-numbers {
       background: rgba(7, 11, 20, 0.7);
@@ -367,10 +391,13 @@ STUDIO_HTML = r"""<!doctype html>
       text-align: right;
       user-select: none;
       min-width: 44px;
+      flex-shrink: 0;
       overflow: hidden;
     }
     .code-textarea {
-      flex: 1;
+      flex: 1 1 0%;
+      min-width: 0 !important;
+      width: 100%;
       background: transparent;
       border: none;
       outline: none;
@@ -381,8 +408,24 @@ STUDIO_HTML = r"""<!doctype html>
       line-height: 1.55;
       color: var(--text);
       white-space: pre;
+      word-break: normal;
+      overflow-wrap: normal;
       tab-size: 2;
-      overflow: auto;
+      overflow: auto !important;
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      box-sizing: border-box;
+    }
+    .code-textarea::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .code-textarea::-webkit-scrollbar-thumb {
+      background: rgba(120, 169, 255, 0.25);
+      border-radius: 4px;
+    }
+    .code-textarea::-webkit-scrollbar-thumb:hover {
+      background: rgba(120, 169, 255, 0.5);
     }
     /* RIGHT PANEL: LIVE PREVIEW & AI ASSISTANT */
     .studio-workspace.preview-closed .aux-panel {
@@ -401,36 +444,36 @@ STUDIO_HTML = r"""<!doctype html>
     }
     .aux-collapse-btn {
       position: absolute;
-      left: -15px;
+      left: -18px;
       top: 50%;
       transform: translateY(-50%);
-      width: 15px;
-      height: 52px;
+      width: 18px;
+      height: 64px;
       background: #161b22;
-      border: 1px solid rgba(88, 166, 255, 0.4);
+      border: 1.5px solid #38bdf8;
       border-right: none;
-      border-radius: 8px 0 0 8px;
-      color: #8b949e;
+      border-radius: 9px 0 0 9px;
+      color: #38bdf8;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 35;
+      z-index: 100;
       padding: 0;
       transition: all 0.2s ease;
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 17px;
+      font-weight: 800;
       line-height: 1;
       user-select: none;
-      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+      box-shadow: -3px 0 14px rgba(56, 189, 248, 0.4);
     }
     .aux-collapse-btn:hover {
-      background: #1f2937;
-      color: #58a6ff;
-      border-color: #58a6ff;
-      box-shadow: -2px 0 12px rgba(88, 166, 255, 0.35);
-      width: 17px;
-      left: -17px;
+      background: #1e293b;
+      color: #fff;
+      border-color: #7dd3fc;
+      box-shadow: -4px 0 20px rgba(56, 189, 248, 0.65);
+      width: 22px;
+      left: -22px;
     }
     .aux-dock-buttons {
       position: absolute;
@@ -498,10 +541,7 @@ STUDIO_HTML = r"""<!doctype html>
       width: 28px;
       height: 18px;
     }
-    .cyber-eye.projector-size {
-      width: 20px;
-      height: 13px;
-    }
+    
     .eye-socket {
       position: relative;
       width: 100%;
@@ -516,10 +556,7 @@ STUDIO_HTML = r"""<!doctype html>
       justify-content: center;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .cyber-eye.projecting .eye-socket {
-      border-color: #7dd3fc;
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.95), inset 0 0 7px rgba(56, 189, 248, 0.7);
-    }
+    
     .eye-ball {
       position: absolute;
       width: 100%;
@@ -545,10 +582,7 @@ STUDIO_HTML = r"""<!doctype html>
       width: 12px;
       height: 12px;
     }
-    .cyber-eye.projector-size .eye-iris {
-      width: 8.5px;
-      height: 8.5px;
-    }
+    
     .eye-pupil {
       width: 4.5px;
       height: 4.5px;
@@ -560,10 +594,7 @@ STUDIO_HTML = r"""<!doctype html>
       width: 5.5px;
       height: 5.5px;
     }
-    .cyber-eye.projector-size .eye-pupil {
-      width: 4px;
-      height: 4px;
-    }
+    
     .eye-glint {
       position: absolute;
       width: 2px;
@@ -602,181 +633,6 @@ STUDIO_HTML = r"""<!doctype html>
       transform: translateY(0%);
     }
 
-    /* === SCI-FI ROBOT EYE PROJECTOR & 3D CANOPY SYSTEM === */
-    .preview-projector-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3px 6px;
-      background: radial-gradient(circle at center, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.98) 100%);
-      border: 1.5px solid rgba(56, 189, 248, 0.7);
-      border-radius: 20px;
-      margin-right: 4px;
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.5), inset 0 0 8px rgba(56, 189, 248, 0.3);
-      position: relative;
-    }
-    .preview-projector-badge::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 14px;
-      height: 3px;
-      background: #38bdf8;
-      border-radius: 50%;
-      filter: blur(2px);
-      box-shadow: 0 0 8px #38bdf8;
-      animation: emitterPulse 2s ease-in-out infinite;
-    }
-    @keyframes emitterPulse {
-      0%, 100% { opacity: 0.6; transform: translateX(-50%) scaleX(0.85); }
-      50% { opacity: 1; transform: translateX(-50%) scaleX(1.4); }
-    }
-
-    /* Concentric Emitter Energy Rings around Eye */
-    .projector-emitter-rings {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 24px;
-      height: 16px;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .emitter-ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 1.5px solid #38bdf8;
-      opacity: 0;
-      animation: emitterRingPulse 3s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.75);
-    }
-    .ring-1 { animation-delay: 0s; }
-    .ring-2 { animation-delay: 1s; }
-    .ring-3 { animation-delay: 2s; }
-
-    @keyframes emitterRingPulse {
-      0% { transform: scale(0.7); opacity: 0.9; }
-      50% { opacity: 0.5; }
-      100% { transform: scale(2.4); opacity: 0; }
-    }
-
-    .preview-viewport-wrap {
-      position: relative;
-    }
-    .preview-projection-beam {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 15;
-      overflow: hidden;
-      opacity: 0.38;
-      transition: opacity 0.3s ease;
-      mix-blend-mode: screen;
-    }
-    .preview-projection-beam.burst {
-      opacity: 0.98;
-      animation: projectorFlicker 0.45s ease-out;
-    }
-    @keyframes projectorFlicker {
-      0% { opacity: 0.7; }
-      15% { opacity: 1; }
-      25% { opacity: 0.8; }
-      40% { opacity: 1; }
-      70% { opacity: 0.9; }
-      100% { opacity: 0.65; }
-    }
-    .projector-rays-svg {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.4));
-    }
-    .projector-canopy {
-      opacity: 0.75;
-      filter: drop-shadow(0 4px 12px rgba(56, 189, 248, 0.3));
-    }
-    .god-ray {
-      opacity: 0.75;
-      transform-origin: 500px 0px;
-    }
-    .ray-left-far { animation: raySway1 6s ease-in-out infinite alternate; }
-    .ray-left { animation: raySway2 4.5s ease-in-out infinite alternate; }
-    .ray-mid { animation: rayPulse 2.8s ease-in-out infinite alternate; }
-    .ray-right { animation: raySway1 5s ease-in-out infinite alternate-reverse; }
-    .ray-right-far { animation: raySway2 6.5s ease-in-out infinite alternate-reverse; }
-
-    @keyframes raySway1 {
-      0% { opacity: 0.45; transform: rotate(-2deg); }
-      100% { opacity: 0.9; transform: rotate(2deg); }
-    }
-    @keyframes raySway2 {
-      0% { opacity: 0.55; transform: rotate(1.5deg); }
-      100% { opacity: 0.95; transform: rotate(-1.5deg); }
-    }
-    @keyframes rayPulse {
-      0% { opacity: 0.65; }
-      50% { opacity: 1; }
-      100% { opacity: 0.65; }
-    }
-    .lens-flare {
-      animation: flareShine 3s ease-in-out infinite alternate;
-    }
-    @keyframes flareShine {
-      0% { rx: 75px; ry: 20px; opacity: 0.75; }
-      100% { rx: 120px; ry: 32px; opacity: 1; }
-    }
-
-    /* Dust Motes / Floating Light Particles */
-    .projector-dust {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-    }
-    .dust-mote {
-      position: absolute;
-      border-radius: 50%;
-      background: #e0f2fe;
-      box-shadow: 0 0 4px #38bdf8, 0 0 8px rgba(56, 189, 248, 0.85);
-      pointer-events: none;
-    }
-    .mote-1 { width: 3px; height: 3px; left: 48%; top: 10%; animation: drift1 9s ease-in-out infinite; }
-    .mote-2 { width: 2px; height: 2px; left: 52%; top: 20%; animation: drift2 11s ease-in-out infinite; }
-    .mote-3 { width: 2.5px; height: 2.5px; left: 45%; top: 35%; animation: drift3 8s ease-in-out infinite; }
-    .mote-4 { width: 3px; height: 3px; left: 55%; top: 50%; animation: drift1 12s ease-in-out infinite reverse; }
-    .mote-5 { width: 2px; height: 2px; left: 40%; top: 65%; animation: drift2 10s ease-in-out infinite; }
-    .mote-6 { width: 2.5px; height: 2.5px; left: 60%; top: 40%; animation: drift3 13s ease-in-out infinite; }
-
-    @keyframes drift1 {
-      0% { transform: translate(0, 0); opacity: 0.2; }
-      50% { transform: translate(25px, 40px); opacity: 0.85; }
-      100% { transform: translate(-15px, 80px); opacity: 0.1; }
-    }
-    @keyframes drift2 {
-      0% { transform: translate(0, 0); opacity: 0.3; }
-      50% { transform: translate(-30px, 35px); opacity: 0.9; }
-      100% { transform: translate(20px, 75px); opacity: 0.2; }
-    }
-    @keyframes drift3 {
-      0% { transform: translate(0, 0); opacity: 0.15; }
-      50% { transform: translate(15px, -25px); opacity: 0.8; }
-      100% { transform: translate(-25px, -60px); opacity: 0.15; }
-    }
-
-    /* Atmospheric Light Haze */
-    .projector-haze {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.2) 0%, rgba(56, 189, 248, 0.06) 40%, transparent 75%);
-      mix-blend-mode: screen;
-      opacity: 0.85;
-      pointer-events: none;
-    }
     .aux-tabs {
       background: var(--panel2);
       border-bottom: 1px solid var(--border);
@@ -807,6 +663,7 @@ STUDIO_HTML = r"""<!doctype html>
       min-height: 0;
       background: #090d16;
       overflow: hidden;
+      box-sizing: border-box;
     }
     .preview-container.is-fullscreen {
       position: fixed !important;
@@ -818,6 +675,7 @@ STUDIO_HTML = r"""<!doctype html>
       display: flex !important;
       flex-direction: column !important;
       overflow: hidden !important;
+      box-sizing: border-box !important;
     }
     .preview-container.is-fullscreen .preview-toolbar {
       position: fixed !important;
@@ -855,12 +713,13 @@ STUDIO_HTML = r"""<!doctype html>
       align-items: center;
       justify-content: center;
       background: #070b14;
-      overflow: auto;
-      padding: 68px 16px 20px 16px;
-      box-sizing: border-box;
+      overflow: hidden;
+      padding: 62px 0 0 0 !important;
+      box-sizing: border-box !important;
     }
     .preview-container.is-fullscreen .preview-frame-holder {
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-sizing: border-box;
     }
     .preview-container.is-fullscreen .preview-frame-holder:not(.device-tablet):not(.device-mobile) {
       width: 100% !important;
@@ -870,6 +729,7 @@ STUDIO_HTML = r"""<!doctype html>
       border-radius: 0 !important;
       box-shadow: none !important;
       border: none !important;
+      box-sizing: border-box !important;
     }
     .preview-container.is-fullscreen .preview-frame-holder.device-tablet {
       width: 768px !important;
@@ -882,6 +742,7 @@ STUDIO_HTML = r"""<!doctype html>
       overflow: hidden !important;
       flex-shrink: 0;
       margin: auto;
+      box-sizing: border-box;
     }
     .preview-container.is-fullscreen .preview-frame-holder.landscape.device-tablet {
       width: 1024px !important;
@@ -900,6 +761,7 @@ STUDIO_HTML = r"""<!doctype html>
       overflow: hidden !important;
       flex-shrink: 0;
       margin: auto;
+      box-sizing: border-box;
     }
     .preview-container.is-fullscreen .preview-frame-holder.landscape.device-mobile {
       width: 812px !important;
@@ -917,6 +779,8 @@ STUDIO_HTML = r"""<!doctype html>
       gap: 6px;
       flex-wrap: wrap;
       min-height: 38px;
+      flex-shrink: 0;
+      box-sizing: border-box;
     }
     .preview-toolbar-actions {
       display: inline-flex;
@@ -959,13 +823,18 @@ STUDIO_HTML = r"""<!doctype html>
     }
     
     .preview-viewport-wrap {
-      flex: 1;
+      flex: 1 1 0%;
+      min-height: 0 !important;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #0b0f19;
-      overflow: auto;
-      padding: 12px;
+      overflow: hidden;
+      padding: 0 !important;
+      box-sizing: border-box !important;
+      position: relative;
+      width: 100%;
+      height: 100%;
     }
     .preview-frame-holder {
       width: 100%;
@@ -974,6 +843,7 @@ STUDIO_HTML = r"""<!doctype html>
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       position: relative;
+      box-sizing: border-box;
     }
     .preview-frame-holder.device-tablet {
       width: 768px;
@@ -984,6 +854,7 @@ STUDIO_HTML = r"""<!doctype html>
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b;
       overflow: hidden;
       margin: auto;
+      box-sizing: border-box;
     }
     .preview-frame-holder.device-mobile {
       width: 375px;
@@ -994,6 +865,7 @@ STUDIO_HTML = r"""<!doctype html>
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b;
       overflow: hidden;
       margin: auto;
+      box-sizing: border-box;
     }
     .preview-frame-holder.landscape.device-tablet {
       width: 1024px;
@@ -1012,6 +884,8 @@ STUDIO_HTML = r"""<!doctype html>
       height: 100%;
       border: none;
       background: #fff;
+      display: block;
+      box-sizing: border-box;
     }
     .ai-assistant-container {
       flex: 1;
@@ -1019,51 +893,87 @@ STUDIO_HTML = r"""<!doctype html>
       flex-direction: column;
       height: 100%;
       min-height: 0;
-      padding: 12px;
+      padding: 14px 16px 16px 16px;
+      box-sizing: border-box !important;
+      overflow: hidden;
+      width: 100%;
     }
     .ai-chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 6px;
+      flex: 1 1 0%;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 4px 6px 28px 6px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      font-size: 12px;
+      gap: 12px;
+      font-size: 12.5px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .ai-chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+    .ai-chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(120, 169, 255, 0.25);
+      border-radius: 4px;
+    }
+    .ai-chat-messages::-webkit-scrollbar-thumb:hover {
+      background: rgba(120, 169, 255, 0.5);
     }
     .ai-msg {
-      padding: 10px 12px;
+      padding: 12px 14px;
       border-radius: 10px;
-      line-height: 1.5;
+      line-height: 1.55;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     .ai-msg.user {
       background: rgba(120, 169, 255, 0.15);
       border: 1px solid rgba(120, 169, 255, 0.25);
       align-self: flex-end;
       color: #fff;
+      max-width: 90%;
     }
     .ai-msg.assistant {
       background: var(--panel2);
       border: 1px solid var(--border);
-      align-self: flex-start;
+      align-self: stretch;
       color: var(--text);
+      margin-left: 0;
+      margin-right: 0;
+    }
+    .ai-msg pre {
+      max-width: 100%;
+      overflow-x: auto !important;
+      white-space: pre !important;
+      word-break: normal !important;
+      box-sizing: border-box;
     }
     .ai-composer {
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 10px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      width: 100%;
     }
     .ai-composer textarea {
       width: 100%;
-      height: 60px;
+      height: 68px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
       color: var(--text);
-      padding: 8px;
+      padding: 10px 12px;
       font-size: 12px;
       outline: none;
       resize: none;
+      box-sizing: border-box;
     }
     /* STATUS BAR */
     .studio-statusbar {
@@ -1226,7 +1136,7 @@ STUDIO_HTML = r"""<!doctype html>
       </div>
       <div class="editor-body-wrap">
         <div id="line-numbers" class="line-numbers">1</div>
-        <textarea id="code-editor" class="code-textarea" spellcheck="false" placeholder="// Click any file from the explorer to open and edit directly on GitHub..."></textarea>
+        <textarea id="code-editor" class="code-textarea" wrap="off" spellcheck="false" placeholder="// Click any file from the explorer to open and edit directly on GitHub..."></textarea>
       </div>
     </section>
 
@@ -1255,9 +1165,13 @@ STUDIO_HTML = r"""<!doctype html>
           <span>Live Web Preview</span>
         </div>
         <div id="tab-btn-ai" class="aux-tab">🤖 Hashtag AI Co-Pilot</div>
-        <button id="btn-expand-aux" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(120,169,255,0.35);display:flex;align-items:center;gap:4px" title="Toggle Wide / Fullscreen Panel (Read AI response clearly)">
+        <button id="btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(120,169,255,0.35);display:flex;align-items:center;gap:4px" title="Toggle Wide Panel (Read AI response clearly)">
           <span id="expand-aux-icon">⛶</span>
           <span id="expand-aux-label">Widen</span>
+        </button>
+        <button id="btn-close-aux-header" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Minimize / Hide Side Panel">
+          <span>›</span>
+          <span>Close</span>
         </button>
       </div>
 
@@ -1271,26 +1185,7 @@ STUDIO_HTML = r"""<!doctype html>
             <button id="dev-rotate" class="dev-btn" title="Rotate Screen Orientation">🔄 <span class="dev-btn-label">Rotate</span></button>
           </div>
           <div class="preview-toolbar-actions">
-            <div class="preview-projector-badge" id="preview-projector-badge" title="Live Preview Optical Projector Eye">
-              <div class="projector-emitter-rings">
-                <div class="emitter-ring ring-1"></div>
-                <div class="emitter-ring ring-2"></div>
-                <div class="emitter-ring ring-3"></div>
-              </div>
-              <div class="cyber-eye projector-size" id="eye-projector">
-                <div class="eye-socket">
-                  <div class="eye-lid top-lid"></div>
-                  <div class="eye-ball">
-                    <div class="eye-iris">
-                      <div class="eye-pupil">
-                        <div class="eye-glint"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="eye-lid bottom-lid"></div>
-                </div>
-              </div>
-            </div>
+
             <span id="preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
             <button id="preview-fullscreen-btn" class="btn btn-primary" title="Full Screen Preview (F)" style="padding:2px 8px;font-size:11px;font-weight:600">⛶ Fullscreen</button>
             <button id="preview-popout-btn" class="btn" title="Open in New Real Browser Tab" style="padding:2px 8px;font-size:11px">↗ Pop Out</button>
@@ -1298,56 +1193,7 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
         </div>
         <div class="preview-viewport-wrap">
-          <div id="preview-projection-beam" class="preview-projection-beam">
-            <!-- Volumetric Light Rays (God Rays) -->
-            <svg class="projector-rays-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="rayGrad1" x1="50%" y1="0%" x2="15%" y2="100%">
-                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.65"/>
-                  <stop offset="25%" stop-color="#38bdf8" stop-opacity="0.22"/>
-                  <stop offset="70%" stop-color="#0284c7" stop-opacity="0.04"/>
-                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
-                </linearGradient>
-                <linearGradient id="rayGrad2" x1="50%" y1="0%" x2="85%" y2="100%">
-                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.65"/>
-                  <stop offset="25%" stop-color="#38bdf8" stop-opacity="0.22"/>
-                  <stop offset="70%" stop-color="#0284c7" stop-opacity="0.04"/>
-                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
-                </linearGradient>
-                <linearGradient id="rayGradCenter" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.85"/>
-                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.28"/>
-                  <stop offset="65%" stop-color="#0284c7" stop-opacity="0.06"/>
-                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
-                </linearGradient>
-                <radialGradient id="lensFlareGlow" cx="50%" cy="0%" r="50%">
-                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-                  <stop offset="20%" stop-color="#38bdf8" stop-opacity="0.55"/>
-                  <stop offset="60%" stop-color="#0284c7" stop-opacity="0.12"/>
-                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
-                </radialGradient>
-              </defs>
-              <!-- Clean Conical Light Frustum -->
-              <polygon points="500,0 50,600 950,600" fill="url(#rayGradCenter)" class="main-frustum"/>
-              <!-- Elegant 3-Beam Volumetric God Rays -->
-              <polygon points="500,0 80,600 240,600" fill="url(#rayGrad1)" class="god-ray ray-left"/>
-              <polygon points="500,0 450,600 550,600" fill="url(#rayGradCenter)" class="god-ray ray-mid"/>
-              <polygon points="500,0 760,600 920,600" fill="url(#rayGrad2)" class="god-ray ray-right"/>
-              <!-- Lens Flare Halo -->
-              <ellipse cx="500" cy="0" rx="60" ry="16" fill="url(#lensFlareGlow)" class="lens-flare"/>
-            </svg>
-            <!-- Atmospheric Dust Motes & Photons -->
-            <div class="projector-dust">
-              <div class="dust-mote mote-1"></div>
-              <div class="dust-mote mote-2"></div>
-              <div class="dust-mote mote-3"></div>
-              <div class="dust-mote mote-4"></div>
-              <div class="dust-mote mote-5"></div>
-              <div class="dust-mote mote-6"></div>
-            </div>
-            <!-- Atmospheric Projector Haze -->
-            <div class="projector-haze"></div>
-          </div>
+          
           <div id="preview-frame-holder" class="preview-frame-holder">
             <iframe id="preview-frame" class="preview-frame" 
               sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation"
@@ -2195,14 +2041,21 @@ STUDIO_HTML = r"""<!doctype html>
     $("view-ai").style.display = "flex";
   };
 
-  // Aux panel collapse & dock triggers
-  var bCollapse = $("btn-collapse-aux");
-  if (bCollapse) {
-    bCollapse.onclick = function() {
-      var ws = $("workspace");
-      if (ws) ws.classList.add("preview-closed");
-    };
+  // Aux panel collapse & dock triggers (Fixed: cleanly clear wide/maximized classes upon minimize)
+  function collapseAuxPanel() {
+    var ws = $("workspace");
+    if (!ws) return;
+    ws.classList.add("preview-closed");
+    ws.classList.remove("aux-expanded", "aux-maximized");
+    var expLabel = $("expand-aux-label");
+    if (expLabel) expLabel.textContent = "Widen";
   }
+
+  var bCollapse = $("btn-collapse-aux");
+  if (bCollapse) bCollapse.onclick = collapseAuxPanel;
+
+  var bCloseHdr = $("btn-close-aux-header");
+  if (bCloseHdr) bCloseHdr.onclick = collapseAuxPanel;
 
   var dockAi = $("dock-btn-ai");
   if (dockAi) {
@@ -2299,19 +2152,25 @@ STUDIO_HTML = r"""<!doctype html>
 
   $("btn-format-code").onclick = formatCurrentCode;
 
-  // --- WORD WRAP TOGGLE ---
+  // --- WORD WRAP TOGGLE (With guaranteed horizontal scroll when OFF) ---
   var isWrapped = false;
   $("btn-toggle-wrap").onclick = function() {
     isWrapped = !isWrapped;
     var editor = $("code-editor");
     if (isWrapped) {
+      editor.setAttribute("wrap", "soft");
       editor.style.whiteSpace = "pre-wrap";
       editor.style.wordBreak = "break-word";
+      editor.style.overflowWrap = "break-word";
+      editor.style.overflowX = "hidden";
       this.textContent = "Wrap: ON";
       this.style.color = "var(--accent)";
     } else {
+      editor.setAttribute("wrap", "off");
       editor.style.whiteSpace = "pre";
       editor.style.wordBreak = "normal";
+      editor.style.overflowWrap = "normal";
+      editor.style.overflowX = "auto";
       this.textContent = "Wrap: OFF";
       this.style.color = "";
     }
@@ -2478,7 +2337,7 @@ STUDIO_HTML = r"""<!doctype html>
     $("view-preview").style.display = "flex";
     $("view-ai").style.display = "none";
     updatePreview();
-    setTimeout(updateProjectorBeamAlignment, 150);
+    
 
     var req = prev.requestFullscreen || prev.webkitRequestFullscreen || prev.mozRequestFullScreen || prev.msRequestFullscreen;
     if (req) {
@@ -2508,14 +2367,14 @@ STUDIO_HTML = r"""<!doctype html>
     if (document.fullscreenElement && exit) {
       exit.call(document).then(function() {
         cleanupFullscreen();
-      setTimeout(updateProjectorBeamAlignment, 150);
+      
       }).catch(function() {
         cleanupFullscreen();
-      setTimeout(updateProjectorBeamAlignment, 150);
+      
       });
     } else {
       cleanupFullscreen();
-      setTimeout(updateProjectorBeamAlignment, 150);
+      
     }
   }
 
@@ -2558,7 +2417,7 @@ STUDIO_HTML = r"""<!doctype html>
         }
       } catch(e) {}
     }
-    setTimeout(updateProjectorBeamAlignment, 120);
+    
   }
 
   function enterFullscreen() {
@@ -2572,7 +2431,7 @@ STUDIO_HTML = r"""<!doctype html>
   document.addEventListener("fullscreenchange", function() {
     if (!document.fullscreenElement && fullscreenState.isFullscreen) {
       cleanupFullscreen();
-      setTimeout(updateProjectorBeamAlignment, 150);
+      
     }
   });
 
@@ -2814,7 +2673,7 @@ STUDIO_HTML = r"""<!doctype html>
         if (icon) icon.textContent = "⛶";
         expandBtn.title = "Widen panel to 650px";
       }
-      setTimeout(updateProjectorBeamAlignment, 150);
+      
     };
   }
 
@@ -2823,45 +2682,42 @@ STUDIO_HTML = r"""<!doctype html>
   updatePreview();
 
   // ========================================================
-  // CYBER EYE TRACKER & HOLOGRAPHIC PROJECTOR ENGINE
-  // ========================================================
+  // --- CYBER EYE ENGINE (EXACTLY 2 EYES: PREVIEW TAB EYE & DOCK BUTTON EYE) ---
   (function initCyberEyeEngine() {
-    var eyes = [];
-    ["eye-dock", "eye-tab", "eye-projector"].forEach(function(id) {
-      var el = $(id);
-      if (el) {
-        var iris = el.querySelector(".eye-iris");
-        var pupil = el.querySelector(".eye-pupil");
-        eyes.push({ id: id, el: el, iris: iris, pupil: pupil });
+    var eyes = [
+      { id: "eye-tab", el: $("eye-tab"), iris: null },
+      { id: "eye-dock", el: $("eye-dock"), iris: null }
+    ];
+
+    eyes.forEach(function(e) {
+      if (e.el) {
+        e.iris = e.el.querySelector(".eye-iris");
       }
     });
 
-    if (!eyes.length) return;
-
-    var beam = $("preview-projection-beam");
     var isTyping = false;
     var typingTimer = null;
     var lastMouseX = window.innerWidth / 2;
     var lastMouseY = window.innerHeight / 2;
 
-    // 1. Natural Organic Blinking
+    // 1. Natural Blinking Loop
     function scheduleBlink() {
-      var delay = 2600 + Math.random() * 3200;
+      var nextBlink = 2200 + Math.random() * 3800;
       setTimeout(function() {
-        triggerBlink(false);
+        triggerBlink();
         scheduleBlink();
-      }, delay);
+      }, nextBlink);
     }
 
     function triggerBlink(doubleBlink) {
-      eyes.forEach(function(e) { e.el.classList.add("blinking"); });
+      eyes.forEach(function(e) { if (e.el) e.el.classList.add("blinking"); });
       setTimeout(function() {
-        eyes.forEach(function(e) { e.el.classList.remove("blinking"); });
+        eyes.forEach(function(e) { if (e.el) e.el.classList.remove("blinking"); });
         if (doubleBlink || Math.random() < 0.2) {
           setTimeout(function() {
-            eyes.forEach(function(e) { e.el.classList.add("blinking"); });
+            eyes.forEach(function(e) { if (e.el) e.el.classList.add("blinking"); });
             setTimeout(function() {
-              eyes.forEach(function(e) { e.el.classList.remove("blinking"); });
+              eyes.forEach(function(e) { if (e.el) e.el.classList.remove("blinking"); });
             }, 80);
           }, 110);
         }
@@ -2870,68 +2726,13 @@ STUDIO_HTML = r"""<!doctype html>
 
     scheduleBlink();
 
-    // 2. Holographic Projection Pulse
-    window.pulseProjectorEye = function() {
-      if (beam) {
-        beam.classList.add("burst");
-        setTimeout(function() { beam.classList.remove("burst"); }, 450);
-      }
-      var eyeProj = $("eye-projector");
-      if (eyeProj) {
-        eyeProj.classList.add("projecting");
-        setTimeout(function() { eyeProj.classList.remove("projecting"); }, 450);
-      }
-      var eyeTab = $("eye-tab");
-      if (eyeTab) {
-        eyeTab.classList.add("projecting");
-        setTimeout(function() { eyeTab.classList.remove("projecting"); }, 450);
-      }
-    };
-
-    // Dynamic Ray Alignment: Aligns SVG rays to the physical position of the eye
-    function updateProjectorBeamAlignment() {
-      var eyeBadge = $("preview-projector-badge");
-      var wrap = document.querySelector(".preview-viewport-wrap");
-      var svg = document.querySelector(".projector-rays-svg");
-      if (!eyeBadge || !wrap || !svg) return;
-      var bRect = eyeBadge.getBoundingClientRect();
-      var wRect = wrap.getBoundingClientRect();
-      if (wRect.width === 0) return;
-
-      var eyeCenterX = (bRect.left + bRect.width / 2) - wRect.left;
-      var apexX = Math.round(Math.max(40, Math.min(960, (eyeCenterX / wRect.width) * 1000)));
-
-      var mainFrustum = svg.querySelector(".main-frustum");
-      if (mainFrustum) mainFrustum.setAttribute("points", apexX + ",0 50,600 950,600");
-
-      var flare = svg.querySelector(".lens-flare");
-      if (flare) flare.setAttribute("cx", apexX);
-
-      var rLeft = svg.querySelector(".ray-left");
-      if (rLeft) rLeft.setAttribute("points", apexX + ",0 80,600 240,600");
-
-      var rMid = svg.querySelector(".ray-mid");
-      if (rMid) rMid.setAttribute("points", apexX + ",0 " + Math.max(0, apexX - 60) + ",600 " + Math.min(1000, apexX + 60) + ",600");
-
-      var rRight = svg.querySelector(".ray-right");
-      if (rRight) rRight.setAttribute("points", apexX + ",0 760,600 920,600");
-
-      var radialGrad = svg.querySelector("#lensFlareGlow");
-      if (radialGrad) radialGrad.setAttribute("cx", (apexX / 10) + "%");
-    }
-
-    window.addEventListener("resize", updateProjectorBeamAlignment, { passive: true });
-    setTimeout(updateProjectorBeamAlignment, 300);
-
-    // 3. Coordinate Tracker: looks towards (targetX, targetY)
+    // 2. Coordinate Tracker: looks towards (targetX, targetY)
     function lookAt(targetX, targetY) {
       eyes.forEach(function(e) {
-        if (!e.iris) return;
-
-        // All eyes track cursor and code editor dynamically!
+        if (!e.iris || !e.el) return;
 
         var rect = e.el.getBoundingClientRect();
-        if (rect.width === 0 && rect.height === 0) return; // invisible / collapsed
+        if (rect.width === 0 && rect.height === 0) return;
 
         var eyeX = rect.left + rect.width / 2;
         var eyeY = rect.top + rect.height / 2;
@@ -2953,7 +2754,7 @@ STUDIO_HTML = r"""<!doctype html>
       });
     }
 
-    // 4. Mouse Move Tracking (Anywhere on Page)
+    // 3. Mouse Move Tracking (Anywhere on Page)
     document.addEventListener("mousemove", function(e) {
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
@@ -2962,7 +2763,7 @@ STUDIO_HTML = r"""<!doctype html>
       }
     }, { passive: true });
 
-    // 5. Code Editor Typing Tracker (Locks gaze directly on editor)
+    // 4. Code Editor Typing Tracker (Locks gaze directly on editor)
     var editor = $("code-editor");
     if (editor) {
       function onEditorActivity() {
@@ -2974,7 +2775,6 @@ STUDIO_HTML = r"""<!doctype html>
         var targetY = edRect.top + Math.min(edRect.height * 0.4, 250);
 
         lookAt(targetX, targetY);
-        if (window.pulseProjectorEye) window.pulseProjectorEye();
 
         typingTimer = setTimeout(function() {
           isTyping = false;
@@ -2984,13 +2784,13 @@ STUDIO_HTML = r"""<!doctype html>
 
       editor.addEventListener("input", onEditorActivity, { passive: true });
       editor.addEventListener("keydown", function(e) {
-        if (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter") {
+        if (e.key && (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter")) {
           onEditorActivity();
         }
       }, { passive: true });
     }
 
-    // 6. Idle Autonomous Wander
+    // 5. Idle Autonomous Wander
     setInterval(function() {
       if (isTyping) return;
       if (Math.random() < 0.28) {
@@ -3003,6 +2803,8 @@ STUDIO_HTML = r"""<!doctype html>
       }
     }, 3000);
   })();
+
+})();
 
 })();
 </script>
