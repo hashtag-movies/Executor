@@ -427,6 +427,191 @@ STUDIO_HTML = r"""<!doctype html>
       border-color: #38bdf8;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(56, 189, 248, 0.45);
     }
+
+    /* === INTERACTIVE CYBER EYE COMPONENT === */
+    .cyber-eye {
+      position: relative;
+      width: 22px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .cyber-eye.dock-size {
+      width: 28px;
+      height: 18px;
+    }
+    .cyber-eye.projector-size {
+      width: 20px;
+      height: 13px;
+    }
+    .eye-socket {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, #0f172a 20%, #020617 100%);
+      border: 1.5px solid #38bdf8;
+      overflow: hidden;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.5), inset 0 0 4px rgba(56, 189, 248, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .cyber-eye.projecting .eye-socket {
+      border-color: #7dd3fc;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.95), inset 0 0 7px rgba(56, 189, 248, 0.7);
+    }
+    .eye-ball {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .eye-iris {
+      position: absolute;
+      width: 9.5px;
+      height: 9.5px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #7dd3fc 0%, #0284c7 60%, #0369a1 100%);
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.08s ease-out;
+      will-change: transform;
+    }
+    .cyber-eye.dock-size .eye-iris {
+      width: 12px;
+      height: 12px;
+    }
+    .cyber-eye.projector-size .eye-iris {
+      width: 8.5px;
+      height: 8.5px;
+    }
+    .eye-pupil {
+      width: 4.5px;
+      height: 4.5px;
+      border-radius: 50%;
+      background: #000814;
+      position: relative;
+    }
+    .cyber-eye.dock-size .eye-pupil {
+      width: 5.5px;
+      height: 5.5px;
+    }
+    .cyber-eye.projector-size .eye-pupil {
+      width: 4px;
+      height: 4px;
+    }
+    .eye-glint {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: #ffffff;
+      top: 0.5px;
+      left: 0.5px;
+      box-shadow: 0 0 2px #fff;
+    }
+    /* Eyelids for blinking */
+    .eye-lid {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      background: #0b1120;
+      z-index: 5;
+      transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .top-lid {
+      top: 0;
+      transform: translateY(-100%);
+      border-bottom: 0.5px solid rgba(56, 189, 248, 0.4);
+    }
+    .bottom-lid {
+      bottom: 0;
+      transform: translateY(100%);
+      border-top: 0.5px solid rgba(56, 189, 248, 0.4);
+    }
+    .cyber-eye.blinking .top-lid {
+      transform: translateY(0%);
+    }
+    .cyber-eye.blinking .bottom-lid {
+      transform: translateY(0%);
+    }
+
+    /* === PROJECTOR BEAM IN PREVIEW VIEWPORT === */
+    .preview-projector-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      margin-right: 2px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+    .projector-status-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+    .preview-viewport-wrap {
+      position: relative;
+    }
+    .preview-projection-beam {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.18;
+      background: radial-gradient(ellipse at 50% -10%, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0.08) 40%, rgba(56, 189, 248, 0.01) 75%, transparent 100%);
+      transition: opacity 0.45s ease;
+      overflow: hidden;
+    }
+    .preview-projection-beam::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 35%;
+      right: 35%;
+      height: 40px;
+      border-radius: 50%;
+      background: #38bdf8;
+      filter: blur(14px);
+      opacity: 0.5;
+    }
+    .preview-projection-beam::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(56, 189, 248, 0.035) 0px,
+        rgba(56, 189, 248, 0.035) 2px,
+        transparent 2px,
+        transparent 5px
+      );
+      animation: holoScanlines 10s linear infinite;
+    }
+    @keyframes holoScanlines {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(120px); }
+    }
+    .preview-projection-beam.burst {
+      opacity: 0.75;
+      transition: opacity 0.06s ease;
+    }
     .aux-tabs {
       background: var(--panel2);
       border-bottom: 1px solid var(--border);
@@ -831,7 +1016,6 @@ STUDIO_HTML = r"""<!doctype html>
         <span>💾 Commit to GitHub</span>
       </button>
       <button id="delete-btn" class="btn btn-danger" style="display:none" title="Delete file from GitHub">🗑️ Delete</button>
-      <button id="toggle-preview-btn" class="btn" title="Toggle Live Web Preview">👁️ Preview</button>
       <a href="/ai" class="btn" target="_blank" style="border-color:rgba(88,166,255,0.4);color:#58a6ff;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
       <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
     </div>
@@ -889,7 +1073,22 @@ STUDIO_HTML = r"""<!doctype html>
       </button>
 
       <div class="aux-tabs">
-        <div id="tab-btn-preview" class="aux-tab active">👁️ Live Web Preview</div>
+        <div id="tab-btn-preview" class="aux-tab active" style="display:flex;align-items:center;justify-content:center;gap:7px">
+          <div class="cyber-eye" id="eye-tab">
+            <div class="eye-socket">
+              <div class="eye-lid top-lid"></div>
+              <div class="eye-ball">
+                <div class="eye-iris">
+                  <div class="eye-pupil">
+                    <div class="eye-glint"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="eye-lid bottom-lid"></div>
+            </div>
+          </div>
+          <span>Live Web Preview</span>
+        </div>
         <div id="tab-btn-ai" class="aux-tab">🤖 Hashtag AI Co-Pilot</div>
       </div>
 
@@ -903,6 +1102,22 @@ STUDIO_HTML = r"""<!doctype html>
             <button id="dev-rotate" class="dev-btn" title="Rotate Screen Orientation">🔄 <span class="dev-btn-label">Rotate</span></button>
           </div>
           <div class="preview-toolbar-actions">
+            <div class="preview-projector-badge" id="preview-projector-badge" title="Holographic Preview Projector Eye (Active Eye Beam)">
+              <div class="cyber-eye projector-size" id="eye-projector">
+                <div class="eye-socket">
+                  <div class="eye-lid top-lid"></div>
+                  <div class="eye-ball">
+                    <div class="eye-iris">
+                      <div class="eye-pupil">
+                        <div class="eye-glint"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="eye-lid bottom-lid"></div>
+                </div>
+              </div>
+              <span class="projector-status-label">Projecting</span>
+            </div>
             <span id="preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
             <button id="preview-fullscreen-btn" class="btn btn-primary" title="Full Screen Preview (F)" style="padding:2px 8px;font-size:11px;font-weight:600">⛶ Fullscreen</button>
             <button id="preview-popout-btn" class="btn" title="Open in New Real Browser Tab" style="padding:2px 8px;font-size:11px">↗ Pop Out</button>
@@ -910,6 +1125,7 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
         </div>
         <div class="preview-viewport-wrap">
+          <div id="preview-projection-beam" class="preview-projection-beam"></div>
           <div id="preview-frame-holder" class="preview-frame-holder">
             <iframe id="preview-frame" class="preview-frame" 
               sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation"
@@ -948,10 +1164,19 @@ STUDIO_HTML = r"""<!doctype html>
         </svg>
       </button>
       <button id="dock-btn-preview" class="aux-dock-btn dock-preview" title="Open Live Web Preview">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
+        <div class="cyber-eye dock-size" id="eye-dock">
+          <div class="eye-socket">
+            <div class="eye-lid top-lid"></div>
+            <div class="eye-ball">
+              <div class="eye-iris">
+                <div class="eye-pupil">
+                  <div class="eye-glint"></div>
+                </div>
+              </div>
+            </div>
+            <div class="eye-lid bottom-lid"></div>
+          </div>
+        </div>
       </button>
     </div>
   </main>
@@ -1777,7 +2002,7 @@ STUDIO_HTML = r"""<!doctype html>
     };
   }
 
-  $("toggle-preview-btn").onclick = function() {
+  var tPrev = $("toggle-preview-btn"); if (tPrev) tPrev.onclick = function() {
     var ws = $("workspace");
     if (ws.classList.contains("preview-closed")) {
       ws.classList.remove("preview-closed");
@@ -2306,6 +2531,151 @@ STUDIO_HTML = r"""<!doctype html>
   // Init
   loadRepositories();
   updatePreview();
+
+  // ========================================================
+  // CYBER EYE TRACKER & HOLOGRAPHIC PROJECTOR ENGINE
+  // ========================================================
+  (function initCyberEyeEngine() {
+    var eyes = [];
+    ["eye-dock", "eye-tab", "eye-projector"].forEach(function(id) {
+      var el = $(id);
+      if (el) {
+        var iris = el.querySelector(".eye-iris");
+        var pupil = el.querySelector(".eye-pupil");
+        eyes.push({ id: id, el: el, iris: iris, pupil: pupil });
+      }
+    });
+
+    if (!eyes.length) return;
+
+    var beam = $("preview-projection-beam");
+    var isTyping = false;
+    var typingTimer = null;
+    var lastMouseX = window.innerWidth / 2;
+    var lastMouseY = window.innerHeight / 2;
+
+    // 1. Natural Organic Blinking
+    function scheduleBlink() {
+      var delay = 2600 + Math.random() * 3200;
+      setTimeout(function() {
+        triggerBlink(false);
+        scheduleBlink();
+      }, delay);
+    }
+
+    function triggerBlink(doubleBlink) {
+      eyes.forEach(function(e) { e.el.classList.add("blinking"); });
+      setTimeout(function() {
+        eyes.forEach(function(e) { e.el.classList.remove("blinking"); });
+        if (doubleBlink || Math.random() < 0.2) {
+          setTimeout(function() {
+            eyes.forEach(function(e) { e.el.classList.add("blinking"); });
+            setTimeout(function() {
+              eyes.forEach(function(e) { e.el.classList.remove("blinking"); });
+            }, 80);
+          }, 110);
+        }
+      }, 90);
+    }
+
+    scheduleBlink();
+
+    // 2. Holographic Projection Pulse
+    window.pulseProjectorEye = function() {
+      if (beam) {
+        beam.classList.add("burst");
+        setTimeout(function() { beam.classList.remove("burst"); }, 450);
+      }
+      var eyeProj = $("eye-projector");
+      if (eyeProj) {
+        eyeProj.classList.add("projecting");
+        setTimeout(function() { eyeProj.classList.remove("projecting"); }, 450);
+      }
+      var eyeTab = $("eye-tab");
+      if (eyeTab) {
+        eyeTab.classList.add("projecting");
+        setTimeout(function() { eyeTab.classList.remove("projecting"); }, 450);
+      }
+    };
+
+    // 3. Coordinate Tracker: looks towards (targetX, targetY)
+    function lookAt(targetX, targetY) {
+      eyes.forEach(function(e) {
+        if (!e.iris) return;
+        var rect = e.el.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) return; // invisible / collapsed
+
+        var eyeX = rect.left + rect.width / 2;
+        var eyeY = rect.top + rect.height / 2;
+
+        var dx = targetX - eyeX;
+        var dy = targetY - eyeY;
+        var dist = Math.hypot(dx, dy);
+        var angle = Math.atan2(dy, dx);
+
+        var isDock = (e.id === "eye-dock");
+        var maxTravelX = isDock ? 5.5 : 4.0;
+        var maxTravelY = isDock ? 3.5 : 2.5;
+        var scale = Math.min(dist / 50, 1);
+
+        var moveX = Math.cos(angle) * maxTravelX * scale;
+        var moveY = Math.sin(angle) * maxTravelY * scale;
+
+        e.iris.style.transform = "translate(" + moveX.toFixed(2) + "px, " + moveY.toFixed(2) + "px)";
+      });
+    }
+
+    // 4. Mouse Move Tracking (Anywhere on Page)
+    document.addEventListener("mousemove", function(e) {
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      if (!isTyping) {
+        lookAt(e.clientX, e.clientY);
+      }
+    }, { passive: true });
+
+    // 5. Code Editor Typing Tracker (Locks gaze directly on editor)
+    var editor = $("code-editor");
+    if (editor) {
+      function onEditorActivity() {
+        isTyping = true;
+        clearTimeout(typingTimer);
+
+        var edRect = editor.getBoundingClientRect();
+        var targetX = edRect.left + Math.min(edRect.width * 0.35, 300);
+        var targetY = edRect.top + Math.min(edRect.height * 0.4, 250);
+
+        lookAt(targetX, targetY);
+        if (window.pulseProjectorEye) window.pulseProjectorEye();
+
+        typingTimer = setTimeout(function() {
+          isTyping = false;
+          lookAt(lastMouseX, lastMouseY);
+        }, 1200);
+      }
+
+      editor.addEventListener("input", onEditorActivity, { passive: true });
+      editor.addEventListener("keydown", function(e) {
+        if (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter") {
+          onEditorActivity();
+        }
+      }, { passive: true });
+    }
+
+    // 6. Idle Autonomous Wander
+    setInterval(function() {
+      if (isTyping) return;
+      if (Math.random() < 0.28) {
+        var wanderX = lastMouseX + (Math.random() - 0.5) * 220;
+        var wanderY = lastMouseY + (Math.random() - 0.5) * 160;
+        lookAt(wanderX, wanderY);
+        setTimeout(function() {
+          if (!isTyping) lookAt(lastMouseX, lastMouseY);
+        }, 900);
+      }
+    }, 3000);
+  })();
+
 })();
 </script>
 </body>
