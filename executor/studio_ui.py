@@ -207,17 +207,25 @@ STUDIO_HTML = r"""<!doctype html>
     /* MAIN WORKSPACE */
     .studio-workspace {
       display: grid;
-      grid-template-columns: 260px 1fr 340px;
+      grid-template-columns: 260px 1fr 420px;
       height: 100%;
       min-height: 0;
       overflow: hidden;
-      transition: grid-template-columns 0.2s ease;
+      transition: grid-template-columns 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
     .studio-workspace.preview-closed {
       grid-template-columns: 260px 1fr 0px;
     }
-    .studio-workspace.preview-maximized {
-      grid-template-columns: 0px 1fr 1fr;
+    .studio-workspace.preview-closed .aux-panel {
+      border-left: none !important;
+      display: none !important;
+    }
+    .studio-workspace.aux-expanded {
+      grid-template-columns: 260px 1fr 650px;
+    }
+    .studio-workspace.aux-maximized {
+      grid-template-columns: 0px 0px 1fr;
     }
     /* LEFT PANEL: FILE EXPLORER */
     .sidebar-panel {
