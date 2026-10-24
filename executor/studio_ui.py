@@ -157,6 +157,53 @@ STUDIO_HTML = r"""<!doctype html>
       border-color: var(--danger);
       color: #fff;
     }
+    /* === 100% RELIABLE ROCK-SOLID FULLSCREEN === */
+    body.has-preview-fullscreen {
+      overflow: hidden !important;
+    }
+    body.has-preview-fullscreen .preview-container {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 999999 !important;
+      background: #070b14 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    body.has-preview-fullscreen .preview-toolbar {
+      position: fixed !important;
+      top: 14px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      z-index: 1000000 !important;
+      background: rgba(15, 23, 42, 0.94) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(120, 169, 255, 0.35) !important;
+      border-radius: 9999px !important;
+      padding: 6px 16px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.3) !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    body.has-preview-fullscreen .preview-viewport-wrap {
+      flex: 1 !important;
+      height: 100vh !important;
+      width: 100vw !important;
+      padding-top: 54px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    body.has-preview-fullscreen .preview-frame-holder:not(.device-tablet):not(.device-mobile) {
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 0 !important;
+      border: none !important;
+    }
+
     /* MAIN WORKSPACE */
     .studio-workspace {
       display: grid;
@@ -618,8 +665,9 @@ STUDIO_HTML = r"""<!doctype html>
       pointer-events: none;
       z-index: 15;
       overflow: hidden;
-      opacity: 0.65;
+      opacity: 0.38;
       transition: opacity 0.3s ease;
+      mix-blend-mode: screen;
     }
     .preview-projection-beam.burst {
       opacity: 0.98;
@@ -1199,6 +1247,10 @@ STUDIO_HTML = r"""<!doctype html>
           <span>Live Web Preview</span>
         </div>
         <div id="tab-btn-ai" class="aux-tab">🤖 Hashtag AI Co-Pilot</div>
+        <button id="btn-expand-aux" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(120,169,255,0.35);display:flex;align-items:center;gap:4px" title="Toggle Wide / Fullscreen Panel (Read AI response clearly)">
+          <span id="expand-aux-icon">⛶</span>
+          <span id="expand-aux-label">Widen</span>
+        </button>
       </div>
 
       <!-- PREVIEW TAB -->
@@ -1242,49 +1294,39 @@ STUDIO_HTML = r"""<!doctype html>
             <!-- Volumetric Light Rays (God Rays) -->
             <svg class="projector-rays-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
               <defs>
-                <linearGradient id="canopyGrad" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
-                  <stop offset="35%" stop-color="#0284c7" stop-opacity="0.45"/>
-                  <stop offset="80%" stop-color="#075985" stop-opacity="0.2"/>
-                  <stop offset="100%" stop-color="#0369a1" stop-opacity="0.05"/>
-                </linearGradient>
-                <linearGradient id="rayGrad1" x1="50%" y1="0%" x2="10%" y2="100%">
-                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
-                  <stop offset="18%" stop-color="#38bdf8" stop-opacity="0.32"/>
-                  <stop offset="55%" stop-color="#0284c7" stop-opacity="0.1"/>
+                <linearGradient id="rayGrad1" x1="50%" y1="0%" x2="15%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.65"/>
+                  <stop offset="25%" stop-color="#38bdf8" stop-opacity="0.22"/>
+                  <stop offset="70%" stop-color="#0284c7" stop-opacity="0.04"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </linearGradient>
-                <linearGradient id="rayGrad2" x1="50%" y1="0%" x2="90%" y2="100%">
-                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
-                  <stop offset="18%" stop-color="#38bdf8" stop-opacity="0.32"/>
-                  <stop offset="55%" stop-color="#0284c7" stop-opacity="0.1"/>
+                <linearGradient id="rayGrad2" x1="50%" y1="0%" x2="85%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.65"/>
+                  <stop offset="25%" stop-color="#38bdf8" stop-opacity="0.22"/>
+                  <stop offset="70%" stop-color="#0284c7" stop-opacity="0.04"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </linearGradient>
                 <linearGradient id="rayGradCenter" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.98"/>
-                  <stop offset="12%" stop-color="#38bdf8" stop-opacity="0.45"/>
-                  <stop offset="48%" stop-color="#0284c7" stop-opacity="0.15"/>
+                  <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.85"/>
+                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.28"/>
+                  <stop offset="65%" stop-color="#0284c7" stop-opacity="0.06"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </linearGradient>
                 <radialGradient id="lensFlareGlow" cx="50%" cy="0%" r="50%">
-                  <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
-                  <stop offset="18%" stop-color="#38bdf8" stop-opacity="0.75"/>
-                  <stop offset="50%" stop-color="#0284c7" stop-opacity="0.25"/>
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                  <stop offset="20%" stop-color="#38bdf8" stop-opacity="0.55"/>
+                  <stop offset="60%" stop-color="#0284c7" stop-opacity="0.12"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </radialGradient>
               </defs>
-              <!-- 3D Holographic Projection Canopy (Matches User Sketch) -->
-              <polygon points="500,0 0,90 1000,90" fill="url(#canopyGrad)" class="projector-canopy"/>
-              <!-- Main Conical Light Frustum -->
-              <polygon points="500,0 0,600 1000,600" fill="url(#rayGradCenter)" class="main-frustum"/>
-              <!-- Individual Volumetric Shafts / Light Beams -->
-              <polygon points="500,0 0,600 160,600" fill="url(#rayGrad1)" class="god-ray ray-left-far"/>
-              <polygon points="500,0 180,600 350,600" fill="url(#rayGrad1)" class="god-ray ray-left"/>
-              <polygon points="500,0 420,600 580,600" fill="url(#rayGradCenter)" class="god-ray ray-mid"/>
-              <polygon points="500,0 650,600 820,600" fill="url(#rayGrad2)" class="god-ray ray-right"/>
-              <polygon points="500,0 840,600 1000,600" fill="url(#rayGrad2)" class="god-ray ray-right-far"/>
-              <!-- Lens Flare Emitter at Top -->
-              <ellipse cx="500" cy="0" rx="95" ry="26" fill="url(#lensFlareGlow)" class="lens-flare"/>
+              <!-- Clean Conical Light Frustum -->
+              <polygon points="500,0 50,600 950,600" fill="url(#rayGradCenter)" class="main-frustum"/>
+              <!-- Elegant 3-Beam Volumetric God Rays -->
+              <polygon points="500,0 80,600 240,600" fill="url(#rayGrad1)" class="god-ray ray-left"/>
+              <polygon points="500,0 450,600 550,600" fill="url(#rayGradCenter)" class="god-ray ray-mid"/>
+              <polygon points="500,0 760,600 920,600" fill="url(#rayGrad2)" class="god-ray ray-right"/>
+              <!-- Lens Flare Halo -->
+              <ellipse cx="500" cy="0" rx="60" ry="16" fill="url(#lensFlareGlow)" class="lens-flare"/>
             </svg>
             <!-- Atmospheric Dust Motes & Photons -->
             <div class="projector-dust">
@@ -2479,11 +2521,44 @@ STUDIO_HTML = r"""<!doctype html>
   }
 
   function toggleFullscreen() {
-    if (fullscreenState.isFullscreen) {
-      exitFullscreen();
+    var prev = $("view-preview");
+    var body = document.body;
+    var isFs = body.classList.contains("has-preview-fullscreen");
+
+    if (isFs) {
+      body.classList.remove("has-preview-fullscreen");
+      if (prev) prev.classList.remove("is-fullscreen");
+      fullscreenState.isFullscreen = false;
+      updateFullscreenButtons(false);
+      try {
+        if (document.fullscreenElement) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        }
+      } catch(e) {}
     } else {
-      enterFullscreen();
+      var ws = $("workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      $("tab-btn-preview").click();
+
+      body.classList.add("has-preview-fullscreen");
+      if (prev) prev.classList.add("is-fullscreen");
+      fullscreenState.isFullscreen = true;
+      updateFullscreenButtons(true);
+      try {
+        if (prev && prev.requestFullscreen) {
+          prev.requestFullscreen().catch(function(){});
+        }
+      } catch(e) {}
     }
+    setTimeout(updateProjectorBeamAlignment, 120);
+  }
+
+  function enterFullscreen() {
+    if (!fullscreenState.isFullscreen) toggleFullscreen();
+  }
+
+  function exitFullscreen() {
+    if (fullscreenState.isFullscreen) toggleFullscreen();
   }
 
   document.addEventListener("fullscreenchange", function() {
@@ -2705,6 +2780,36 @@ STUDIO_HTML = r"""<!doctype html>
     };
   }
 
+  // Aux panel expand / widen handler (allows comfortable reading of AI outputs)
+  var auxExpandState = 0;
+  var expandBtn = $("btn-expand-aux");
+  if (expandBtn) {
+    expandBtn.onclick = function() {
+      var ws = $("workspace");
+      if (!ws) return;
+      auxExpandState = (auxExpandState + 1) % 3;
+      ws.classList.remove("aux-expanded", "aux-maximized", "preview-closed");
+      var label = $("expand-aux-label");
+      var icon = $("expand-aux-icon");
+      if (auxExpandState === 1) {
+        ws.classList.add("aux-expanded");
+        if (label) label.textContent = "Maximize";
+        if (icon) icon.textContent = "⛶";
+        expandBtn.title = "Maximize panel across screen";
+      } else if (auxExpandState === 2) {
+        ws.classList.add("aux-maximized");
+        if (label) label.textContent = "Restore";
+        if (icon) icon.textContent = "✕";
+        expandBtn.title = "Restore normal panel size";
+      } else {
+        if (label) label.textContent = "Widen";
+        if (icon) icon.textContent = "⛶";
+        expandBtn.title = "Widen panel to 650px";
+      }
+      setTimeout(updateProjectorBeamAlignment, 150);
+    };
+  }
+
   // Init
   loadRepositories();
   updatePreview();
@@ -2788,29 +2893,20 @@ STUDIO_HTML = r"""<!doctype html>
       var eyeCenterX = (bRect.left + bRect.width / 2) - wRect.left;
       var apexX = Math.round(Math.max(40, Math.min(960, (eyeCenterX / wRect.width) * 1000)));
 
-      var canopy = svg.querySelector(".projector-canopy");
-      if (canopy) canopy.setAttribute("points", apexX + ",0 0,90 1000,90");
-
       var mainFrustum = svg.querySelector(".main-frustum");
-      if (mainFrustum) mainFrustum.setAttribute("points", apexX + ",0 0,600 1000,600");
+      if (mainFrustum) mainFrustum.setAttribute("points", apexX + ",0 50,600 950,600");
 
       var flare = svg.querySelector(".lens-flare");
       if (flare) flare.setAttribute("cx", apexX);
 
-      var rLeftFar = svg.querySelector(".ray-left-far");
-      if (rLeftFar) rLeftFar.setAttribute("points", apexX + ",0 0,600 160,600");
-
       var rLeft = svg.querySelector(".ray-left");
-      if (rLeft) rLeft.setAttribute("points", apexX + ",0 180,600 350,600");
+      if (rLeft) rLeft.setAttribute("points", apexX + ",0 80,600 240,600");
 
       var rMid = svg.querySelector(".ray-mid");
-      if (rMid) rMid.setAttribute("points", apexX + ",0 " + Math.max(0, apexX - 80) + ",600 " + Math.min(1000, apexX + 80) + ",600");
+      if (rMid) rMid.setAttribute("points", apexX + ",0 " + Math.max(0, apexX - 60) + ",600 " + Math.min(1000, apexX + 60) + ",600");
 
       var rRight = svg.querySelector(".ray-right");
-      if (rRight) rRight.setAttribute("points", apexX + ",0 650,600 820,600");
-
-      var rRightFar = svg.querySelector(".ray-right-far");
-      if (rRightFar) rRightFar.setAttribute("points", apexX + ",0 840,600 1000,600");
+      if (rRight) rRight.setAttribute("points", apexX + ",0 760,600 920,600");
 
       var radialGrad = svg.querySelector("#lensFlareGlow");
       if (radialGrad) radialGrad.setAttribute("cx", (apexX / 10) + "%");
@@ -2824,11 +2920,7 @@ STUDIO_HTML = r"""<!doctype html>
       eyes.forEach(function(e) {
         if (!e.iris) return;
 
-        // Projector eye is actively projecting: locked forward, does NOT move with cursor (blinks only!)
-        if (e.id === "eye-projector" || e.id === "eye-tab") {
-          e.iris.style.transform = "translate(0px, 0.5px)";
-          return;
-        }
+        // All eyes track cursor and code editor dynamically!
 
         var rect = e.el.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) return; // invisible / collapsed
