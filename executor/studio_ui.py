@@ -547,17 +547,17 @@ STUDIO_HTML = r"""<!doctype html>
       transform: translateY(0%);
     }
 
-    /* === REAL-LIFE PROJECTOR OPTICAL SYSTEM & VOLUMETRIC RAYS === */
+    /* === SCI-FI ROBOT EYE PROJECTOR & 3D CANOPY SYSTEM === */
     .preview-projector-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       padding: 3px 6px;
-      background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
-      border: 1.5px solid rgba(56, 189, 248, 0.6);
+      background: radial-gradient(circle at center, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.98) 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.7);
       border-radius: 20px;
       margin-right: 4px;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4), inset 0 0 8px rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.5), inset 0 0 8px rgba(56, 189, 248, 0.3);
       position: relative;
     }
     .preview-projector-badge::after {
@@ -571,13 +571,44 @@ STUDIO_HTML = r"""<!doctype html>
       background: #38bdf8;
       border-radius: 50%;
       filter: blur(2px);
-      box-shadow: 0 0 6px #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
       animation: emitterPulse 2s ease-in-out infinite;
     }
     @keyframes emitterPulse {
-      0%, 100% { opacity: 0.5; transform: translateX(-50%) scaleX(0.8); }
-      50% { opacity: 1; transform: translateX(-50%) scaleX(1.3); }
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scaleX(0.85); }
+      50% { opacity: 1; transform: translateX(-50%) scaleX(1.4); }
     }
+
+    /* Concentric Emitter Energy Rings around Eye */
+    .projector-emitter-rings {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 16px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .emitter-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid #38bdf8;
+      opacity: 0;
+      animation: emitterRingPulse 3s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.75);
+    }
+    .ring-1 { animation-delay: 0s; }
+    .ring-2 { animation-delay: 1s; }
+    .ring-3 { animation-delay: 2s; }
+
+    @keyframes emitterRingPulse {
+      0% { transform: scale(0.7); opacity: 0.9; }
+      50% { opacity: 0.5; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+
     .preview-viewport-wrap {
       position: relative;
     }
@@ -587,20 +618,20 @@ STUDIO_HTML = r"""<!doctype html>
       pointer-events: none;
       z-index: 15;
       overflow: hidden;
-      opacity: 0.55;
+      opacity: 0.65;
       transition: opacity 0.3s ease;
     }
     .preview-projection-beam.burst {
-      opacity: 0.95;
+      opacity: 0.98;
       animation: projectorFlicker 0.45s ease-out;
     }
     @keyframes projectorFlicker {
-      0% { opacity: 0.6; }
+      0% { opacity: 0.7; }
       15% { opacity: 1; }
-      25% { opacity: 0.75; }
+      25% { opacity: 0.8; }
       40% { opacity: 1; }
-      70% { opacity: 0.85; }
-      100% { opacity: 0.55; }
+      70% { opacity: 0.9; }
+      100% { opacity: 0.65; }
     }
     .projector-rays-svg {
       width: 100%;
@@ -608,37 +639,41 @@ STUDIO_HTML = r"""<!doctype html>
       position: absolute;
       top: 0;
       left: 0;
-      filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.35));
+      filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.4));
+    }
+    .projector-canopy {
+      opacity: 0.75;
+      filter: drop-shadow(0 4px 12px rgba(56, 189, 248, 0.3));
     }
     .god-ray {
-      opacity: 0.7;
+      opacity: 0.75;
       transform-origin: 500px 0px;
     }
     .ray-left-far { animation: raySway1 6s ease-in-out infinite alternate; }
     .ray-left { animation: raySway2 4.5s ease-in-out infinite alternate; }
-    .ray-mid { animation: rayPulse 3s ease-in-out infinite alternate; }
+    .ray-mid { animation: rayPulse 2.8s ease-in-out infinite alternate; }
     .ray-right { animation: raySway1 5s ease-in-out infinite alternate-reverse; }
     .ray-right-far { animation: raySway2 6.5s ease-in-out infinite alternate-reverse; }
 
     @keyframes raySway1 {
-      0% { opacity: 0.4; transform: rotate(-2deg); }
-      100% { opacity: 0.85; transform: rotate(2deg); }
+      0% { opacity: 0.45; transform: rotate(-2deg); }
+      100% { opacity: 0.9; transform: rotate(2deg); }
     }
     @keyframes raySway2 {
-      0% { opacity: 0.5; transform: rotate(1.5deg); }
-      100% { opacity: 0.9; transform: rotate(-1.5deg); }
+      0% { opacity: 0.55; transform: rotate(1.5deg); }
+      100% { opacity: 0.95; transform: rotate(-1.5deg); }
     }
     @keyframes rayPulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 0.95; }
-      100% { opacity: 0.6; }
+      0% { opacity: 0.65; }
+      50% { opacity: 1; }
+      100% { opacity: 0.65; }
     }
     .lens-flare {
       animation: flareShine 3s ease-in-out infinite alternate;
     }
     @keyframes flareShine {
-      0% { rx: 70px; ry: 18px; opacity: 0.7; }
-      100% { rx: 110px; ry: 30px; opacity: 1; }
+      0% { rx: 75px; ry: 20px; opacity: 0.75; }
+      100% { rx: 120px; ry: 32px; opacity: 1; }
     }
 
     /* Dust Motes / Floating Light Particles */
@@ -651,7 +686,7 @@ STUDIO_HTML = r"""<!doctype html>
       position: absolute;
       border-radius: 50%;
       background: #e0f2fe;
-      box-shadow: 0 0 4px #38bdf8, 0 0 8px rgba(56, 189, 248, 0.8);
+      box-shadow: 0 0 4px #38bdf8, 0 0 8px rgba(56, 189, 248, 0.85);
       pointer-events: none;
     }
     .mote-1 { width: 3px; height: 3px; left: 48%; top: 10%; animation: drift1 9s ease-in-out infinite; }
@@ -681,9 +716,9 @@ STUDIO_HTML = r"""<!doctype html>
     .projector-haze {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0.05) 35%, transparent 70%);
+      background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.2) 0%, rgba(56, 189, 248, 0.06) 40%, transparent 75%);
       mix-blend-mode: screen;
-      opacity: 0.8;
+      opacity: 0.85;
       pointer-events: none;
     }
     .aux-tabs {
@@ -1177,6 +1212,11 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
           <div class="preview-toolbar-actions">
             <div class="preview-projector-badge" id="preview-projector-badge" title="Live Preview Optical Projector Eye">
+              <div class="projector-emitter-rings">
+                <div class="emitter-ring ring-1"></div>
+                <div class="emitter-ring ring-2"></div>
+                <div class="emitter-ring ring-3"></div>
+              </div>
               <div class="cyber-eye projector-size" id="eye-projector">
                 <div class="eye-socket">
                   <div class="eye-lid top-lid"></div>
@@ -1202,41 +1242,49 @@ STUDIO_HTML = r"""<!doctype html>
             <!-- Volumetric Light Rays (God Rays) -->
             <svg class="projector-rays-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
               <defs>
+                <linearGradient id="canopyGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
+                  <stop offset="35%" stop-color="#0284c7" stop-opacity="0.45"/>
+                  <stop offset="80%" stop-color="#075985" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#0369a1" stop-opacity="0.05"/>
+                </linearGradient>
                 <linearGradient id="rayGrad1" x1="50%" y1="0%" x2="10%" y2="100%">
-                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
-                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.25"/>
-                  <stop offset="50%" stop-color="#0284c7" stop-opacity="0.08"/>
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
+                  <stop offset="18%" stop-color="#38bdf8" stop-opacity="0.32"/>
+                  <stop offset="55%" stop-color="#0284c7" stop-opacity="0.1"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </linearGradient>
                 <linearGradient id="rayGrad2" x1="50%" y1="0%" x2="90%" y2="100%">
-                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
-                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.25"/>
-                  <stop offset="50%" stop-color="#0284c7" stop-opacity="0.08"/>
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
+                  <stop offset="18%" stop-color="#38bdf8" stop-opacity="0.32"/>
+                  <stop offset="55%" stop-color="#0284c7" stop-opacity="0.1"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </linearGradient>
                 <linearGradient id="rayGradCenter" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.95"/>
-                  <stop offset="10%" stop-color="#38bdf8" stop-opacity="0.38"/>
-                  <stop offset="45%" stop-color="#0284c7" stop-opacity="0.12"/>
+                  <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.98"/>
+                  <stop offset="12%" stop-color="#38bdf8" stop-opacity="0.45"/>
+                  <stop offset="48%" stop-color="#0284c7" stop-opacity="0.15"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </linearGradient>
                 <radialGradient id="lensFlareGlow" cx="50%" cy="0%" r="50%">
-                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.65"/>
-                  <stop offset="45%" stop-color="#0284c7" stop-opacity="0.2"/>
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+                  <stop offset="18%" stop-color="#38bdf8" stop-opacity="0.75"/>
+                  <stop offset="50%" stop-color="#0284c7" stop-opacity="0.25"/>
                   <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
                 </radialGradient>
               </defs>
+              <!-- 3D Holographic Projection Canopy (Matches User Sketch) -->
+              <polygon points="500,0 0,90 1000,90" fill="url(#canopyGrad)" class="projector-canopy"/>
               <!-- Main Conical Light Frustum -->
               <polygon points="500,0 0,600 1000,600" fill="url(#rayGradCenter)" class="main-frustum"/>
               <!-- Individual Volumetric Shafts / Light Beams -->
-              <polygon points="500,0 80,600 180,600" fill="url(#rayGrad1)" class="god-ray ray-left-far"/>
-              <polygon points="500,0 220,600 340,600" fill="url(#rayGrad1)" class="god-ray ray-left"/>
-              <polygon points="500,0 440,600 560,600" fill="url(#rayGradCenter)" class="god-ray ray-mid"/>
-              <polygon points="500,0 660,600 780,600" fill="url(#rayGrad2)" class="god-ray ray-right"/>
-              <polygon points="500,0 820,600 920,600" fill="url(#rayGrad2)" class="god-ray ray-right-far"/>
+              <polygon points="500,0 0,600 160,600" fill="url(#rayGrad1)" class="god-ray ray-left-far"/>
+              <polygon points="500,0 180,600 350,600" fill="url(#rayGrad1)" class="god-ray ray-left"/>
+              <polygon points="500,0 420,600 580,600" fill="url(#rayGradCenter)" class="god-ray ray-mid"/>
+              <polygon points="500,0 650,600 820,600" fill="url(#rayGrad2)" class="god-ray ray-right"/>
+              <polygon points="500,0 840,600 1000,600" fill="url(#rayGrad2)" class="god-ray ray-right-far"/>
               <!-- Lens Flare Emitter at Top -->
-              <ellipse cx="500" cy="0" rx="90" ry="25" fill="url(#lensFlareGlow)" class="lens-flare"/>
+              <ellipse cx="500" cy="0" rx="95" ry="26" fill="url(#lensFlareGlow)" class="lens-flare"/>
             </svg>
             <!-- Atmospheric Dust Motes & Photons -->
             <div class="projector-dust">
@@ -2380,6 +2428,7 @@ STUDIO_HTML = r"""<!doctype html>
     $("view-preview").style.display = "flex";
     $("view-ai").style.display = "none";
     updatePreview();
+    setTimeout(updateProjectorBeamAlignment, 150);
 
     var req = prev.requestFullscreen || prev.webkitRequestFullscreen || prev.mozRequestFullScreen || prev.msRequestFullscreen;
     if (req) {
@@ -2409,11 +2458,14 @@ STUDIO_HTML = r"""<!doctype html>
     if (document.fullscreenElement && exit) {
       exit.call(document).then(function() {
         cleanupFullscreen();
+      setTimeout(updateProjectorBeamAlignment, 150);
       }).catch(function() {
         cleanupFullscreen();
+      setTimeout(updateProjectorBeamAlignment, 150);
       });
     } else {
       cleanupFullscreen();
+      setTimeout(updateProjectorBeamAlignment, 150);
     }
   }
 
@@ -2437,6 +2489,7 @@ STUDIO_HTML = r"""<!doctype html>
   document.addEventListener("fullscreenchange", function() {
     if (!document.fullscreenElement && fullscreenState.isFullscreen) {
       cleanupFullscreen();
+      setTimeout(updateProjectorBeamAlignment, 150);
     }
   });
 
@@ -2722,10 +2775,61 @@ STUDIO_HTML = r"""<!doctype html>
       }
     };
 
+    // Dynamic Ray Alignment: Aligns SVG rays to the physical position of the eye
+    function updateProjectorBeamAlignment() {
+      var eyeBadge = $("preview-projector-badge");
+      var wrap = document.querySelector(".preview-viewport-wrap");
+      var svg = document.querySelector(".projector-rays-svg");
+      if (!eyeBadge || !wrap || !svg) return;
+      var bRect = eyeBadge.getBoundingClientRect();
+      var wRect = wrap.getBoundingClientRect();
+      if (wRect.width === 0) return;
+
+      var eyeCenterX = (bRect.left + bRect.width / 2) - wRect.left;
+      var apexX = Math.round(Math.max(40, Math.min(960, (eyeCenterX / wRect.width) * 1000)));
+
+      var canopy = svg.querySelector(".projector-canopy");
+      if (canopy) canopy.setAttribute("points", apexX + ",0 0,90 1000,90");
+
+      var mainFrustum = svg.querySelector(".main-frustum");
+      if (mainFrustum) mainFrustum.setAttribute("points", apexX + ",0 0,600 1000,600");
+
+      var flare = svg.querySelector(".lens-flare");
+      if (flare) flare.setAttribute("cx", apexX);
+
+      var rLeftFar = svg.querySelector(".ray-left-far");
+      if (rLeftFar) rLeftFar.setAttribute("points", apexX + ",0 0,600 160,600");
+
+      var rLeft = svg.querySelector(".ray-left");
+      if (rLeft) rLeft.setAttribute("points", apexX + ",0 180,600 350,600");
+
+      var rMid = svg.querySelector(".ray-mid");
+      if (rMid) rMid.setAttribute("points", apexX + ",0 " + Math.max(0, apexX - 80) + ",600 " + Math.min(1000, apexX + 80) + ",600");
+
+      var rRight = svg.querySelector(".ray-right");
+      if (rRight) rRight.setAttribute("points", apexX + ",0 650,600 820,600");
+
+      var rRightFar = svg.querySelector(".ray-right-far");
+      if (rRightFar) rRightFar.setAttribute("points", apexX + ",0 840,600 1000,600");
+
+      var radialGrad = svg.querySelector("#lensFlareGlow");
+      if (radialGrad) radialGrad.setAttribute("cx", (apexX / 10) + "%");
+    }
+
+    window.addEventListener("resize", updateProjectorBeamAlignment, { passive: true });
+    setTimeout(updateProjectorBeamAlignment, 300);
+
     // 3. Coordinate Tracker: looks towards (targetX, targetY)
     function lookAt(targetX, targetY) {
       eyes.forEach(function(e) {
         if (!e.iris) return;
+
+        // Projector eye is actively projecting: locked forward, does NOT move with cursor (blinks only!)
+        if (e.id === "eye-projector" || e.id === "eye-tab") {
+          e.iris.style.transform = "translate(0px, 0.5px)";
+          return;
+        }
+
         var rect = e.el.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) return; // invisible / collapsed
 
