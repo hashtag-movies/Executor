@@ -437,10 +437,13 @@ STUDIO_HTML = r"""<!doctype html>
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: 100% !important;
+      max-height: 100% !important;
+      min-height: 0 !important;
       min-width: 0;
       overflow: visible;
       position: relative;
+      box-sizing: border-box;
     }
     .aux-collapse-btn {
       position: absolute;
@@ -887,69 +890,77 @@ STUDIO_HTML = r"""<!doctype html>
       display: block;
       box-sizing: border-box;
     }
-    .ai-assistant-container {
-      flex: 1 1 0%;
-      display: flex;
-      flex-direction: column;
-      height: calc(100% - 38px);
-      max-height: calc(100% - 38px);
+        .ai-assistant-container {
+      flex: 1 1 0% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: calc(100% - 38px) !important;
+      max-height: calc(100% - 38px) !important;
       min-height: 0 !important;
-      padding: 12px 14px 12px 14px;
+      padding: 10px 12px 10px 12px !important;
       box-sizing: border-box !important;
-      overflow: hidden;
-      width: 100%;
+      overflow: hidden !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
       position: relative;
     }
     .ai-chat-messages {
-      flex: 1 1 0%;
+      flex: 1 1 0% !important;
       min-height: 0 !important;
-      overflow-y: scroll !important; /* Always enable vertical scrolling */
+      height: 0 !important;
+      max-height: 100% !important;
+      overflow-y: scroll !important;
       overflow-x: hidden !important;
-      padding: 4px 6px 20px 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      font-size: 12.5px;
-      box-sizing: border-box;
-      width: 100%;
+      padding: 4px 6px 16px 6px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      font-size: 12.5px !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
       overscroll-behavior-y: contain;
       scroll-behavior: smooth;
       scrollbar-width: thin;
-      scrollbar-color: rgba(56, 189, 248, 0.5) rgba(15, 23, 42, 0.6);
+      scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.85);
       touch-action: pan-y;
     }
     .ai-chat-messages::-webkit-scrollbar {
-      width: 8px !important;
+      width: 9px !important;
     }
     .ai-chat-messages::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.85) !important;
+      border-radius: 8px;
     }
     .ai-chat-messages::-webkit-scrollbar-thumb {
-      background: rgba(56, 189, 248, 0.45);
-      border-radius: 6px;
-      border: 1px solid rgba(56, 189, 248, 0.2);
+      background: #38bdf8 !important;
+      border-radius: 8px;
+      border: 2px solid #0f172a;
     }
     .ai-chat-messages::-webkit-scrollbar-thumb:hover {
-      background: rgba(56, 189, 248, 0.85);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      background: #7dd3fc !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
     }
     .ai-msg {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: 10px;
       line-height: 1.55;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
       word-break: break-word;
       overflow-wrap: break-word;
+      overflow: hidden;
     }
     .ai-msg.user {
       background: rgba(120, 169, 255, 0.15);
       border: 1px solid rgba(120, 169, 255, 0.25);
       align-self: flex-end;
       color: #fff;
-      max-width: 90%;
+      max-width: 90% !important;
     }
     .ai-msg.assistant {
       background: var(--panel2);
@@ -960,33 +971,57 @@ STUDIO_HTML = r"""<!doctype html>
       margin-right: 0;
     }
     .ai-msg pre {
-      max-width: 100%;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
       overflow-x: auto !important;
       white-space: pre !important;
       word-break: normal !important;
-      box-sizing: border-box;
+      box-sizing: border-box !important;
+      scrollbar-width: thin;
+      scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.85);
+    }
+    .ai-msg pre::-webkit-scrollbar {
+      height: 7px !important;
+    }
+    .ai-msg pre::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.85) !important;
+      border-radius: 6px;
+    }
+    .ai-msg pre::-webkit-scrollbar-thumb {
+      background: #38bdf8 !important;
+      border-radius: 6px;
+    }
+    .ai-msg pre::-webkit-scrollbar-thumb:hover {
+      background: #7dd3fc !important;
+    }
+    .ai-msg pre code {
+      white-space: pre !important;
+      display: block !important;
     }
     .ai-composer {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 8px;
-      flex-shrink: 0;
-      box-sizing: border-box;
-      width: 100%;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 6px !important;
+      margin-top: 8px !important;
+      flex-shrink: 0 !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
     }
     .ai-composer textarea {
-      width: 100%;
-      height: 54px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      padding: 8px 10px;
-      font-size: 12px;
-      outline: none;
-      resize: none;
-      box-sizing: border-box;
+      width: 100% !important;
+      height: 52px !important;
+      min-height: 52px !important;
+      max-height: 52px !important;
+      background: var(--bg) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 8px !important;
+      color: var(--text) !important;
+      padding: 8px 10px !important;
+      font-size: 12px !important;
+      outline: none !important;
+      resize: none !important;
+      box-sizing: border-box !important;
     }
     /* STATUS BAR */
     .studio-statusbar {
@@ -2271,7 +2306,7 @@ STUDIO_HTML = r"""<!doctype html>
              '<button class="btn" style="padding:2px 8px;font-size:10.5px" onclick="copyStudioSnippet(\'' + id + '\', this)">Copy</button>' +
              '<button class="btn btn-primary" style="padding:2px 8px;font-size:10.5px" onclick="applySnippetToEditor(\'' + id + '\')">⚡ Apply to Editor</button>' +
              '</div></div>' +
-             '<pre style="padding:10px 12px;margin:0;overflow-x:auto;font-family:monospace;font-size:11.5px"><code id="' + id + '">' + code + '</code></pre></div>';
+             '<pre style="padding:10px 12px;margin:0;overflow-x:auto !important;white-space:pre !important;word-break:normal !important;width:100%;max-width:100%;box-sizing:border-box;font-family:monospace;font-size:11.5px"><code id="' + id + '" style="white-space:pre !important;display:block">' + code + '</code></pre></div>';
     });
     html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-family:monospace">$1</code>');
     html = html.replace(/\*\*([^\*]+)\*\*/g, '<b>$1</b>');
