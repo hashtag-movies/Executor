@@ -91,9 +91,8 @@ STUDIO_HTML = r"""<!doctype html>
       gap: 6px;
     }
     .repo-select-wrap select {
-      background-color: #000;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      background: transparent;
+      border: none;
       color: var(--text);
       font-size: 12px;
       font-weight: 600;
@@ -331,6 +330,10 @@ STUDIO_HTML = r"""<!doctype html>
       overflow: auto;
     }
     /* RIGHT PANEL: LIVE PREVIEW & AI ASSISTANT */
+    .studio-workspace.preview-closed .aux-panel {
+      border-left: none !important;
+      display: none !important;
+    }
     .aux-panel {
       background: var(--panel);
       border-left: 1px solid var(--border);
@@ -338,7 +341,91 @@ STUDIO_HTML = r"""<!doctype html>
       flex-direction: column;
       height: 100%;
       min-width: 0;
-      overflow: hidden;
+      overflow: visible;
+      position: relative;
+    }
+    .aux-collapse-btn {
+      position: absolute;
+      left: -15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px;
+      height: 52px;
+      background: #161b22;
+      border: 1px solid rgba(88, 166, 255, 0.4);
+      border-right: none;
+      border-radius: 8px 0 0 8px;
+      color: #8b949e;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 35;
+      padding: 0;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      user-select: none;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+    }
+    .aux-collapse-btn:hover {
+      background: #1f2937;
+      color: #58a6ff;
+      border-color: #58a6ff;
+      box-shadow: -2px 0 12px rgba(88, 166, 255, 0.35);
+      width: 17px;
+      left: -17px;
+    }
+    .aux-dock-buttons {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 40;
+    }
+    .studio-workspace.preview-closed .aux-dock-buttons {
+      display: flex;
+    }
+    .aux-dock-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(13, 17, 23, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(88, 166, 255, 0.4);
+      color: #58a6ff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(88, 166, 255, 0.15);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .aux-dock-btn:hover {
+      transform: scale(1.1);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(56, 189, 248, 0.45);
+    }
+    .aux-dock-btn.dock-ai {
+      border-color: rgba(167, 139, 250, 0.5);
+      color: #c084fc;
+    }
+    .aux-dock-btn.dock-ai:hover {
+      border-color: #c084fc;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(192, 132, 252, 0.45);
+    }
+    .aux-dock-btn.dock-preview {
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+    }
+    .aux-dock-btn.dock-preview:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(56, 189, 248, 0.45);
     }
     .aux-tabs {
       background: var(--panel2);
@@ -796,6 +883,11 @@ STUDIO_HTML = r"""<!doctype html>
 
     <!-- RIGHT: LIVE PREVIEW & AI ASSISTANT -->
     <aside id="aux-panel" class="aux-panel">
+      <!-- COLLAPSE HANDLE BUTTON (Collapses side panel) -->
+      <button id="btn-collapse-aux" class="aux-collapse-btn" title="Collapse Side Panel (Hide Preview & AI)">
+        <span>›</span>
+      </button>
+
       <div class="aux-tabs">
         <div id="tab-btn-preview" class="aux-tab active">👁️ Live Web Preview</div>
         <div id="tab-btn-ai" class="aux-tab">🤖 Hashtag AI Co-Pilot</div>
@@ -842,6 +934,26 @@ STUDIO_HTML = r"""<!doctype html>
         </div>
       </div>
     </aside>
+
+    <!-- DOCKED QUICK-ACCESS BUTTONS (Visible when aux-panel is collapsed) -->
+    <div id="aux-dock-buttons" class="aux-dock-buttons">
+      <button id="dock-btn-ai" class="aux-dock-btn dock-ai" title="Open Hashtag AI Co-Pilot">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="3"/>
+          <circle cx="12" cy="5" r="2"/>
+          <path d="M12 7v4"/>
+          <line x1="8" y1="16" x2="8.01" y2="16" stroke-width="3"/>
+          <line x1="16" y1="16" x2="16.01" y2="16" stroke-width="3"/>
+          <path d="M9 19h6"/>
+        </svg>
+      </button>
+      <button id="dock-btn-preview" class="aux-dock-btn dock-preview" title="Open Live Web Preview">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
   </main>
 
   <!-- STATUSBAR -->
@@ -1636,9 +1748,43 @@ STUDIO_HTML = r"""<!doctype html>
     $("view-ai").style.display = "flex";
   };
 
+  // Aux panel collapse & dock triggers
+  var bCollapse = $("btn-collapse-aux");
+  if (bCollapse) {
+    bCollapse.onclick = function() {
+      var ws = $("workspace");
+      if (ws) ws.classList.add("preview-closed");
+    };
+  }
+
+  var dockAi = $("dock-btn-ai");
+  if (dockAi) {
+    dockAi.onclick = function() {
+      var ws = $("workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      $("tab-btn-ai").click();
+      var aiInput = $("ai-prompt");
+      if (aiInput) setTimeout(function() { aiInput.focus(); }, 150);
+    };
+  }
+
+  var dockPrev = $("dock-btn-preview");
+  if (dockPrev) {
+    dockPrev.onclick = function() {
+      var ws = $("workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      $("tab-btn-preview").click();
+    };
+  }
+
   $("toggle-preview-btn").onclick = function() {
     var ws = $("workspace");
-    ws.classList.toggle("preview-closed");
+    if (ws.classList.contains("preview-closed")) {
+      ws.classList.remove("preview-closed");
+      $("tab-btn-preview").click();
+    } else {
+      ws.classList.add("preview-closed");
+    }
   };
   $("refresh-preview-btn").onclick = updatePreview;
 
