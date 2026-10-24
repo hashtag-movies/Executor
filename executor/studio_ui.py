@@ -547,24 +547,36 @@ STUDIO_HTML = r"""<!doctype html>
       transform: translateY(0%);
     }
 
-    /* === PROJECTOR BEAM IN PREVIEW VIEWPORT === */
+    /* === REAL-LIFE PROJECTOR OPTICAL SYSTEM & VOLUMETRIC RAYS === */
     .preview-projector-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 2px 8px;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(56, 189, 248, 0.4);
+      justify-content: center;
+      padding: 3px 6px;
+      background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.6);
       border-radius: 20px;
-      margin-right: 2px;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      margin-right: 4px;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4), inset 0 0 8px rgba(56, 189, 248, 0.25);
+      position: relative;
     }
-    .projector-status-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: #38bdf8;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
+    .preview-projector-badge::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 3px;
+      background: #38bdf8;
+      border-radius: 50%;
+      filter: blur(2px);
+      box-shadow: 0 0 6px #38bdf8;
+      animation: emitterPulse 2s ease-in-out infinite;
+    }
+    @keyframes emitterPulse {
+      0%, 100% { opacity: 0.5; transform: translateX(-50%) scaleX(0.8); }
+      50% { opacity: 1; transform: translateX(-50%) scaleX(1.3); }
     }
     .preview-viewport-wrap {
       position: relative;
@@ -573,44 +585,106 @@ STUDIO_HTML = r"""<!doctype html>
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 10;
-      opacity: 0.18;
-      background: radial-gradient(ellipse at 50% -10%, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0.08) 40%, rgba(56, 189, 248, 0.01) 75%, transparent 100%);
-      transition: opacity 0.45s ease;
+      z-index: 15;
       overflow: hidden;
-    }
-    .preview-projection-beam::before {
-      content: '';
-      position: absolute;
-      top: -20px;
-      left: 35%;
-      right: 35%;
-      height: 40px;
-      border-radius: 50%;
-      background: #38bdf8;
-      filter: blur(14px);
-      opacity: 0.5;
-    }
-    .preview-projection-beam::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        rgba(56, 189, 248, 0.035) 0px,
-        rgba(56, 189, 248, 0.035) 2px,
-        transparent 2px,
-        transparent 5px
-      );
-      animation: holoScanlines 10s linear infinite;
-    }
-    @keyframes holoScanlines {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(120px); }
+      opacity: 0.55;
+      transition: opacity 0.3s ease;
     }
     .preview-projection-beam.burst {
-      opacity: 0.75;
-      transition: opacity 0.06s ease;
+      opacity: 0.95;
+      animation: projectorFlicker 0.45s ease-out;
+    }
+    @keyframes projectorFlicker {
+      0% { opacity: 0.6; }
+      15% { opacity: 1; }
+      25% { opacity: 0.75; }
+      40% { opacity: 1; }
+      70% { opacity: 0.85; }
+      100% { opacity: 0.55; }
+    }
+    .projector-rays-svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.35));
+    }
+    .god-ray {
+      opacity: 0.7;
+      transform-origin: 500px 0px;
+    }
+    .ray-left-far { animation: raySway1 6s ease-in-out infinite alternate; }
+    .ray-left { animation: raySway2 4.5s ease-in-out infinite alternate; }
+    .ray-mid { animation: rayPulse 3s ease-in-out infinite alternate; }
+    .ray-right { animation: raySway1 5s ease-in-out infinite alternate-reverse; }
+    .ray-right-far { animation: raySway2 6.5s ease-in-out infinite alternate-reverse; }
+
+    @keyframes raySway1 {
+      0% { opacity: 0.4; transform: rotate(-2deg); }
+      100% { opacity: 0.85; transform: rotate(2deg); }
+    }
+    @keyframes raySway2 {
+      0% { opacity: 0.5; transform: rotate(1.5deg); }
+      100% { opacity: 0.9; transform: rotate(-1.5deg); }
+    }
+    @keyframes rayPulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 0.95; }
+      100% { opacity: 0.6; }
+    }
+    .lens-flare {
+      animation: flareShine 3s ease-in-out infinite alternate;
+    }
+    @keyframes flareShine {
+      0% { rx: 70px; ry: 18px; opacity: 0.7; }
+      100% { rx: 110px; ry: 30px; opacity: 1; }
+    }
+
+    /* Dust Motes / Floating Light Particles */
+    .projector-dust {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .dust-mote {
+      position: absolute;
+      border-radius: 50%;
+      background: #e0f2fe;
+      box-shadow: 0 0 4px #38bdf8, 0 0 8px rgba(56, 189, 248, 0.8);
+      pointer-events: none;
+    }
+    .mote-1 { width: 3px; height: 3px; left: 48%; top: 10%; animation: drift1 9s ease-in-out infinite; }
+    .mote-2 { width: 2px; height: 2px; left: 52%; top: 20%; animation: drift2 11s ease-in-out infinite; }
+    .mote-3 { width: 2.5px; height: 2.5px; left: 45%; top: 35%; animation: drift3 8s ease-in-out infinite; }
+    .mote-4 { width: 3px; height: 3px; left: 55%; top: 50%; animation: drift1 12s ease-in-out infinite reverse; }
+    .mote-5 { width: 2px; height: 2px; left: 40%; top: 65%; animation: drift2 10s ease-in-out infinite; }
+    .mote-6 { width: 2.5px; height: 2.5px; left: 60%; top: 40%; animation: drift3 13s ease-in-out infinite; }
+
+    @keyframes drift1 {
+      0% { transform: translate(0, 0); opacity: 0.2; }
+      50% { transform: translate(25px, 40px); opacity: 0.85; }
+      100% { transform: translate(-15px, 80px); opacity: 0.1; }
+    }
+    @keyframes drift2 {
+      0% { transform: translate(0, 0); opacity: 0.3; }
+      50% { transform: translate(-30px, 35px); opacity: 0.9; }
+      100% { transform: translate(20px, 75px); opacity: 0.2; }
+    }
+    @keyframes drift3 {
+      0% { transform: translate(0, 0); opacity: 0.15; }
+      50% { transform: translate(15px, -25px); opacity: 0.8; }
+      100% { transform: translate(-25px, -60px); opacity: 0.15; }
+    }
+
+    /* Atmospheric Light Haze */
+    .projector-haze {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0.05) 35%, transparent 70%);
+      mix-blend-mode: screen;
+      opacity: 0.8;
+      pointer-events: none;
     }
     .aux-tabs {
       background: var(--panel2);
@@ -1102,7 +1176,7 @@ STUDIO_HTML = r"""<!doctype html>
             <button id="dev-rotate" class="dev-btn" title="Rotate Screen Orientation">🔄 <span class="dev-btn-label">Rotate</span></button>
           </div>
           <div class="preview-toolbar-actions">
-            <div class="preview-projector-badge" id="preview-projector-badge" title="Holographic Preview Projector Eye (Active Eye Beam)">
+            <div class="preview-projector-badge" id="preview-projector-badge" title="Live Preview Optical Projector Eye">
               <div class="cyber-eye projector-size" id="eye-projector">
                 <div class="eye-socket">
                   <div class="eye-lid top-lid"></div>
@@ -1116,7 +1190,6 @@ STUDIO_HTML = r"""<!doctype html>
                   <div class="eye-lid bottom-lid"></div>
                 </div>
               </div>
-              <span class="projector-status-label">Projecting</span>
             </div>
             <span id="preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
             <button id="preview-fullscreen-btn" class="btn btn-primary" title="Full Screen Preview (F)" style="padding:2px 8px;font-size:11px;font-weight:600">⛶ Fullscreen</button>
@@ -1125,7 +1198,58 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
         </div>
         <div class="preview-viewport-wrap">
-          <div id="preview-projection-beam" class="preview-projection-beam"></div>
+          <div id="preview-projection-beam" class="preview-projection-beam">
+            <!-- Volumetric Light Rays (God Rays) -->
+            <svg class="projector-rays-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="rayGrad1" x1="50%" y1="0%" x2="10%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.25"/>
+                  <stop offset="50%" stop-color="#0284c7" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="rayGrad2" x1="50%" y1="0%" x2="90%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.25"/>
+                  <stop offset="50%" stop-color="#0284c7" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="rayGradCenter" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.95"/>
+                  <stop offset="10%" stop-color="#38bdf8" stop-opacity="0.38"/>
+                  <stop offset="45%" stop-color="#0284c7" stop-opacity="0.12"/>
+                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
+                </linearGradient>
+                <radialGradient id="lensFlareGlow" cx="50%" cy="0%" r="50%">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                  <stop offset="15%" stop-color="#38bdf8" stop-opacity="0.65"/>
+                  <stop offset="45%" stop-color="#0284c7" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <!-- Main Conical Light Frustum -->
+              <polygon points="500,0 0,600 1000,600" fill="url(#rayGradCenter)" class="main-frustum"/>
+              <!-- Individual Volumetric Shafts / Light Beams -->
+              <polygon points="500,0 80,600 180,600" fill="url(#rayGrad1)" class="god-ray ray-left-far"/>
+              <polygon points="500,0 220,600 340,600" fill="url(#rayGrad1)" class="god-ray ray-left"/>
+              <polygon points="500,0 440,600 560,600" fill="url(#rayGradCenter)" class="god-ray ray-mid"/>
+              <polygon points="500,0 660,600 780,600" fill="url(#rayGrad2)" class="god-ray ray-right"/>
+              <polygon points="500,0 820,600 920,600" fill="url(#rayGrad2)" class="god-ray ray-right-far"/>
+              <!-- Lens Flare Emitter at Top -->
+              <ellipse cx="500" cy="0" rx="90" ry="25" fill="url(#lensFlareGlow)" class="lens-flare"/>
+            </svg>
+            <!-- Atmospheric Dust Motes & Photons -->
+            <div class="projector-dust">
+              <div class="dust-mote mote-1"></div>
+              <div class="dust-mote mote-2"></div>
+              <div class="dust-mote mote-3"></div>
+              <div class="dust-mote mote-4"></div>
+              <div class="dust-mote mote-5"></div>
+              <div class="dust-mote mote-6"></div>
+            </div>
+            <!-- Atmospheric Projector Haze -->
+            <div class="projector-haze"></div>
+          </div>
           <div id="preview-frame-holder" class="preview-frame-holder">
             <iframe id="preview-frame" class="preview-frame" 
               sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation"
