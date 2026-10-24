@@ -1494,42 +1494,40 @@ STUDIO_HTML = r"""<!doctype html>
     }
   }
 
-  // 1. Load User's GitHub Repositories (Strict per-user isolation)
+  // 1. Load User's GitHub Repositories (Auto-connect to server token or localStorage token)
   function loadRepositories(retryCount) {
     retryCount = retryCount || 0;
-    var userToken = localStorage.getItem("hashtag_studio_gh_token");
     var select = $("repo-select");
 
-    if (!userToken || !userToken.trim()) {
+    $("sync-status").textContent = "Fetching repositories...";
+    api("/v1/github/project/repos").then(function(res) {
+      var repos = res && (res.repositories || res.repos || (Array.isArray(res) ? res : []));
+      var isConnected = res && (res.connected || (repos && repos.length > 0) || (res.user && (res.user.login || res.user.username)));
+
+      if (res && res.user && (res.user.login || res.user.username)) {
+        updateGitHubNavBadge(res.user);
+      }
+
+      if (isConnected && repos && repos.length) {
+        renderRepoList(repos, res.current);
+        loadProjectTree();
+        $("sync-status").textContent = "Ready (" + repos.length + " repos)";
+      } else {
+        if (select) select.innerHTML = '<option value="">🐙 Connect GitHub Account...</option>';
+        state.repo = "";
+        state.tree = [];
+        updateGitHubNavBadge(null);
+        renderFileTree([]);
+        $("sync-status").textContent = "No GitHub Connected";
+      }
+    }).catch(function(err) {
+      console.warn("loadRepositories error:", err);
       if (select) select.innerHTML = '<option value="">🐙 Connect GitHub Account...</option>';
       state.repo = "";
       state.tree = [];
       updateGitHubNavBadge(null);
       renderFileTree([]);
-      $("sync-status").textContent = "No GitHub Connected";
-      return;
-    }
-
-    $("sync-status").textContent = "Fetching repositories...";
-    api("/v1/github/project/repos").then(function(res) {
-      var repos = res && (res.repositories || res.repos || (Array.isArray(res) ? res : []));
-      if (res && res.user && (res.user.login || res.user.username)) {
-        updateGitHubNavBadge(res.user);
-      }
-      if (repos && repos.length) {
-        renderRepoList(repos, res.current);
-        loadProjectTree();
-      } else {
-        if (select) select.innerHTML = '<option value="">(No repositories found)</option>';
-        state.repo = "";
-        renderFileTree([]);
-        $("sync-status").textContent = "Connected (0 repos)";
-      }
-    }).catch(function(err) {
-      console.warn("loadRepositories error:", err);
-      $("sync-status").textContent = "GitHub Auth Error";
-      if (select) select.innerHTML = '<option value="">GitHub Auth Error - Reconnect</option>';
-      renderFileTree([]);
+      $("sync-status").textContent = "Connect GitHub";
     });
   }
 
@@ -2803,8 +2801,6 @@ STUDIO_HTML = r"""<!doctype html>
       }
     }, 3000);
   })();
-
-})();
 
 })();
 </script>
