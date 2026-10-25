@@ -217,15 +217,21 @@ async def connector_ws(websocket: WebSocket):
 
 @app.get("/v1/connector/status")
 def connector_status():
+    is_conn = pc_connector.is_connected() if callable(getattr(pc_connector, "is_connected", None)) else bool(getattr(pc_connector, "is_connected", False))
+    cnt = pc_connector.connected_count() if callable(getattr(pc_connector, "connected_count", None)) else getattr(pc_connector, "connected_count", 0)
+    tot = pc_connector.total_count() if callable(getattr(pc_connector, "total_count", None)) else getattr(pc_connector, "total_count", 0)
+    info = pc_connector.system_info() if callable(getattr(pc_connector, "system_info", None)) else getattr(pc_connector, "system_info", {})
+    queued = pc_connector.get_queued_actions_count() if callable(getattr(pc_connector, "get_queued_actions_count", None)) else 0
+    conns = [c.to_dict() for c in pc_connector.list_connections()] if callable(getattr(pc_connector, "list_connections", None)) else []
     return {
         "ok": True,
-        "connected": pc_connector.is_connected,
-        "connected_count": pc_connector.connected_count,
-        "total_count": pc_connector.total_count,
-        "info": pc_connector.system_info,
-        "primary_connection_id": pc_connector._primary_connection_id,
-        "queued_actions": pc_connector.get_queued_actions_count(),
-        "connections": [c.to_dict() for c in pc_connector.list_connections()],
+        "connected": is_conn,
+        "connected_count": cnt,
+        "total_count": tot,
+        "info": info,
+        "primary_connection_id": getattr(pc_connector, "_primary_connection_id", None),
+        "queued_actions": queued,
+        "connections": conns,
     }
 
 @app.post("/v1/connector/action")
