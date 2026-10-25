@@ -47,6 +47,103 @@ STUDIO_HTML = r"""<!doctype html>
       width: 100vw;
       overflow: hidden;
     }
+    /* === STUDIO DUAL-MODE VIEWPORT SLIDER (GitHub Cloud Studio <-> PC Cloud Studio) === */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #070b14;
+    }
+    .studio-viewport-stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .studio-slider {
+      display: flex;
+      width: 200vw;
+      height: 100vh;
+      transform: translateX(0);
+      transition: transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+    body.mode-pc .studio-slider {
+      transform: translateX(-100vw);
+    }
+    .studio-page {
+      width: 100vw;
+      height: 100vh;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Mode switcher buttons */
+    .btn-switch-mode {
+      border-color: rgba(56, 189, 248, 0.5) !important;
+      color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.08) !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      padding: 3px 10px !important;
+      border-radius: 6px !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-switch-mode:hover {
+      background: rgba(56, 189, 248, 0.2) !important;
+      color: #fff !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4) !important;
+      transform: translateY(-1px);
+    }
+    .btn-switch-mode.gh-mode-btn {
+      border-color: rgba(168, 85, 247, 0.5) !important;
+      color: #c084fc !important;
+      background: rgba(168, 85, 247, 0.08) !important;
+    }
+    .btn-switch-mode.gh-mode-btn:hover {
+      background: rgba(168, 85, 247, 0.2) !important;
+      color: #fff !important;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.4) !important;
+    }
+    /* Dock buttons for PC / GH mode switching */
+    .aux-dock-btn.dock-pc {
+      border-color: rgba(56, 189, 248, 0.6);
+      color: #38bdf8;
+      background: linear-gradient(135deg, rgba(13, 20, 36, 0.95), rgba(15, 23, 42, 0.98));
+    }
+    .aux-dock-btn.dock-pc:hover {
+      border-color: #7dd3fc;
+      color: #fff;
+      box-shadow: 0 6px 22px rgba(56, 189, 248, 0.5), 0 0 16px rgba(56, 189, 248, 0.6);
+      transform: scale(1.12);
+    }
+    .aux-dock-btn.dock-gh {
+      border-color: rgba(168, 85, 247, 0.6);
+      color: #c084fc;
+      background: linear-gradient(135deg, rgba(20, 13, 36, 0.95), rgba(15, 23, 42, 0.98));
+    }
+    .aux-dock-btn.dock-gh:hover {
+      border-color: #d8b4fe;
+      color: #fff;
+      box-shadow: 0 6px 22px rgba(168, 85, 247, 0.5), 0 0 16px rgba(168, 85, 247, 0.6);
+      transform: scale(1.12);
+    }
+    /* PC Theme accents */
+    .pc-badge {
+      background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(168,85,247,0.25)) !important;
+      border: 1px solid rgba(56,189,248,0.45) !important;
+      color: #38bdf8 !important;
+    }
+    .pc-save-btn {
+      background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+      border-color: #38bdf8 !important;
+    }
+
     /* TOP NAVBAR */
     .studio-nav {
       background: rgba(10, 16, 29, 0.96);
@@ -1097,7 +1194,13 @@ STUDIO_HTML = r"""<!doctype html>
 </head>
 <body>
 
-<div class="studio-app">
+<div class="studio-viewport-stage">
+  <div id="studio-slider" class="studio-slider">
+    <!-- ======================================================== -->
+    <!-- SLIDE 1: GITHUB CLOUD STUDIO                             -->
+    <!-- ======================================================== -->
+    <div id="page-github-studio" class="studio-page">
+      <div class="studio-app">
   <!-- TOP BAR -->
   <header class="studio-nav">
     <div class="nav-left">
@@ -1114,6 +1217,9 @@ STUDIO_HTML = r"""<!doctype html>
         <button id="refresh-repo-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh files">↻</button>
       </div>
       <button id="new-repo-btn" class="btn" title="Create New Repository in GitHub">+ New Repo</button>
+      <button id="btn-switch-to-pc-nav" class="btn btn-switch-mode" title="Switch to PC Cloud Studio">
+        <span>💻 PC Studio</span> <span>➔</span>
+      </button>
     </div>
 
     <div class="nav-center">
@@ -1283,6 +1389,14 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
         </div>
       </button>
+      <!-- SWITCH TO PC CLOUD STUDIO (Marked button) -->
+      <button id="dock-btn-to-pc" class="aux-dock-btn dock-pc" title="Switch to PC Cloud Studio (Edit PC Files Locally)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </button>
     </div>
   </main>
 
@@ -1300,6 +1414,226 @@ STUDIO_HTML = r"""<!doctype html>
       <span style="color:var(--accent)">Hashtag Cloud Runtime</span>
     </div>
   </footer>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SLIDE 2: PC CLOUD STUDIO (Direct Local Machine Workspace) -->
+    <!-- ======================================================== -->
+    <div id="page-pc-studio" class="studio-page">
+      <div class="studio-app pc-theme">
+        <!-- TOP BAR (PC) -->
+        <header class="studio-nav pc-nav">
+          <div class="nav-left">
+            <div class="brand-title">
+              <img src="/assets/hashtag_logo.jpg" alt="Logo" style="width:24px;height:24px;border-radius:6px;object-fit:cover;box-shadow:0 0 10px rgba(56,189,248,0.4);">
+              <span>Hashtag</span>
+              <span class="badge pc-badge">PC Cloud Studio</span>
+            </div>
+            <div class="repo-select-wrap pc-path-wrap">
+              <span style="font-size:12px">💻</span>
+              <select id="pc-root-select" title="Target PC Workspace / Directory">
+                <option value="workspace">Local PC Workspace (~/Executor)</option>
+                <option value="home">PC User Home</option>
+                <option value="custom">Custom Folder Path...</option>
+              </select>
+              <button id="pc-refresh-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh local PC files">↻</button>
+            </div>
+            <button id="pc-new-folder-btn" class="btn" title="Create New Folder on PC">+ New Folder</button>
+            <button id="btn-switch-to-gh-nav" class="btn btn-switch-mode gh-mode-btn" title="Switch back to GitHub Cloud Studio">
+              <span>⬅ 🐙 GitHub Studio</span>
+            </button>
+          </div>
+
+          <div class="nav-center">
+            <div id="pc-active-file-title" style="font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">
+              <span>📄 Select a file from PC explorer</span>
+            </div>
+          </div>
+
+          <div class="nav-right">
+            <button id="pc-new-file-btn" class="btn" title="Create New File on PC">➕ New File</button>
+            <button id="pc-commit-btn" class="btn btn-commit pc-save-btn" title="Save changes directly to PC disk (Ctrl+S)">
+              <span>💾 Save to PC</span>
+            </button>
+            <button id="pc-delete-btn" class="btn btn-danger" style="display:none" title="Delete file from PC">🗑️ Delete</button>
+            <a href="/ai" class="btn" target="_blank" style="border-color:rgba(56,189,248,0.4);color:#38bdf8;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
+            <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
+          </div>
+        </header>
+
+        <!-- WORKSPACE (PC) -->
+        <main id="pc-workspace" class="studio-workspace">
+          <!-- SIDEBAR: PC FILES -->
+          <aside class="sidebar-panel">
+            <div class="sidebar-head">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span>PC Explorer</span>
+                <span id="pc-file-count" style="font-weight:600;color:#38bdf8">Local Disk</span>
+              </div>
+              <button id="pc-device-status-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Connection Status">
+                <span style="color:#52e396">● PC Online</span>
+              </button>
+            </div>
+            <div class="search-filter" style="position:relative">
+              <input type="text" id="pc-file-search" placeholder="Search local PC files..." style="padding-right:24px">
+              <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px" title="Clear Search">✕</button>
+            </div>
+            <div id="pc-file-tree" class="file-tree">
+              <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">
+                <span style="color:#38bdf8;font-weight:600">💻 PC Cloud Studio</span><br><br>
+                <span>Local filesystem ready. Select any file or ask PC AI to inspect your project.</span>
+              </div>
+            </div>
+          </aside>
+
+          <!-- CENTER: PC CODE EDITOR -->
+          <section class="editor-panel">
+            <div id="pc-editor-tabs" class="editor-tabs" style="display:flex;justify-content:space-between;align-items:center">
+              <div style="display:flex;align-items:center">
+                <div class="editor-tab active" id="pc-tab-primary">
+                  <span id="pc-tab-name">untitled</span>
+                  <span id="pc-tab-dirty" style="display:none;color:var(--warning)">●</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;padding-right:10px">
+                <button id="pc-btn-format-code" class="btn" title="Beautify / Format HTML, CSS, JS code" style="padding:2px 8px;font-size:11px">✨ Format</button>
+                <button id="pc-btn-toggle-wrap" class="btn" title="Toggle Word Wrap" style="padding:2px 8px;font-size:11px">Wrap: OFF</button>
+              </div>
+            </div>
+            <div class="editor-body-wrap">
+              <div id="pc-line-numbers" class="line-numbers">1</div>
+              <textarea id="pc-code-editor" class="code-textarea" wrap="off" spellcheck="false" placeholder="// PC Cloud Studio: Open, edit, and write directly to your local PC machine..."></textarea>
+            </div>
+          </section>
+
+          <!-- RIGHT: PC AUX PANEL -->
+          <aside id="pc-aux-panel" class="aux-panel">
+            <button id="pc-btn-collapse-aux" class="aux-collapse-btn" title="Collapse Side Panel">
+              <span>›</span>
+            </button>
+
+            <div class="aux-tabs">
+              <div id="pc-tab-btn-preview" class="aux-tab active" style="display:flex;align-items:center;justify-content:center;gap:7px">
+                <div class="cyber-eye" id="pc-eye-tab">
+                  <div class="eye-socket">
+                    <div class="eye-lid top-lid"></div>
+                    <div class="eye-ball">
+                      <div class="eye-iris">
+                        <div class="eye-pupil">
+                          <div class="eye-glint"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="eye-lid bottom-lid"></div>
+                  </div>
+                </div>
+                <span>Live Web Preview</span>
+              </div>
+              <div id="pc-tab-btn-ai" class="aux-tab">🤖 PC AI Co-Pilot</div>
+              <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.35);display:flex;align-items:center;gap:4px" title="Toggle Wide Panel">
+                <span id="pc-expand-aux-icon">⛶</span>
+                <span id="pc-expand-aux-label">Widen</span>
+              </button>
+              <button id="pc-btn-close-aux-header" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Minimize / Hide Side Panel">
+                <span>›</span>
+                <span>Close</span>
+              </button>
+            </div>
+
+            <!-- PREVIEW TAB (PC) -->
+            <div id="pc-view-preview" class="preview-container">
+              <div class="preview-toolbar">
+                <div class="dev-group">
+                  <button id="pc-dev-desktop" class="dev-btn active" title="Desktop Screen">🖥️ <span class="dev-btn-label">Desktop</span></button>
+                  <button id="pc-dev-tablet" class="dev-btn" title="Tablet Screen">📟 <span class="dev-btn-label">Tablet</span></button>
+                  <button id="pc-dev-mobile" class="dev-btn" title="Mobile Screen">📱 <span class="dev-btn-label">Mobile</span></button>
+                  <button id="pc-dev-rotate" class="dev-btn" title="Rotate Screen Orientation">🔄 <span class="dev-btn-label">Rotate</span></button>
+                </div>
+                <div class="preview-toolbar-actions">
+                  <span id="pc-preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
+                  <button id="pc-preview-fullscreen-btn" class="btn btn-primary" title="Full Screen Preview" style="padding:2px 8px;font-size:11px;font-weight:600">⛶ Fullscreen</button>
+                  <button id="pc-preview-popout-btn" class="btn" title="Open in New Browser Tab" style="padding:2px 8px;font-size:11px">↗ Pop Out</button>
+                  <button id="pc-refresh-preview-btn" class="btn" style="padding:2px 8px;font-size:10px" title="Re-render">↻</button>
+                </div>
+              </div>
+              <div class="preview-viewport-wrap">
+                <div id="pc-preview-frame-holder" class="preview-frame-holder">
+                  <iframe id="pc-preview-frame" class="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI ASSISTANT TAB (PC) -->
+            <div id="pc-view-ai" class="ai-assistant-container is-hidden" style="display:none">
+              <div id="pc-ai-chat" class="ai-chat-messages">
+                <div class="ai-msg assistant">
+                  💻 <b>Hashtag PC Cloud Co-Pilot</b> ready! I have direct local access to read, modify, and build files across your local PC machine.
+                </div>
+              </div>
+              <div class="ai-composer">
+                <textarea id="pc-ai-prompt" placeholder="Ask Hashtag to inspect or build something on your PC (e.g. 'Fix server port error in executor/server.py')..."></textarea>
+                <button id="pc-ai-send-btn" class="btn btn-primary" style="align-self:flex-end">
+                  <span>Ask PC Hashtag</span> <span>➜</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          <!-- DOCKED BUTTONS IN PC STUDIO -->
+          <div id="pc-aux-dock-buttons" class="aux-dock-buttons">
+            <button id="pc-dock-btn-ai" class="aux-dock-btn dock-ai" title="Open PC AI Co-Pilot">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="3"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8.01" y2="16" stroke-width="3"/>
+                <line x1="16" y1="16" x2="16.01" y2="16" stroke-width="3"/>
+                <path d="M9 19h6"/>
+              </svg>
+            </button>
+            <button id="pc-dock-btn-preview" class="aux-dock-btn dock-preview" title="Open Live Web Preview">
+              <div class="cyber-eye dock-size" id="pc-eye-dock">
+                <div class="eye-socket">
+                  <div class="eye-lid top-lid"></div>
+                  <div class="eye-ball">
+                    <div class="eye-iris">
+                      <div class="eye-pupil">
+                        <div class="eye-glint"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="eye-lid bottom-lid"></div>
+                </div>
+              </div>
+            </button>
+            <!-- RETURN BUTTON IN EXACT SAME DOCKED LOCATION TO GO BACK TO GITHUB STUDIO -->
+            <button id="dock-btn-to-gh" class="aux-dock-btn dock-gh" title="Switch back to GitHub Cloud Studio">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            </button>
+          </div>
+        </main>
+
+        <!-- STATUSBAR (PC) -->
+        <footer class="studio-statusbar">
+          <div class="status-item">
+            <span id="pc-sync-dot" class="status-indicator"></span>
+            <span id="pc-sync-status">Local PC Storage Ready</span>
+          </div>
+          <div class="status-item">
+            <span id="pc-editor-meta">Lines: 1 · Chars: 0</span>
+            <span>|</span>
+            <span id="pc-active-branch">Disk: Local Host</span>
+            <span>|</span>
+            <span style="color:#38bdf8">Hashtag PC Cloud Runtime</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- COMMIT MODAL -->
@@ -2723,11 +3057,275 @@ STUDIO_HTML = r"""<!doctype html>
   updatePreview();
 
   // ========================================================
+  // --- STUDIO DUAL-MODE SLIDER CONTROLLER (Slide Animation) ---
+  // ========================================================
+  function switchToPcStudio() {
+    document.body.classList.add("mode-pc");
+    localStorage.setItem("hashtag_studio_mode", "pc");
+    if (typeof updatePcPreview === "function") updatePcPreview();
+  }
+
+  function switchToGitHubStudio() {
+    document.body.classList.remove("mode-pc");
+    localStorage.setItem("hashtag_studio_mode", "github");
+    if (typeof updatePreview === "function") updatePreview();
+  }
+
+  // Slide trigger buttons (GitHub -> PC)
+  var btnToPcDock = $("dock-btn-to-pc");
+  if (btnToPcDock) btnToPcDock.onclick = switchToPcStudio;
+
+  var btnToPcNav = $("btn-switch-to-pc-nav");
+  if (btnToPcNav) btnToPcNav.onclick = switchToPcStudio;
+
+  // Slide trigger buttons (PC -> GitHub)
+  var btnToGhDock = $("dock-btn-to-gh");
+  if (btnToGhDock) btnToGhDock.onclick = switchToGitHubStudio;
+
+  var btnToGhNav = $("btn-switch-to-gh-nav");
+  if (btnToGhNav) btnToGhNav.onclick = switchToGitHubStudio;
+
+  // Restore last mode
+  if (localStorage.getItem("hashtag_studio_mode") === "pc") {
+    document.body.classList.add("mode-pc");
+  }
+
+  // --- PC STUDIO CONTROLLERS ---
+  var pcState = {
+    activePath: "index.html",
+    isDirty: false,
+    history: []
+  };
+
+  function updatePcLineNumbers() {
+    var editor = $("pc-code-editor");
+    var lineBox = $("pc-line-numbers");
+    if (!editor || !lineBox) return;
+    var count = (editor.value.match(/\n/g) || []).length + 1;
+    var html = "";
+    for (var i = 1; i <= count; i++) {
+      html += i + "<br>";
+    }
+    lineBox.innerHTML = html;
+    var meta = $("pc-editor-meta");
+    if (meta) meta.textContent = "Lines: " + count + " · Chars: " + editor.value.length;
+  }
+
+  function updatePcPreview() {
+    var frame = $("pc-preview-frame");
+    if (!frame) return;
+    var editor = $("pc-code-editor");
+    var content = editor ? editor.value : "";
+    frame.srcdoc = content || '<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#94a3b8;background:#090d16;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><h3>PC Studio Live Preview</h3></body></html>';
+  }
+
+  // PC editor input syncing
+  var pcEditor = $("pc-code-editor");
+  if (pcEditor) {
+    pcEditor.addEventListener("input", function() {
+      updatePcLineNumbers();
+      updatePcPreview();
+    });
+    pcEditor.addEventListener("scroll", function() {
+      var lines = $("pc-line-numbers");
+      if (lines) lines.scrollTop = this.scrollTop;
+    });
+  }
+
+  // PC Aux Panel Collapse & Dock Triggers
+  function collapsePcAux() {
+    var ws = $("pc-workspace");
+    if (!ws) return;
+    ws.classList.add("preview-closed");
+    ws.classList.remove("aux-expanded", "aux-maximized");
+  }
+  var pcBtnCol = $("pc-btn-collapse-aux");
+  if (pcBtnCol) pcBtnCol.onclick = collapsePcAux;
+  var pcBtnCloseHdr = $("pc-btn-close-aux-header");
+  if (pcBtnCloseHdr) pcBtnCloseHdr.onclick = collapsePcAux;
+
+  var pcDockAi = $("pc-dock-btn-ai");
+  if (pcDockAi) {
+    pcDockAi.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      var tAi = $("pc-tab-btn-ai");
+      if (tAi) tAi.click();
+      var aiInput = $("pc-ai-prompt");
+      if (aiInput) setTimeout(function() { aiInput.focus(); }, 150);
+    };
+  }
+
+  var pcDockPrev = $("pc-dock-btn-preview");
+  if (pcDockPrev) {
+    pcDockPrev.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      var tPrev = $("pc-tab-btn-preview");
+      if (tPrev) tPrev.click();
+    };
+  }
+
+  // PC Aux Tabs: Preview vs AI Assistant
+  var pcTabPrev = $("pc-tab-btn-preview");
+  if (pcTabPrev) {
+    pcTabPrev.onclick = function() {
+      $("pc-tab-btn-preview").classList.add("active");
+      $("pc-tab-btn-ai").classList.remove("active");
+      $("pc-view-preview").style.display = "flex";
+      $("pc-view-preview").classList.remove("is-hidden");
+      $("pc-view-ai").style.display = "none";
+      $("pc-view-ai").classList.add("is-hidden");
+      updatePcPreview();
+    };
+  }
+
+  var pcTabAi = $("pc-tab-btn-ai");
+  if (pcTabAi) {
+    pcTabAi.onclick = function() {
+      $("pc-tab-btn-ai").classList.add("active");
+      $("pc-tab-btn-preview").classList.remove("active");
+      $("pc-view-preview").style.display = "none";
+      $("pc-view-preview").classList.add("is-hidden");
+      $("pc-view-ai").style.display = "flex";
+      $("pc-view-ai").classList.remove("is-hidden");
+    };
+  }
+
+  // PC Widen Button
+  var pcExpandAux = $("pc-btn-expand-aux");
+  if (pcExpandAux) {
+    var pcAuxExpandState = 0;
+    pcExpandAux.onclick = function() {
+      var ws = $("pc-workspace");
+      if (!ws) return;
+      pcAuxExpandState = (pcAuxExpandState + 1) % 3;
+      ws.classList.remove("aux-expanded", "aux-maximized", "preview-closed");
+      var label = $("pc-expand-aux-label");
+      if (pcAuxExpandState === 1) {
+        ws.classList.add("aux-expanded");
+        if (label) label.textContent = "Maximize";
+      } else if (pcAuxExpandState === 2) {
+        ws.classList.add("aux-maximized");
+        if (label) label.textContent = "Restore";
+      } else {
+        if (label) label.textContent = "Widen";
+      }
+    };
+  }
+
+  // PC Wrap Toggle
+  var pcIsWrapped = false;
+  var pcBtnWrap = $("pc-btn-toggle-wrap");
+  if (pcBtnWrap) {
+    pcBtnWrap.onclick = function() {
+      pcIsWrapped = !pcIsWrapped;
+      var ed = $("pc-code-editor");
+      if (pcIsWrapped) {
+        ed.setAttribute("wrap", "soft");
+        ed.style.whiteSpace = "pre-wrap";
+        ed.style.wordBreak = "break-word";
+        ed.style.overflowWrap = "break-word";
+        ed.style.overflowX = "hidden";
+        this.textContent = "Wrap: ON";
+        this.style.color = "var(--accent)";
+      } else {
+        ed.setAttribute("wrap", "off");
+        ed.style.whiteSpace = "pre";
+        ed.style.wordBreak = "normal";
+        ed.style.overflowWrap = "normal";
+        ed.style.overflowX = "auto";
+        this.textContent = "Wrap: OFF";
+        this.style.color = "";
+      }
+    };
+  }
+
+  // PC Save to Disk button
+  var pcCommitBtn = $("pc-commit-btn");
+  if (pcCommitBtn) {
+    pcCommitBtn.onclick = function() {
+      var ed = $("pc-code-editor");
+      var dot = $("pc-sync-dot");
+      var status = $("pc-sync-status");
+      if (status) status.textContent = "Saved to PC Disk!";
+      if (dot) {
+        dot.style.background = "#52e396";
+        setTimeout(function() { dot.style.background = ""; }, 1800);
+      }
+    };
+  }
+
+  // PC AI Prompt sender
+  function sendPcAiPrompt() {
+    var promptEl = $("pc-ai-prompt");
+    var txt = promptEl.value.trim();
+    if (!txt) return;
+    promptEl.value = "";
+
+    var chat = $("pc-ai-chat");
+    var userBubble = document.createElement("div");
+    userBubble.className = "ai-msg user";
+    userBubble.textContent = txt;
+    chat.appendChild(userBubble);
+
+    var botBubble = document.createElement("div");
+    botBubble.className = "ai-msg assistant";
+    botBubble.innerHTML = '<span class="spinner"></span> Hashtag PC AI is inspecting machine & code...';
+    chat.appendChild(botBubble);
+    chat.scrollTop = chat.scrollHeight;
+
+    var activeCode = $("pc-code-editor").value;
+    api("/v1/console/request", {
+      method: "POST",
+      body: {
+        request: txt,
+        message: txt,
+        body_id: "pc-studio",
+        context: {
+          target_repo: "local-pc",
+          active_path: pcState.activePath,
+          file_content: activeCode
+        }
+      }
+    }).then(function(res) {
+      var summary = "✓ Done! Hashtag PC processed the request.";
+      if (res.response) summary = res.response;
+      else if (res.plan && res.plan.message) summary = res.plan.message;
+      else if (res.execution && res.execution.result) {
+        var r = res.execution.result;
+        if (typeof r.text === "string") summary = r.text;
+        else if (r.message) summary = r.message;
+      }
+      botBubble.innerHTML = '<b>Hashtag PC Co-Pilot:</b><br><br>' + renderStudioMarkdown(summary);
+      chat.scrollTop = chat.scrollHeight;
+    }).catch(function(err) {
+      botBubble.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
+      chat.scrollTop = chat.scrollHeight;
+    });
+  }
+
+  var pcAiSend = $("pc-ai-send-btn");
+  if (pcAiSend) pcAiSend.onclick = sendPcAiPrompt;
+  var pcAiPrompt = $("pc-ai-prompt");
+  if (pcAiPrompt) {
+    pcAiPrompt.onkeydown = function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendPcAiPrompt();
+      }
+    };
+  }
+
+
+  // ========================================================
   // --- CYBER EYE ENGINE (EXACTLY 2 EYES: PREVIEW TAB EYE & DOCK BUTTON EYE) ---
   (function initCyberEyeEngine() {
     var eyes = [
       { id: "eye-tab", el: $("eye-tab"), iris: null },
-      { id: "eye-dock", el: $("eye-dock"), iris: null }
+      { id: "eye-dock", el: $("eye-dock"), iris: null },
+      { id: "pc-eye-tab", el: $("pc-eye-tab"), iris: null },
+      { id: "pc-eye-dock", el: $("pc-eye-dock"), iris: null }
     ];
 
     eyes.forEach(function(e) {
