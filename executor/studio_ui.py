@@ -152,6 +152,157 @@ STUDIO_HTML = r"""<!doctype html>
       box-shadow: 0 0 14px rgba(56,189,248,0.5) !important;
     }
 
+    /* PC Breadcrumbs */
+    .pc-breadcrumbs-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 11px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+    .pc-breadcrumbs-bar::-webkit-scrollbar { display: none; }
+    .pc-crumb-item {
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .pc-crumb-item:hover {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+    }
+    .pc-crumb-sep {
+      color: #475569;
+      font-size: 10px;
+    }
+
+    /* Context Menu */
+    .studio-context-menu {
+      position: fixed;
+      background: rgba(13, 20, 36, 0.98);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 8px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.25);
+      padding: 5px 0;
+      min-width: 230px;
+      z-index: 99999999;
+      user-select: none;
+      font-size: 12px;
+      animation: ctxFadeIn 0.12s ease-out;
+    }
+    @keyframes ctxFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .ctx-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      color: #edf4ff;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .ctx-item:hover {
+      background: rgba(56, 189, 248, 0.18);
+      color: #38bdf8;
+    }
+    .ctx-item.transfer-action {
+      font-weight: 700;
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .ctx-item.transfer-action:hover {
+      background: rgba(56, 189, 248, 0.25);
+      color: #fff;
+    }
+    .ctx-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 4px 0;
+    }
+
+    /* CSS-Only Preview Fullscreen Overlay (Never fullscreens entire browser window) */
+    .preview-container.is-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999999 !important;
+      background: #070b14 !important;
+      box-sizing: border-box !important;
+    }
+    .preview-container.is-fullscreen .preview-toolbar {
+      position: fixed !important;
+      top: 14px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      z-index: 10000000 !important;
+      background: rgba(13, 20, 36, 0.92) !important;
+      backdrop-filter: blur(12px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 9999px !important;
+      padding: 6px 14px !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
+      width: auto !important;
+      gap: 12px !important;
+    }
+    .preview-container.is-fullscreen .preview-viewport-wrap {
+      flex: 1;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #070b14;
+      padding-top: 60px;
+      box-sizing: border-box !important;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-sizing: border-box;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder:not(.device-tablet):not(.device-mobile) {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.device-tablet {
+      width: 768px !important;
+      height: 1024px !important;
+      max-width: 96vw !important;
+      max-height: calc(100vh - 84px) !important;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.landscape.device-tablet {
+      width: 1024px !important;
+      height: 768px !important;
+      max-width: 96vw !important;
+      max-height: calc(100vh - 84px) !important;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.device-mobile {
+      width: 375px !important;
+      height: 812px !important;
+      max-width: 92vw !important;
+      max-height: calc(100vh - 84px) !important;
+    }
+    .preview-container.is-fullscreen .preview-frame-holder.landscape.device-mobile {
+      width: 812px !important;
+      height: 375px !important;
+      max-width: 96vw !important;
+      max-height: calc(100vh - 84px) !important;
+    }
+
     /* TOP NAVBAR */
     .studio-nav {
       background: rgba(10, 16, 29, 0.96);
@@ -1185,9 +1336,6 @@ STUDIO_HTML = r"""<!doctype html>
         <button id="refresh-repo-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh files">↻</button>
       </div>
       <button id="new-repo-btn" class="btn" title="Create New Repository in GitHub">+ New Repo</button>
-      <button id="btn-switch-to-pc-nav" class="btn btn-switch-mode" title="Switch to PC Cloud Studio" onclick="switchToPcStudio()">
-        <span>💻 PC Cloud Studio ➡</span>
-      </button>
     </div>
 
     <div class="nav-center">
@@ -1332,6 +1480,13 @@ STUDIO_HTML = r"""<!doctype html>
 
     <!-- DOCKED QUICK-ACCESS BUTTONS (Visible when aux-panel is collapsed) -->
     <div id="aux-dock-buttons" class="aux-dock-buttons">
+      <button id="dock-btn-to-pc" class="aux-dock-btn dock-pc" title="Switch to PC Cloud Studio (Direct Machine Workspace)" onclick="switchToPcStudio()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </button>
       <button id="dock-btn-ai" class="aux-dock-btn dock-ai" title="Open Hashtag AI Co-Pilot">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="11" width="18" height="10" rx="3"/>
@@ -1357,14 +1512,6 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
         </div>
       </button>
-      <!-- SWITCH TO PC CLOUD STUDIO BUTTON (Sliding Page Trigger) -->
-      <button id="dock-btn-to-pc" class="aux-dock-btn dock-pc" title="Switch to PC Cloud Studio" onclick="switchToPcStudio()">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-          <line x1="8" y1="21" x2="16" y2="21"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
-        </svg>
-      </button>
     </div>
   </main>
 
@@ -1383,7 +1530,7 @@ STUDIO_HTML = r"""<!doctype html>
     </div>
   </footer>
 </div>
-    </div>
+    </div><!-- end page-github-studio -->
 
     <!-- ======================================================== -->
     <!-- SLIDE 2: PC CLOUD STUDIO (Direct Local Machine Workspace) -->
@@ -1400,9 +1547,10 @@ STUDIO_HTML = r"""<!doctype html>
             </div>
             <div class="repo-select-wrap">
               <span style="font-size:12px">💻</span>
-              <select id="pc-root-select" title="Target PC Workspace / Directory">
+              <select id="pc-root-select" title="Target PC Workspace / Drive / Directory">
                 <option value=".">Local PC Workspace (Connect PC)</option>
               </select>
+              <button id="pc-back-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Go back to parent directory (⬆)">⬆</button>
               <button id="pc-refresh-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh local PC files">↻</button>
             </div>
             <button id="btn-pc-connect-nav" class="btn" style="padding:2px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px;border-color:rgba(56,189,248,0.4);color:#38bdf8" title="PC Connection Status" onclick="openPcAuthModal()">
@@ -1438,16 +1586,22 @@ STUDIO_HTML = r"""<!doctype html>
                 <span>PC Explorer</span>
                 <span id="pc-file-count" style="font-weight:600;color:var(--accent)">0 files</span>
               </div>
-              <button id="sidebar-pc-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Connection Status" onclick="openPcAuthModal()">
+              <button id="sidebar-pc-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Machine Status" onclick="openPcAuthModal()">
                 <span id="sidebar-pc-label">💻 Connect PC</span>
               </button>
             </div>
+            
+            <!-- Breadcrumbs path navigation -->
+            <div id="pc-breadcrumbs" class="pc-breadcrumbs-bar">
+              <span class="pc-crumb-item" data-crumb-path=".">💻 Local PC</span>
+            </div>
+
             <div class="search-filter" style="position:relative">
               <input type="text" id="pc-file-search" placeholder="Search local PC files..." style="padding-right:24px">
               <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px">✕</button>
             </div>
             <div id="pc-file-tree" class="file-tree">
-              <!-- Initial Connection Card (Clean & matches GitHub not-connected state) -->
+              <!-- Initial Connection Card -->
               <div style="padding:18px 14px;text-align:center;color:var(--muted);font-size:12px">
                 <div style="font-size:28px;margin-bottom:8px">💻</div>
                 <div style="font-weight:700;color:var(--text);margin-bottom:6px">PC Disconnected</div>
@@ -1478,9 +1632,8 @@ STUDIO_HTML = r"""<!doctype html>
             </div>
           </section>
 
-          <!-- RIGHT: PC LIVE PREVIEW & AI ASSISTANT (PIXEL IDENTICAL TO GITHUB CLOUD STUDIO) -->
+          <!-- RIGHT: PC LIVE PREVIEW & AI ASSISTANT -->
           <aside id="pc-aux-panel" class="aux-panel">
-            <!-- COLLAPSE HANDLE BUTTON -->
             <button id="pc-btn-collapse-aux" class="aux-collapse-btn" title="Collapse Side Panel (Hide Preview & AI)">
               <span>›</span>
             </button>
@@ -1539,7 +1692,7 @@ STUDIO_HTML = r"""<!doctype html>
               </div>
             </div>
 
-            <!-- AI ASSISTANT TAB (EXACT SAME COMPOSER & BUBBLES AS GITHUB CLOUD STUDIO) -->
+            <!-- AI ASSISTANT TAB -->
             <div id="pc-view-ai" class="ai-assistant-container" style="display:none">
               <div id="pc-ai-chat" class="ai-chat-messages">
                 <div class="ai-msg assistant">
@@ -1582,7 +1735,6 @@ STUDIO_HTML = r"""<!doctype html>
                 </div>
               </div>
             </button>
-            <!-- RETURN BUTTON IN EXACT SAME DOCKED LOCATION TO GO BACK TO GITHUB STUDIO -->
             <button id="dock-btn-to-gh" class="aux-dock-btn dock-gh" title="Switch back to GitHub Cloud Studio" onclick="switchToGitHubStudio()">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
@@ -1608,8 +1760,8 @@ STUDIO_HTML = r"""<!doctype html>
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- end studio-slider -->
+</div><!-- end studio-viewport-stage -->
 
 <!-- COMMIT MODAL -->
 <div id="commit-modal" class="modal-backdrop">
@@ -1653,7 +1805,142 @@ STUDIO_HTML = r"""<!doctype html>
 
 
 
-<!-- PC CONNECT MODAL (Pixel-identical modal layout to GitHub modal) -->
+<!-- ======================================================== -->
+<!-- GLOBAL RIGHT-CLICK CONTEXT MENU -->
+<!-- ======================================================== -->
+<div id="studio-context-menu" class="studio-context-menu" style="display:none">
+  <div class="ctx-item transfer-action" id="ctx-transfer-btn">
+    <span id="ctx-transfer-icon">🐙</span>
+    <span id="ctx-transfer-label">Transfer File...</span>
+  </div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" id="ctx-open-btn">
+    <span>📄</span>
+    <span>Open in Editor</span>
+  </div>
+  <div class="ctx-item" id="ctx-preview-btn">
+    <span>👁️</span>
+    <span>Render Preview</span>
+  </div>
+  <div class="ctx-item" id="ctx-copy-btn">
+    <span>📋</span>
+    <span>Copy File Path</span>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: TRANSFER PC FILE -> GITHUB REPOSITORY -->
+<!-- ======================================================== -->
+<div id="modal-transfer-to-gh" class="modal-backdrop">
+  <div class="modal" style="max-width:520px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px">🐙</span>
+        <h3 style="margin:0;font-size:16px;font-weight:700">Transfer File to GitHub Repository</h3>
+      </div>
+      <button type="button" class="btn" style="padding:2px 8px;font-size:12px" onclick="closeGhTransferModal()">✕</button>
+    </div>
+
+    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+      <div style="font-weight:700;color:#c084fc;margin-bottom:4px">Source File on PC:</div>
+      <div id="trans-gh-source-path" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;word-break:break-all">C:\path\file.js</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+      <div>
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">Target GitHub Repository:</label>
+        <select id="trans-gh-target-repo" class="btn" style="width:100%;text-align:left;background:#0d1424;border:1px solid rgba(255,255,255,0.15);padding:6px 10px;font-size:12px;color:#fff">
+          <option value="">Loading repositories...</option>
+        </select>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">Target Branch:</label>
+          <input type="text" id="trans-gh-branch" value="main" style="width:100%;background:#030712;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;color:#fff;font-size:12px">
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">Target Path in Repo:</label>
+          <input type="text" id="trans-gh-repo-path" value="" placeholder="e.g. src/index.js" style="width:100%;background:#030712;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;color:#fff;font-size:12px">
+        </div>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">Commit Message:</label>
+        <input type="text" id="trans-gh-commit-msg" value="" style="width:100%;background:#030712;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;color:#fff;font-size:12px">
+      </div>
+    </div>
+
+    <div id="trans-gh-status-line" style="font-size:11px;color:#94a3b8;margin-bottom:14px;min-height:16px"></div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button type="button" class="btn" onclick="closeGhTransferModal()">Cancel</button>
+      <button type="button" id="trans-gh-submit-btn" class="btn btn-primary" onclick="executeTransferToGitHub()">
+        <span>🚀 Commit & Transfer to GitHub</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: TRANSFER GITHUB FILE -> LOCAL PC -->
+<!-- ======================================================== -->
+<div id="modal-transfer-to-pc" class="modal-backdrop">
+  <div class="modal" style="max-width:520px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px">💻</span>
+        <h3 style="margin:0;font-size:16px;font-weight:700">Transfer File to Local PC Disk</h3>
+      </div>
+      <button type="button" class="btn" style="padding:2px 8px;font-size:12px" onclick="closePcTransferModal()">✕</button>
+    </div>
+
+    <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+      <div style="font-weight:700;color:#38bdf8;margin-bottom:4px">Source File on GitHub:</div>
+      <div id="trans-pc-source-path" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;word-break:break-all">repo/path/to/file.js</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+      <div>
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">Quick Destination Folder on PC:</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn" style="padding:3px 8px;font-size:11px" onclick="setPcTargetFolder('current')">📍 Current Folder</button>
+          <button type="button" class="btn" style="padding:3px 8px;font-size:11px" onclick="setPcTargetFolder('desktop')">🖥️ Desktop</button>
+          <button type="button" class="btn" style="padding:3px 8px;font-size:11px" onclick="setPcTargetFolder('documents')">📁 Documents</button>
+          <button type="button" class="btn" style="padding:3px 8px;font-size:11px" onclick="setPcTargetFolder('downloads')">📥 Downloads</button>
+        </div>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">Destination Directory on PC:</label>
+        <input type="text" id="trans-pc-target-dir" value="" placeholder="e.g. C:\Users\user\Desktop" style="width:100%;background:#030712;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;color:#fff;font-size:12px" oninput="updatePcTargetFullPathPreview()">
+      </div>
+
+      <div>
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">Target File Name:</label>
+        <input type="text" id="trans-pc-target-filename" value="" placeholder="filename.ext" style="width:100%;background:#030712;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;color:#fff;font-size:12px" oninput="updatePcTargetFullPathPreview()">
+      </div>
+
+      <div style="font-size:11px;color:var(--muted)">
+        <span>Will save to: </span>
+        <code id="trans-pc-target-full-path" style="color:#7dd3fc;word-break:break-all">...</code>
+      </div>
+    </div>
+
+    <div id="trans-pc-status-line" style="font-size:11px;color:#94a3b8;margin-bottom:14px;min-height:16px"></div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button type="button" class="btn" onclick="closePcTransferModal()">Cancel</button>
+      <button type="button" id="trans-pc-submit-btn" class="btn btn-primary" onclick="executeTransferToPc()">
+        <span>💾 Save to Local PC</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- PC CONNECT MODAL -->
+<!-- ======================================================== -->
 <div id="pc-connect-modal" class="modal-backdrop">
   <div class="modal" style="max-width:520px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -1674,7 +1961,7 @@ STUDIO_HTML = r"""<!doctype html>
       <span class="badge" style="background:rgba(56,189,248,0.2);color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">Connected</span>
     </div>
 
-    <!-- Info Box (identical to GitHub modal blue box) -->
+    <!-- Info Box -->
     <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.5;color:var(--text)">
       <div style="font-weight:700;color:#38bdf8;display:flex;align-items:center;gap:6px;margin-bottom:4px">
         <span>🌐</span> 1-Click Terminal Command Connection
@@ -2742,19 +3029,7 @@ STUDIO_HTML = r"""<!doctype html>
     updatePreview();
     
 
-    var req = prev.requestFullscreen || prev.webkitRequestFullscreen || prev.mozRequestFullScreen || prev.msRequestFullscreen;
-    if (req) {
-      req.call(prev).then(function() {
-        fullscreenState.isFullscreen = true;
-        prev.classList.add("is-fullscreen");
-        updateFullscreenButtons(true);
-      }).catch(function(err) {
-        console.warn("Native fullscreen failed, fallback to CSS fullscreen:", err);
-        fallbackFullscreen();
-      });
-    } else {
-      fallbackFullscreen();
-    }
+    enterFullscreen();
   }
 
   function fallbackFullscreen() {
@@ -2790,45 +3065,48 @@ STUDIO_HTML = r"""<!doctype html>
     updateFullscreenButtons(false);
   }
 
+  var ghPreviewPlaceholder = null;
+
   function toggleFullscreen() {
-    var prev = $("view-preview");
-    var body = document.body;
-    var isFs = body.classList.contains("has-preview-fullscreen");
-
-    if (isFs) {
-      body.classList.remove("has-preview-fullscreen");
-      if (prev) prev.classList.remove("is-fullscreen");
-      fullscreenState.isFullscreen = false;
-      updateFullscreenButtons(false);
-      try {
-        if (document.fullscreenElement) {
-          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-        }
-      } catch(e) {}
+    if (fullscreenState.isFullscreen) {
+      exitFullscreen();
     } else {
-      var ws = $("workspace");
-      if (ws) ws.classList.remove("preview-closed");
-      $("tab-btn-preview").click();
-
-      body.classList.add("has-preview-fullscreen");
-      if (prev) prev.classList.add("is-fullscreen");
-      fullscreenState.isFullscreen = true;
-      updateFullscreenButtons(true);
-      try {
-        if (prev && prev.requestFullscreen) {
-          prev.requestFullscreen().catch(function(){});
-        }
-      } catch(e) {}
+      enterFullscreen();
     }
-    
   }
 
   function enterFullscreen() {
-    if (!fullscreenState.isFullscreen) toggleFullscreen();
+    var prev = $("view-preview");
+    if (!prev || fullscreenState.isFullscreen) return;
+    var ws = $("workspace");
+    if (ws) ws.classList.remove("preview-closed");
+    var tabBtn = $("tab-btn-preview");
+    if (tabBtn) tabBtn.click();
+
+    ghPreviewPlaceholder = document.createElement("div");
+    ghPreviewPlaceholder.id = "gh-prev-placeholder";
+    prev.parentNode.insertBefore(ghPreviewPlaceholder, prev);
+    document.body.appendChild(prev);
+
+    document.body.classList.add("has-preview-fullscreen");
+    prev.classList.add("is-fullscreen");
+    fullscreenState.isFullscreen = true;
+    updateFullscreenButtons(true);
   }
 
   function exitFullscreen() {
-    if (fullscreenState.isFullscreen) toggleFullscreen();
+    var prev = $("view-preview");
+    if (!prev || !fullscreenState.isFullscreen) return;
+    document.body.classList.remove("has-preview-fullscreen");
+    prev.classList.remove("is-fullscreen");
+    fullscreenState.isFullscreen = false;
+    updateFullscreenButtons(false);
+
+    if (ghPreviewPlaceholder && ghPreviewPlaceholder.parentNode) {
+      ghPreviewPlaceholder.parentNode.insertBefore(prev, ghPreviewPlaceholder);
+      ghPreviewPlaceholder.parentNode.removeChild(ghPreviewPlaceholder);
+      ghPreviewPlaceholder = null;
+    }
   }
 
   document.addEventListener("fullscreenchange", function() {
@@ -3094,7 +3372,7 @@ STUDIO_HTML = r"""<!doctype html>
   updatePreview();
 
   // ========================================================
-  // --- PC STUDIO STATE & CONTROLLERS ---
+  // --- PC STUDIO STATE & SYSTEM INFO ---
   // ========================================================
   var pcState = {
     activePath: "index.html",
@@ -3104,7 +3382,17 @@ STUDIO_HTML = r"""<!doctype html>
   var isPcConnected = false;
   var pcCurrentPath = ".";
   var pcPreviewTimer = null;
+  var pcInfo = {};
+  var pcDrivesList = [];
   window.pcFilesLoaded = false;
+
+  // Context menu target tracking
+  var currentContextTarget = {
+    source: null, // "gh" or "pc"
+    path: null,
+    isDir: false,
+    name: null
+  };
 
   // ========================================================
   // --- STUDIO SLIDER & DUAL-MODE VIEWPORT CONTROLLER ---
@@ -3158,7 +3446,6 @@ STUDIO_HTML = r"""<!doctype html>
   // ========================================================
   // --- PC CONNECT MODAL & HEARTBEAT CONTROLLER ---
   // ========================================================
-
   window.openPcAuthModal = function() {
     var m = $("pc-connect-modal");
     if (m) m.classList.add("open");
@@ -3169,7 +3456,6 @@ STUDIO_HTML = r"""<!doctype html>
     if (m) m.classList.remove("open");
   };
 
-  // Close modal when clicking backdrop
   var pcModalEl = $("pc-connect-modal");
   if (pcModalEl) {
     pcModalEl.addEventListener("click", function(e) {
@@ -3235,12 +3521,57 @@ STUDIO_HTML = r"""<!doctype html>
     }
   };
 
+  // Immediate disconnect handler
   window.disconnectPc = function() {
-    api("/v1/connector/disconnect", { method: "POST" }).then(function() {
-      isPcConnected = false;
-      window.pcFilesLoaded = false;
-      checkPcConnectorStatus();
-    }).catch(function() {});
+    var dBtn = $("modal-pc-disconnect-btn");
+    if (dBtn) dBtn.textContent = "Disconnecting...";
+    isPcConnected = false;
+    window.pcFilesLoaded = false;
+
+    // Reset UI components immediately
+    var navDot = $("pc-nav-status-dot");
+    var navText = $("pc-nav-status-text");
+    var sideLabel = $("sidebar-pc-label");
+    var modalBadge = $("pc-modal-status-badge");
+    var modalMsg = $("modal-pc-status-msg");
+    var profileCard = $("pc-profile-card");
+    if (navDot) navDot.style.background = "#f87171";
+    if (navText) navText.textContent = "💻 Connect PC";
+    if (sideLabel) sideLabel.textContent = "💻 Connect PC";
+    if (modalBadge) {
+      modalBadge.textContent = "Disconnected";
+      modalBadge.style.background = "rgba(248,113,113,0.15)";
+      modalBadge.style.color = "#f87171";
+      modalBadge.style.borderColor = "rgba(248,113,113,0.3)";
+    }
+    if (modalMsg) modalMsg.textContent = "Disconnected. Waiting for terminal command execution on your PC...";
+    if (profileCard) profileCard.style.display = "none";
+    if (dBtn) {
+      dBtn.style.display = "none";
+      dBtn.textContent = "Disconnect";
+    }
+
+    var treeEl = $("pc-file-tree");
+    if (treeEl) {
+      treeEl.innerHTML = '<div style="padding:18px 14px;text-align:center;color:var(--muted);font-size:12px">' +
+        '<div style="font-size:28px;margin-bottom:8px">💻</div>' +
+        '<div style="font-weight:700;color:var(--text);margin-bottom:6px">PC Disconnected</div>' +
+        '<div style="margin-bottom:12px;line-height:1.4">Connect your PC using the 1-click terminal command to explore & edit files directly on your machine.</div>' +
+        '<button type="button" class="btn btn-primary" style="padding:4px 14px;font-size:11px" onclick="openPcAuthModal()">' +
+        '<span>⚡ Connect Local PC</span>' +
+        '</button>' +
+        '</div>';
+    }
+    var countEl = $("pc-file-count");
+    if (countEl) countEl.textContent = "0 files";
+    var breadcrumbsEl = $("pc-breadcrumbs");
+    if (breadcrumbsEl) breadcrumbsEl.innerHTML = '<span class="pc-crumb-item" data-crumb-path=".">💻 Local PC</span>';
+
+    api("/v1/connector/disconnect", { method: "POST" }).then(function(res) {
+      console.log("Disconnected successfully:", res);
+    }).catch(function(err) {
+      console.warn("Disconnect processed:", err);
+    });
   };
 
   // Heartbeat Poller for PC Status
@@ -3259,24 +3590,33 @@ STUDIO_HTML = r"""<!doctype html>
 
       if (connected) {
         if (navDot) navDot.style.background = "#52e396";
-        var machine = res.hostname || "PC";
+        var machine = res.hostname || (res.info && res.info.hostname) || "PC";
+        pcInfo = res.info || {};
+        pcInfo.hostname = machine;
+        pcDrivesList = res.drives || pcInfo.drives || [];
+
         if (navText) navText.textContent = "💻 " + machine;
         if (sideLabel) sideLabel.textContent = "💻 " + machine;
+        var sideBtn = $("sidebar-pc-btn");
+        if (sideBtn) sideBtn.title = "Connected to " + machine + " - Click to manage";
+
         if (modalBadge) {
           modalBadge.textContent = "Connected";
           modalBadge.style.background = "rgba(82,227,150,0.15)";
           modalBadge.style.color = "#52e396";
           modalBadge.style.borderColor = "rgba(82,227,150,0.4)";
         }
-        if (modalMsg) modalMsg.innerHTML = '<span style="color:#52e396">✓ Live bridge connected to ' + esc(machine) + ' (' + esc(res.os || "OS") + ')</span>';
+        if (modalMsg) modalMsg.innerHTML = '<span style="color:#52e396">✓ Live bridge connected to ' + esc(machine) + ' (' + esc(pcInfo.system || "Windows") + ')</span>';
         if (profileCard) {
           profileCard.style.display = "flex";
           var mName = $("pc-modal-machine-name");
           var oName = $("pc-modal-os-name");
           if (mName) mName.textContent = machine;
-          if (oName) oName.textContent = (res.os || "Local Machine") + " · Active directory: " + (res.root || ".");
+          if (oName) oName.textContent = (pcInfo.system || "Windows") + " · Active root: " + (pcCurrentPath || ".");
         }
         if (disconnectBtn) disconnectBtn.style.display = "inline-block";
+
+        updatePcRoots(pcInfo, pcDrivesList);
 
         if (!window.pcFilesLoaded) {
           loadPcFiles(pcCurrentPath);
@@ -3310,14 +3650,139 @@ STUDIO_HTML = r"""<!doctype html>
     }).catch(function() {});
   }
 
+  // Populate Drive & Folder Dropdown in PC Studio Navbar
+  function updatePcRoots(info, drives) {
+    var sel = $("pc-root-select");
+    if (!sel) return;
+    info = info || {};
+    drives = drives || info.drives || [];
+
+    var currentVal = sel.value;
+    var html = "";
+
+    if (drives && drives.length) {
+      html += '<optgroup label="PC Drives">';
+      drives.forEach(function(d) {
+        html += '<option value="' + esc(d) + '">Drive ' + esc(d) + '</option>';
+      });
+      html += '</optgroup>';
+    }
+
+    var folders = [];
+    if (info.desktop) folders.push({ label: "🖥️ Desktop", path: info.desktop });
+    if (info.documents) folders.push({ label: "📁 Documents", path: info.documents });
+    if (info.downloads) folders.push({ label: "📥 Downloads", path: info.downloads });
+    if (info.user_home) folders.push({ label: "🏠 User Home", path: info.user_home });
+    if (info.cwd) folders.push({ label: "📍 Workdir", path: info.cwd });
+
+    if (folders.length) {
+      html += '<optgroup label="Common Folders">';
+      folders.forEach(function(f) {
+        html += '<option value="' + esc(f.path) + '">' + esc(f.label) + ' (' + esc(f.path) + ')</option>';
+      });
+      html += '</optgroup>';
+    }
+
+    if (!html) {
+      html = '<option value=".">Local PC Workspace</option>';
+    }
+
+    sel.innerHTML = html;
+    if (currentVal && Array.from(sel.options).some(function(o){ return o.value === currentVal; })) {
+      sel.value = currentVal;
+    } else if (drives && drives.length && (!pcCurrentPath || pcCurrentPath === ".")) {
+      sel.value = drives[0];
+      pcCurrentPath = drives[0];
+    }
+  }
+
+  // Root selector change
+  var pcRootSelectEl = $("pc-root-select");
+  if (pcRootSelectEl) {
+    pcRootSelectEl.onchange = function() {
+      var p = this.value;
+      if (p) {
+        pcCurrentPath = p;
+        loadPcFiles(p);
+      }
+    };
+  }
+
+  // Helper: Get Parent Directory
+  function getParentDirectory(p) {
+    if (!p || p === "." || p === "/" || /^[A-Za-z]:[\\/]?$/.test(p)) return null;
+    var norm = p.replace(/[\\/]+$/, "");
+    var lastSlash = Math.max(norm.lastIndexOf("/"), norm.lastIndexOf("\\"));
+    if (lastSlash === -1) return null;
+    var parent = norm.substring(0, lastSlash);
+    if (/^[A-Za-z]:$/.test(parent)) parent += "\\";
+    if (!parent) parent = "/";
+    return parent;
+  }
+
+  // Update Breadcrumbs Navigation Bar
+  function updatePcBreadcrumbs(dirPath) {
+    var bc = $("pc-breadcrumbs");
+    if (!bc) return;
+    if (!dirPath || dirPath === ".") {
+      bc.innerHTML = '<span class="pc-crumb-item" data-crumb-path=".">💻 ' + esc(pcInfo.hostname || "PC") + '</span>';
+      return;
+    }
+    var sep = dirPath.includes("\\") ? "\\" : "/";
+    var clean = dirPath.replace(/[\\/]+$/, "");
+    var accum = "";
+    var html = '<span class="pc-crumb-item" data-crumb-path=".">💻 ' + esc(pcInfo.hostname || "PC") + '</span>';
+
+    var driveMatch = clean.match(/^([A-Za-z]:)(.*)$/);
+    if (driveMatch) {
+      var driveRoot = driveMatch[1] + "\\";
+      accum = driveRoot;
+      html += '<span class="pc-crumb-sep">&gt;</span><span class="pc-crumb-item" data-crumb-path="' + esc(driveRoot) + '">' + esc(driveMatch[1]) + '</span>';
+      var rem = driveMatch[2].replace(/^[\\/]+/, "");
+      if (rem) {
+        var segments = rem.split(/[\\/]/).filter(Boolean);
+        segments.forEach(function(seg) {
+          if (!accum.endsWith("\\") && !accum.endsWith("/")) accum += "\\";
+          accum += seg;
+          html += '<span class="pc-crumb-sep">&gt;</span><span class="pc-crumb-item" data-crumb-path="' + esc(accum) + '">' + esc(seg) + '</span>';
+        });
+      }
+    } else {
+      var parts = clean.split(/[\\/]/).filter(Boolean);
+      parts.forEach(function(part) {
+        accum += (accum ? "/" : "") + part;
+        html += '<span class="pc-crumb-sep">&gt;</span><span class="pc-crumb-item" data-crumb-path="' + esc(accum) + '">' + esc(part) + '</span>';
+      });
+    }
+    bc.innerHTML = html;
+  }
+
+  // Breadcrumbs click delegation
+  var bcEl = $("pc-breadcrumbs");
+  if (bcEl) {
+    bcEl.onclick = function(e) {
+      var item = e.target.closest(".pc-crumb-item");
+      if (item) {
+        var p = item.getAttribute("data-crumb-path");
+        if (p) loadPcFiles(p);
+      }
+    };
+  }
+
   // Load PC Files via REST
   function loadPcFiles(dirPath) {
     if (!isPcConnected) return;
     window.pcFilesLoaded = true;
+    pcCurrentPath = dirPath;
 
     var treeEl = $("pc-file-tree");
     if (!treeEl) return;
     treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px"><span class="spinner"></span> Loading local files from PC...</div>';
+
+    updatePcBreadcrumbs(dirPath);
+
+    var activeRoot = $("pc-active-root");
+    if (activeRoot) activeRoot.textContent = "Target: " + (pcInfo.hostname || "PC") + " (" + dirPath + ")";
 
     api("/v1/connector/files?path=" + encodeURIComponent(dirPath), { method: "GET" }).then(function(res) {
       if (!res.ok) {
@@ -3328,23 +3793,35 @@ STUDIO_HTML = r"""<!doctype html>
       var countEl = $("pc-file-count");
       if (countEl) countEl.textContent = entries.length + " items";
 
-      if (entries.length === 0) {
-        treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty.</div>';
-        return;
-      }
       entries.sort(function(a, b) {
         if (a.is_dir && !b.is_dir) return -1;
         if (!a.is_dir && b.is_dir) return 1;
         return a.name.localeCompare(b.name);
       });
 
+      var parentDir = getParentDirectory(dirPath);
       var html = '<div class="file-list-items" style="padding:4px 0">';
+
+      // "Go Back to Parent Folder" item if not root
+      if (parentDir) {
+        html += '<div class="file-item dir-item dir-parent-item" data-path="' + esc(parentDir) + '" data-is-dir="true" style="padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;color:#38bdf8;background:rgba(56,189,248,0.06);border-radius:4px;margin-bottom:4px;border:1px solid rgba(56,189,248,0.15)">'
+              + '<span>⬆</span>'
+              + '<span style="font-weight:600;flex:1">.. (Back to Parent Folder)</span>'
+              + '<span style="font-size:10px;color:var(--muted)">' + esc(parentDir) + '</span>'
+              + '</div>';
+      }
+
+      if (entries.length === 0 && !parentDir) {
+        treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty.</div>';
+        return;
+      }
+
       entries.forEach(function(item) {
         var icon = item.is_dir ? "📁" : "📄";
         var isDir = item.is_dir ? "true" : "false";
         var sep = (dirPath.endsWith("/") || dirPath.endsWith("\\")) ? "" : "/";
         var fullPath = dirPath + sep + item.name;
-        html += '<div class="file-item ' + (item.is_dir ? 'dir-item' : '') + '" data-path="' + esc(fullPath) + '" data-is-dir="' + isDir + '" style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;border-radius:4px">';
+        html += '<div class="file-item ' + (item.is_dir ? 'dir-item' : '') + '" data-path="' + esc(fullPath) + '" data-is-dir="' + isDir + '" data-name="' + esc(item.name) + '" style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;border-radius:4px">';
         html += '<span>' + icon + '</span>';
         html += '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(item.name) + '</span>';
         html += '</div>';
@@ -3352,6 +3829,7 @@ STUDIO_HTML = r"""<!doctype html>
       html += '</div>';
       treeEl.innerHTML = html;
 
+      // Attach left-click handlers
       treeEl.querySelectorAll(".file-item").forEach(function(el) {
         el.onclick = function() {
           var p = this.getAttribute("data-path");
@@ -3363,10 +3841,40 @@ STUDIO_HTML = r"""<!doctype html>
             openPcFile(p);
           }
         };
+
+        // Attach right-click context menu handler
+        el.oncontextmenu = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var p = this.getAttribute("data-path");
+          var isD = this.getAttribute("data-is-dir") === "true";
+          var nm = this.getAttribute("data-name") || p.split(/[\\/]/).pop();
+          if (this.classList.contains("dir-parent-item")) return;
+          showContextMenu(e.clientX, e.clientY, "pc", p, isD, nm);
+        };
       });
     }).catch(function(err) {
       treeEl.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Error: ' + esc(err.message) + '</div>';
     });
+  }
+
+  // Refresh & Back navigation buttons
+  var pcBackBtn = $("pc-back-btn");
+  if (pcBackBtn) {
+    pcBackBtn.onclick = function() {
+      var p = getParentDirectory(pcCurrentPath);
+      if (p) {
+        pcCurrentPath = p;
+        loadPcFiles(p);
+      }
+    };
+  }
+
+  var pcRefreshBtn = $("pc-refresh-btn");
+  if (pcRefreshBtn) {
+    pcRefreshBtn.onclick = function() {
+      loadPcFiles(pcCurrentPath || ".");
+    };
   }
 
   function openPcFile(filePath) {
@@ -3397,14 +3905,6 @@ STUDIO_HTML = r"""<!doctype html>
     });
   }
 
-  // --- PC STUDIO CONTROLLERS ---
-  var pcState = {
-    activePath: "index.html",
-    isDirty: false
-  };
-
-  var pcPreviewTimer = null;
-
   function updatePcLineNumbers() {
     var editor = $("pc-code-editor");
     var lineBox = $("pc-line-numbers");
@@ -3426,7 +3926,6 @@ STUDIO_HTML = r"""<!doctype html>
     var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
     var path = (pcState.activePath || "index.html").toLowerCase();
 
-    // Check if Markdown file
     if (path.endsWith(".md") || path.endsWith(".markdown")) {
       frame.removeAttribute("src");
       frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
@@ -3435,7 +3934,6 @@ STUDIO_HTML = r"""<!doctype html>
       return;
     }
 
-    // Check if CSS file
     if (path.endsWith(".css")) {
       frame.removeAttribute("src");
       frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' + content + '</style>'
@@ -3444,7 +3942,6 @@ STUDIO_HTML = r"""<!doctype html>
       return;
     }
 
-    // Check if standalone JavaScript file
     if (path.endsWith(".js") || path.endsWith(".ts")) {
       frame.removeAttribute("src");
       frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
@@ -3467,7 +3964,6 @@ STUDIO_HTML = r"""<!doctype html>
       return;
     }
 
-    // Default HTML rendering
     frame.removeAttribute("src");
     frame.srcdoc = content;
     frame.style.opacity = "1";
@@ -3527,34 +4023,63 @@ STUDIO_HTML = r"""<!doctype html>
     };
   }
 
-  // Fullscreen Preview for PC
+  // ========================================================
+  // --- CSS-ONLY PREVIEW FULLSCREEN (NO BROWSER FULLSCREEN) ---
+  // ========================================================
   var pcFullscreenState = { isFullscreen: false };
+  var pcPreviewPlaceholder = null;
+
   function togglePcFullscreen() {
     var prev = $("pc-view-preview");
     if (!prev) return;
+    if (pcFullscreenState.isFullscreen) {
+      exitPcFullscreen();
+    } else {
+      enterPcFullscreen();
+    }
+  }
+
+  function enterPcFullscreen() {
+    var prev = $("pc-view-preview");
+    if (!prev || pcFullscreenState.isFullscreen) return;
     var ws = $("pc-workspace");
     if (ws) ws.classList.remove("preview-closed");
-    
+    var tabBtn = $("pc-tab-btn-preview");
+    if (tabBtn) tabBtn.click();
+
+    pcPreviewPlaceholder = document.createElement("div");
+    pcPreviewPlaceholder.id = "pc-prev-placeholder";
+    prev.parentNode.insertBefore(pcPreviewPlaceholder, prev);
+    document.body.appendChild(prev);
+
+    document.body.classList.add("has-preview-fullscreen");
+    prev.classList.add("is-fullscreen");
+    pcFullscreenState.isFullscreen = true;
+
     var fBtn = $("pc-preview-fullscreen-btn");
-    pcFullscreenState.isFullscreen = !pcFullscreenState.isFullscreen;
-    if (pcFullscreenState.isFullscreen) {
-      prev.classList.add("fullscreen-preview-active");
-      if (fBtn) {
-        fBtn.textContent = "✕ Exit";
-        fBtn.style.color = "var(--danger)";
-      }
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(function() {});
-      }
-    } else {
-      prev.classList.remove("fullscreen-preview-active");
-      if (fBtn) {
-        fBtn.textContent = "⛶ Fullscreen";
-        fBtn.style.color = "";
-      }
-      if (document.exitFullscreen && document.fullscreenElement) {
-        document.exitFullscreen().catch(function() {});
-      }
+    if (fBtn) {
+      fBtn.textContent = "✕ Exit Fullscreen";
+      fBtn.style.color = "var(--danger)";
+    }
+  }
+
+  function exitPcFullscreen() {
+    var prev = $("pc-view-preview");
+    if (!prev || !pcFullscreenState.isFullscreen) return;
+    document.body.classList.remove("has-preview-fullscreen");
+    prev.classList.remove("is-fullscreen");
+    pcFullscreenState.isFullscreen = false;
+
+    var fBtn = $("pc-preview-fullscreen-btn");
+    if (fBtn) {
+      fBtn.textContent = "⛶ Fullscreen";
+      fBtn.style.color = "";
+    }
+
+    if (pcPreviewPlaceholder && pcPreviewPlaceholder.parentNode) {
+      pcPreviewPlaceholder.parentNode.insertBefore(prev, pcPreviewPlaceholder);
+      pcPreviewPlaceholder.parentNode.removeChild(pcPreviewPlaceholder);
+      pcPreviewPlaceholder = null;
     }
   }
 
@@ -3594,6 +4119,40 @@ STUDIO_HTML = r"""<!doctype html>
         if (saveBtn) saveBtn.click();
       }
     });
+  }
+
+  // Save to PC Disk Button
+  var pcSaveBtn = $("pc-commit-btn");
+  if (pcSaveBtn) {
+    pcSaveBtn.onclick = function() {
+      if (!isPcConnected) {
+        alert("Cannot save: No PC connected.");
+        return;
+      }
+      var path = pcState.activePath;
+      if (!path) {
+        alert("No active file to save.");
+        return;
+      }
+      var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
+      var status = $("pc-sync-status");
+      if (status) status.textContent = "Saving to PC disk...";
+
+      api("/v1/connector/file", {
+        method: "POST",
+        body: JSON.stringify({ path: path, content: content })
+      }).then(function(res) {
+        if (!res.ok) {
+          alert("Failed saving file: " + (res.error || ""));
+          return;
+        }
+        var dirty = $("pc-tab-dirty");
+        if (dirty) dirty.style.display = "none";
+        if (status) status.textContent = "Saved to PC at " + new Date().toLocaleTimeString();
+      }).catch(function(err) {
+        alert("Error saving: " + err.message);
+      });
+    };
   }
 
   // PC Aux Panel Tab Switching
@@ -3651,181 +4210,102 @@ STUDIO_HTML = r"""<!doctype html>
   // PC Widen / Maximize Aux Button
   var pcExpandAux = $("pc-btn-expand-aux");
   if (pcExpandAux) {
-    var pcAuxExpandState = 0;
     pcExpandAux.onclick = function() {
+      var p = $("pc-aux-panel");
       var ws = $("pc-workspace");
-      if (!ws) return;
-      pcAuxExpandState = (pcAuxExpandState + 1) % 3;
-      ws.classList.remove("aux-expanded", "aux-maximized", "preview-closed");
-      var label = $("pc-expand-aux-label");
-      var icon = $("pc-expand-aux-icon");
-      if (pcAuxExpandState === 1) {
-        ws.classList.add("aux-expanded");
-        if (label) label.textContent = "Maximize";
-        if (icon) icon.textContent = "⛶";
-        pcExpandAux.title = "Maximize panel across screen";
-      } else if (pcAuxExpandState === 2) {
-        ws.classList.add("aux-maximized");
-        if (label) label.textContent = "Restore";
-        if (icon) icon.textContent = "✕";
-        pcExpandAux.title = "Restore normal panel size";
-      } else {
-        if (label) label.textContent = "Widen";
-        if (icon) icon.textContent = "⛶";
-        pcExpandAux.title = "Widen panel to 650px";
-      }
+      if (!p) return;
+      if (ws) ws.classList.remove("preview-closed");
+      p.classList.toggle("aux-wide");
+      var isW = p.classList.contains("aux-wide");
+      var lbl = $("pc-expand-aux-label");
+      if (lbl) lbl.textContent = isW ? "Standard" : "Widen";
     };
   }
 
-  // PC Wrap Toggle
-  var pcIsWrapped = false;
-  var pcBtnWrap = $("pc-btn-toggle-wrap");
-  if (pcBtnWrap) {
-    pcBtnWrap.onclick = function() {
-      pcIsWrapped = !pcIsWrapped;
+  // Wrap toggle
+  var pcWrapBtn = $("pc-btn-toggle-wrap");
+  if (pcWrapBtn) {
+    pcWrapBtn.onclick = function() {
       var ed = $("pc-code-editor");
-      if (pcIsWrapped) {
-        ed.setAttribute("wrap", "soft");
-        ed.style.whiteSpace = "pre-wrap";
-        pcBtnWrap.textContent = "Wrap: ON";
-        pcBtnWrap.style.color = "var(--accent)";
-      } else {
-        ed.setAttribute("wrap", "off");
-        ed.style.whiteSpace = "pre";
-        pcBtnWrap.textContent = "Wrap: OFF";
-        pcBtnWrap.style.color = "";
-      }
+      if (!ed) return;
+      var cur = ed.getAttribute("wrap") === "on";
+      ed.setAttribute("wrap", cur ? "off" : "on");
+      this.textContent = cur ? "Wrap: OFF" : "Wrap: ON";
     };
   }
 
-  // PC File Search Filter
-  var pcSearchInput = $("pc-file-search");
-  var pcClearSearch = $("pc-clear-search-btn");
-  if (pcSearchInput) {
-    pcSearchInput.addEventListener("input", function() {
-      var q = (this.value || "").toLowerCase().trim();
-      if (pcClearSearch) pcClearSearch.style.display = q ? "block" : "none";
-      var items = document.querySelectorAll("#pc-file-tree .file-item");
+  // PC Search filter
+  var pcSearch = $("pc-file-search");
+  if (pcSearch) {
+    pcSearch.addEventListener("input", function() {
+      var val = this.value.toLowerCase().trim();
+      var clearBtn = $("pc-clear-search-btn");
+      if (clearBtn) clearBtn.style.display = val ? "block" : "none";
+      var items = document.querySelectorAll("#pc-file-tree .file-item:not(.dir-parent-item)");
+      var visible = 0;
       items.forEach(function(item) {
         var p = (item.getAttribute("data-path") || "").toLowerCase();
-        item.style.display = (!q || p.indexOf(q) !== -1) ? "flex" : "none";
+        var match = !val || p.includes(val);
+        item.style.display = match ? "flex" : "none";
+        if (match) visible++;
       });
+      var countEl = $("pc-file-count");
+      if (countEl) countEl.textContent = val ? (visible + " / " + items.length) : (items.length + " items");
     });
   }
+  var pcClearSearch = $("pc-clear-search-btn");
   if (pcClearSearch) {
     pcClearSearch.onclick = function() {
-      if (pcSearchInput) {
-        pcSearchInput.value = "";
-        pcSearchInput.dispatchEvent(new Event("input"));
-        pcSearchInput.focus();
+      if (pcSearch) {
+        pcSearch.value = "";
+        pcSearch.dispatchEvent(new Event("input"));
       }
     };
   }
 
-  // PC Save to Disk button
-  var pcSaveBtn = $("pc-commit-btn");
-  if (pcSaveBtn) {
-    pcSaveBtn.onclick = function() {
-      if (!isPcConnected) {
-        openPcAuthModal();
-        return;
-      }
-      var ed = $("pc-code-editor");
-      var content = ed ? ed.value : "";
-      var dot = $("pc-sync-dot");
-      var status = $("pc-sync-status");
-      var dirty = $("pc-tab-dirty");
-      if (status) status.textContent = "Saving to PC disk...";
-
-      api("/v1/connector/file", {
-        method: "POST",
-        body: { path: pcState.activePath, content: content }
-      }).then(function(res) {
-        if (!res.ok) {
-          if (status) status.textContent = "Error saving: " + (res.error || "");
-          return;
-        }
-        if (status) status.textContent = "Saved to PC Disk!";
-        if (dirty) dirty.style.display = "none";
-        if (dot) {
-          dot.style.background = "#52e396";
-          setTimeout(function() { dot.style.background = ""; }, 1800);
-        }
-      }).catch(function(err) {
-        if (status) status.textContent = "Save error: " + err.message;
-      });
-    };
-  }
-
-  // Refresh button
-  var pcRefreshBtn = $("pc-refresh-btn");
-  if (pcRefreshBtn) {
-    pcRefreshBtn.onclick = function() {
-      checkPcConnectorStatus();
-      if (isPcConnected) loadPcFiles(pcCurrentPath);
-    };
-  }
-
-  // Root select change
-  var pcRootSelect = $("pc-root-select");
-  if (pcRootSelect) {
-    pcRootSelect.onchange = function() {
-      pcCurrentPath = this.value;
-      if (isPcConnected) loadPcFiles(pcCurrentPath);
-    };
-  }
-
-  // PC AI Prompt sender
+  // PC AI Co-Pilot chat send
   function sendPcAiPrompt() {
     var promptEl = $("pc-ai-prompt");
-    var txt = promptEl.value.trim();
-    if (!txt) return;
+    var chat = $("pc-ai-chat");
+    if (!promptEl || !chat) return;
+    var q = promptEl.value.trim();
+    if (!q) return;
+
+    var uMsg = document.createElement("div");
+    uMsg.className = "ai-msg user";
+    uMsg.textContent = q;
+    chat.appendChild(uMsg);
     promptEl.value = "";
 
-    var chat = $("pc-ai-chat");
-    var userBubble = document.createElement("div");
-    userBubble.className = "ai-msg user";
-    userBubble.textContent = txt;
-    chat.appendChild(userBubble);
-
-    var botBubble = document.createElement("div");
-    botBubble.className = "ai-msg assistant";
-    botBubble.innerHTML = '<span class="spinner"></span> Hashtag PC AI is inspecting machine & code...';
-    chat.appendChild(botBubble);
+    var sMsg = document.createElement("div");
+    sMsg.className = "ai-msg assistant";
+    sMsg.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Analyzing with Hashtag PC Co-Pilot...';
+    chat.appendChild(sMsg);
     chat.scrollTop = chat.scrollHeight;
 
-    var activeCode = $("pc-code-editor").value;
-    api("/v1/console/request", {
+    var edContent = $("pc-code-editor") ? $("pc-code-editor").value : "";
+    var currentFile = pcState.activePath || "untitled";
+
+    api("/v1/ai/chat", {
       method: "POST",
-      body: {
-        request: txt,
-        message: txt,
-        body_id: "pc-studio",
-        context: {
-          target_repo: "local-pc",
-          active_path: pcState.activePath,
-          file_content: activeCode
-        }
-      }
+      body: JSON.stringify({
+        messages: [{
+          role: "user",
+          content: "Context: Local PC File `" + currentFile + "`:\n```\n" + edContent.slice(0, 4000) + "\n```\n\nUser question: " + q
+        }]
+      })
     }).then(function(res) {
-      var summary = "✓ Done! Hashtag PC processed the request.";
-      if (res.response) summary = res.response;
-      else if (res.plan && res.plan.message) summary = res.plan.message;
-      else if (res.execution && res.execution.result) {
-        var r = res.execution.result;
-        if (typeof r.text === "string") summary = r.text;
-        else if (r.message) summary = r.message;
-      }
-      botBubble.innerHTML = '<b>Hashtag PC Co-Pilot:</b><br><br>' + renderStudioMarkdown(summary);
+      var ans = res.response || res.answer || res.reply || "Done.";
+      sMsg.innerHTML = typeof renderStudioMarkdown === "function" ? renderStudioMarkdown(ans) : ('<pre style="white-space:pre-wrap">' + esc(ans) + '</pre>');
       chat.scrollTop = chat.scrollHeight;
     }).catch(function(err) {
-      botBubble.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
-      chat.scrollTop = chat.scrollHeight;
+      sMsg.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
     });
   }
 
-  var pcAiSend = $("pc-ai-send-btn");
-  if (pcAiSend) pcAiSend.onclick = sendPcAiPrompt;
+  var pcAiSendBtn = $("pc-ai-send-btn");
+  if (pcAiSendBtn) pcAiSendBtn.onclick = sendPcAiPrompt;
+
   var pcAiPrompt = $("pc-ai-prompt");
   if (pcAiPrompt) {
     pcAiPrompt.onkeydown = function(e) {
@@ -3836,7 +4316,302 @@ STUDIO_HTML = r"""<!doctype html>
     };
   }
 
-  // Heartbeat trigger
+  // ========================================================
+  // --- CONTEXT MENU & CROSS-BRIDGE FILE TRANSFER ---
+  // ========================================================
+  var ctxMenu = $("studio-context-menu");
+
+  function showContextMenu(x, y, source, path, isDir, name) {
+    if (!ctxMenu) return;
+    currentContextTarget = { source: source, path: path, isDir: isDir, name: name };
+
+    var transIcon = $("ctx-transfer-icon");
+    var transLabel = $("ctx-transfer-label");
+
+    if (source === "pc") {
+      if (transIcon) transIcon.textContent = "🐙";
+      if (transLabel) transLabel.textContent = "Transfer to GitHub Repository...";
+    } else {
+      if (transIcon) transIcon.textContent = "💻";
+      if (transLabel) transLabel.textContent = "Transfer to Local PC...";
+    }
+
+    ctxMenu.style.display = "block";
+    var mw = ctxMenu.offsetWidth || 230;
+    var mh = ctxMenu.offsetHeight || 150;
+    var posX = (x + mw > window.innerWidth) ? (window.innerWidth - mw - 10) : x;
+    var posY = (y + mh > window.innerHeight) ? (window.innerHeight - mh - 10) : y;
+    ctxMenu.style.left = posX + "px";
+    ctxMenu.style.top = posY + "px";
+  }
+
+  function closeContextMenu() {
+    if (ctxMenu) ctxMenu.style.display = "none";
+  }
+
+  document.addEventListener("click", function(e) {
+    if (ctxMenu && !ctxMenu.contains(e.target)) {
+      closeContextMenu();
+    }
+  });
+
+  // Context Menu Actions
+  var ctxTransferBtn = $("ctx-transfer-btn");
+  if (ctxTransferBtn) {
+    ctxTransferBtn.onclick = function() {
+      closeContextMenu();
+      if (currentContextTarget.source === "pc") {
+        openGhTransferModal(currentContextTarget.path, currentContextTarget.name);
+      } else {
+        openPcTransferModal(currentContextTarget.path, currentContextTarget.name);
+      }
+    };
+  }
+
+  var ctxOpenBtn = $("ctx-open-btn");
+  if (ctxOpenBtn) {
+    ctxOpenBtn.onclick = function() {
+      closeContextMenu();
+      if (currentContextTarget.source === "pc") {
+        openPcFile(currentContextTarget.path);
+      } else {
+        if (typeof openFile === "function") openFile(currentContextTarget.path);
+      }
+    };
+  }
+
+  var ctxPreviewBtn = $("ctx-preview-btn");
+  if (ctxPreviewBtn) {
+    ctxPreviewBtn.onclick = function() {
+      closeContextMenu();
+      if (currentContextTarget.source === "pc") {
+        openPcFile(currentContextTarget.path);
+        if ($("pc-tab-btn-preview")) $("pc-tab-btn-preview").click();
+      } else {
+        if (typeof openFile === "function") openFile(currentContextTarget.path);
+        if ($("tab-btn-preview")) $("tab-btn-preview").click();
+      }
+    };
+  }
+
+  var ctxCopyBtn = $("ctx-copy-btn");
+  if (ctxCopyBtn) {
+    ctxCopyBtn.onclick = function() {
+      closeContextMenu();
+      var p = currentContextTarget.path || "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(p);
+      }
+      alert("Copied to clipboard: " + p);
+    };
+  }
+
+  // --- PC -> GitHub Transfer Modal Logic ---
+  window.openGhTransferModal = function(pcFilePath, fileName) {
+    var modal = $("modal-transfer-to-gh");
+    if (!modal) return;
+    $("trans-gh-source-path").textContent = pcFilePath;
+    $("trans-gh-repo-path").value = fileName || pcFilePath.split(/[\\/]/).pop();
+    $("trans-gh-commit-msg").value = "feat: transfer " + (fileName || pcFilePath.split(/[\\/]/).pop()) + " from local PC";
+    $("trans-gh-status-line").textContent = "";
+
+    var repoSel = $("trans-gh-target-repo");
+    if (repoSel) {
+      repoSel.innerHTML = '<option value="">Loading repositories...</option>';
+      api("/v1/github/project/repos").then(function(res) {
+        var repos = res.repos || [];
+        if (!repos.length) {
+          repoSel.innerHTML = '<option value="">No repositories found (Connect GitHub)</option>';
+          return;
+        }
+        var h = "";
+        repos.forEach(function(r) {
+          var sel = (typeof state !== "undefined" && state.repo === r.full_name) ? "selected" : "";
+          h += '<option value="' + esc(r.full_name) + '" ' + sel + '>' + esc(r.full_name) + '</option>';
+        });
+        repoSel.innerHTML = h;
+      }).catch(function(err) {
+        repoSel.innerHTML = '<option value="">Failed loading repositories: ' + esc(err.message) + '</option>';
+      });
+    }
+
+    modal.classList.add("open");
+  };
+
+  window.closeGhTransferModal = function() {
+    var modal = $("modal-transfer-to-gh");
+    if (modal) modal.classList.remove("open");
+  };
+
+  window.executeTransferToGitHub = function() {
+    var pcFilePath = $("trans-gh-source-path").textContent;
+    var repo = $("trans-gh-target-repo").value;
+    var branch = $("trans-gh-branch").value.trim() || "main";
+    var repoPath = $("trans-gh-repo-path").value.trim();
+    var commitMsg = $("trans-gh-commit-msg").value.trim();
+    var statusLine = $("trans-gh-status-line");
+    var submitBtn = $("trans-gh-submit-btn");
+
+    if (!repo) {
+      alert("Please select a target GitHub repository.");
+      return;
+    }
+    if (!repoPath) {
+      alert("Please specify the target file path in the repository.");
+      return;
+    }
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Reading file from PC...';
+
+    api("/v1/connector/file?path=" + encodeURIComponent(pcFilePath), { method: "GET" }).then(function(fileRes) {
+      if (!fileRes.ok) {
+        throw new Error("Failed to read file from PC: " + (fileRes.error || ""));
+      }
+      var content = fileRes.content || "";
+      if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Committing to ' + esc(repo) + ' (' + esc(branch) + ')...';
+
+      return api("/v1/github/project/file", {
+        method: "POST",
+        body: JSON.stringify({
+          repo: repo,
+          branch: branch,
+          path: repoPath,
+          content: content,
+          message: commitMsg || ("feat: transfer " + repoPath + " from local PC")
+        })
+      });
+    }).then(function(ghRes) {
+      if (submitBtn) submitBtn.disabled = false;
+      if (!ghRes.ok) {
+        throw new Error(ghRes.error || "GitHub commit failed");
+      }
+      if (statusLine) statusLine.innerHTML = '<span style="color:#52e396;font-weight:700">✓ Successfully committed to ' + esc(repo) + '/' + esc(repoPath) + '!</span>';
+      setTimeout(function() {
+        closeGhTransferModal();
+        alert("✓ File successfully transferred to GitHub repository " + repo + " (" + branch + ")!");
+        if (typeof state !== "undefined" && state.repo === repo && typeof loadProjectTree === "function") {
+          loadProjectTree();
+        }
+      }, 900);
+    }).catch(function(err) {
+      if (submitBtn) submitBtn.disabled = false;
+      if (statusLine) statusLine.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
+    });
+  };
+
+  // --- GitHub -> PC Transfer Modal Logic ---
+  window.openPcTransferModal = function(ghFilePath, fileName) {
+    var modal = $("modal-transfer-to-pc");
+    if (!modal) return;
+    var fullSrc = (typeof state !== "undefined" && state.repo ? state.repo + "/" : "") + ghFilePath;
+    $("trans-pc-source-path").textContent = fullSrc;
+    $("trans-pc-source-path").setAttribute("data-gh-path", ghFilePath);
+
+    var fName = fileName || ghFilePath.split(/[\\/]/).pop();
+    $("trans-pc-target-filename").value = fName;
+
+    // Set default target directory
+    var defDir = (pcCurrentPath && pcCurrentPath !== ".") ? pcCurrentPath : (pcInfo.desktop || (pcDrivesList && pcDrivesList[0]) || "C:\\");
+    $("trans-pc-target-dir").value = defDir;
+
+    updatePcTargetFullPathPreview();
+    $("trans-pc-status-line").textContent = "";
+    modal.classList.add("open");
+  };
+
+  window.closePcTransferModal = function() {
+    var modal = $("modal-transfer-to-pc");
+    if (modal) modal.classList.remove("open");
+  };
+
+  window.setPcTargetFolder = function(type) {
+    var dirInput = $("trans-pc-target-dir");
+    if (!dirInput) return;
+    if (type === "current") {
+      dirInput.value = pcCurrentPath || ".";
+    } else if (type === "desktop") {
+      dirInput.value = pcInfo.desktop || "C:\\Users\\" + (pcInfo.username || "user") + "\\Desktop";
+    } else if (type === "documents") {
+      dirInput.value = pcInfo.documents || "C:\\Users\\" + (pcInfo.username || "user") + "\\Documents";
+    } else if (type === "downloads") {
+      dirInput.value = pcInfo.downloads || "C:\\Users\\" + (pcInfo.username || "user") + "\\Downloads";
+    }
+    updatePcTargetFullPathPreview();
+  };
+
+  window.updatePcTargetFullPathPreview = function() {
+    var dir = ($("trans-pc-target-dir") ? $("trans-pc-target-dir").value.trim() : "");
+    var fn = ($("trans-pc-target-filename") ? $("trans-pc-target-filename").value.trim() : "file.txt");
+    var previewEl = $("trans-pc-target-full-path");
+    var sep = dir.includes("/") ? "/" : "\\";
+    var full = dir + ((dir.endsWith("/") || dir.endsWith("\\")) ? "" : sep) + fn;
+    if (previewEl) previewEl.textContent = full;
+  };
+
+  window.executeTransferToPc = function() {
+    if (!isPcConnected) {
+      alert("No local PC connected. Please connect your PC first.");
+      return;
+    }
+    var ghPath = $("trans-pc-source-path").getAttribute("data-gh-path");
+    var repo = (typeof state !== "undefined" && state.repo) ? state.repo : "";
+    var targetFull = $("trans-pc-target-full-path").textContent.trim();
+    var statusLine = $("trans-pc-status-line");
+    var submitBtn = $("trans-pc-submit-btn");
+
+    if (!targetFull || targetFull === "...") {
+      alert("Please provide a valid target file path on PC.");
+      return;
+    }
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Reading file from GitHub...';
+
+    api("/v1/github/project/file?repo=" + encodeURIComponent(repo) + "&path=" + encodeURIComponent(ghPath)).then(function(ghRes) {
+      if (!ghRes.ok) {
+        throw new Error("Failed to read file from GitHub: " + (ghRes.error || ""));
+      }
+      var content = ghRes.content || "";
+      if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Writing file to PC disk...';
+
+      return api("/v1/connector/file", {
+        method: "POST",
+        body: JSON.stringify({
+          path: targetFull,
+          content: content
+        })
+      });
+    }).then(function(pcRes) {
+      if (submitBtn) submitBtn.disabled = false;
+      if (!pcRes.ok) {
+        throw new Error(pcRes.error || "Failed to write file on PC");
+      }
+      if (statusLine) statusLine.innerHTML = '<span style="color:#52e396;font-weight:700">✓ Successfully saved file to PC disk!</span>';
+      setTimeout(function() {
+        closePcTransferModal();
+        alert("✓ File successfully transferred and saved to PC at:\n" + targetFull);
+        var dirOfFile = getParentDirectory(targetFull);
+        if (dirOfFile && dirOfFile === pcCurrentPath) {
+          loadPcFiles(pcCurrentPath);
+        }
+      }, 900);
+    }).catch(function(err) {
+      if (submitBtn) submitBtn.disabled = false;
+      if (statusLine) statusLine.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
+    });
+  };
+
+  // Keyboard shortcut: Escape exits preview fullscreen and context menu
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      if (typeof exitFullscreen === "function" && fullscreenState.isFullscreen) exitFullscreen();
+      if (pcFullscreenState.isFullscreen) exitPcFullscreen();
+      closeContextMenu();
+    }
+  });
+
+  // Heartbeat initialization
   checkPcConnectorStatus();
   setInterval(checkPcConnectorStatus, 2500);
 

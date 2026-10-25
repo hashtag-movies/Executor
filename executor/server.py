@@ -217,22 +217,59 @@ async def connector_ws(websocket: WebSocket):
 
 @app.get("/v1/connector/status")
 def connector_status():
-    is_conn = pc_connector.is_connected() if callable(getattr(pc_connector, "is_connected", None)) else bool(getattr(pc_connector, "is_connected", False))
-    cnt = pc_connector.connected_count() if callable(getattr(pc_connector, "connected_count", None)) else getattr(pc_connector, "connected_count", 0)
-    tot = pc_connector.total_count() if callable(getattr(pc_connector, "total_count", None)) else getattr(pc_connector, "total_count", 0)
-    info = pc_connector.system_info() if callable(getattr(pc_connector, "system_info", None)) else getattr(pc_connector, "system_info", {})
-    queued = pc_connector.get_queued_actions_count() if callable(getattr(pc_connector, "get_queued_actions_count", None)) else 0
-    conns = [c.to_dict() for c in pc_connector.list_connections()] if callable(getattr(pc_connector, "list_connections", None)) else []
+    is_conn = bool(pc_connector.is_connected)
+    primary = pc_connector.get_primary_connection() if is_conn else None
+    active_conns = [c.to_dict() for c in pc_connector.list_connections() if c.is_healthy and c.state == ConnectionState.CONNECTED] if is_conn else []
+    cnt = len(active_conns)
+    if cnt == 0:
+        is_conn = False
+        primary = None
+    info = primary.system_info if (primary and is_conn) else {}
+    hostname = primary.hostname if (primary and is_conn) else (info.get("hostname", ""))
+    drives = info.get("drives", []) if (primary and is_conn) else []
     return {
         "ok": True,
         "connected": is_conn,
         "connected_count": cnt,
-        "total_count": tot,
-        "info": info,
-        "primary_connection_id": getattr(pc_connector, "_primary_connection_id", None),
-        "queued_actions": queued,
-        "connections": conns,
+        "total_count": len(pc_connector.list_connections()) if hasattr(pc_connector, "list_connections") else 0,
+        "info": info if is_conn else {},
+        "hostname": hostname if is_conn else "",
+        "drives": drives if is_conn else [],
+        "primary_connection_id": primary.connection_id if primary else None,
+        "queued_actions": pc_connector.get_queued_actions_count() if hasattr(pc_connector, "get_queued_actions_count") else 0,
+        "connections": active_conns if is_conn else [],
     }
+
+
+@app.post("/v1/connector/disconnect")
+async def connector_disconnect():
+    try:
+        if hasattr(pc_connector, "disconnect_async"):
+            await pc_connector.disconnect_async()
+        elif hasattr(pc_connector, "disconnect"):
+            pc_connector.disconnect()
+        pc_connector._connections.clear()
+        pc_connector._primary_connection_id = None
+        return {"ok": True, "connected": False, "message": "Disconnected successfully"}
+    except Exception as e:
+        logger.error("Disconnect error: %s", e)
+        pc_connector._connections.clear()
+        pc_connector._primary_connection_id = None
+        return {"ok": True, "connected": False, "message": f"Disconnected: {e}"}
+
+
+@app.get("/v1/connector/drives")
+async def connector_drives():
+    if not pc_connector.is_connected:
+        return {"ok": False, "error": "No PC is currently connected", "drives": []}
+    try:
+        res = await pc_connector.send_action("drives", {})
+        return {"ok": True, **res}
+    except Exception as e:
+        primary = pc_connector.get_primary_connection()
+        info = primary.system_info if primary else {}
+        drives = info.get("drives") or ["C:\\"]
+        return {"ok": True, "drives": drives, "cwd": info.get("cwd", ".")}
 
 @app.post("/v1/connector/action")
 async def connector_action(payload: dict):
