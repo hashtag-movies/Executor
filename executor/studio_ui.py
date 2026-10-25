@@ -148,162 +148,6 @@ STUDIO_HTML = r"""<!doctype html>
       box-shadow: 0 0 14px rgba(56,189,248,0.5) !important;
     }
 
-    /* === PC CONNECT CARD STYLES === */
-    .pc-connect-card {
-      margin: 12px;
-      padding: 16px;
-      background: linear-gradient(135deg, rgba(13, 20, 36, 0.95), rgba(15, 23, 42, 0.98));
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 10px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.15);
-    }
-    .pc-connect-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .pc-radar-pulse {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #38bdf8;
-      box-shadow: 0 0 10px #38bdf8;
-      animation: pcPulse 1.8s infinite;
-      flex-shrink: 0;
-    }
-    @keyframes pcPulse {
-      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
-      70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
-      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-    }
-    .pc-connect-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.3px;
-    }
-    .pc-connect-subtitle {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-      line-height: 1.3;
-    }
-    .pc-cmd-tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-    .pc-tab-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--muted);
-      border-radius: 5px;
-      padding: 4px 8px;
-      font-size: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .pc-tab-btn.active {
-      background: rgba(56, 189, 248, 0.15);
-      border-color: #38bdf8;
-      color: #38bdf8;
-    }
-    .pc-cmd-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(3, 7, 18, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 6px;
-      padding: 6px 10px;
-      gap: 8px;
-    }
-    .pc-cmd-box code {
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 11px;
-      color: #7dd3fc;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    .pc-copy-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      color: #38bdf8;
-      border-radius: 4px;
-      padding: 3px 8px;
-      font-size: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-    }
-    .pc-copy-btn:hover {
-      background: rgba(56, 189, 248, 0.3);
-      color: #fff;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-    }
-    .pc-connect-footer {
-      margin-top: 10px;
-    }
-    .pc-radar-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: #facc15;
-    }
-    .pc-radar-status.connected {
-      color: #4ade80;
-    }
-    .status-pulse-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: currentColor;
-      display: inline-block;
-    }
-    .pc-connect-instructions {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 4px;
-      line-height: 1.3;
-    }
-    /* Navbar pill */
-    .pc-status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .pc-status-pill.disconnected {
-      color: #f87171;
-      border-color: rgba(248, 113, 113, 0.4);
-      background: rgba(248, 113, 113, 0.08);
-    }
-    .pc-status-pill.connected {
-      color: #4ade80;
-      border-color: rgba(74, 222, 128, 0.4);
-      background: rgba(74, 222, 128, 0.08);
-    }
-    .pc-status-pill .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
     /* TOP NAVBAR */
     .studio-nav {
       background: rgba(10, 16, 29, 0.96);
@@ -1552,17 +1396,17 @@ STUDIO_HTML = r"""<!doctype html>
               <span>Hashtag</span>
               <span class="badge pc-badge">PC Cloud Studio</span>
             </div>
-            <div class="repo-select-wrap pc-path-wrap">
+            <div class="repo-select-wrap">
               <span style="font-size:12px">💻</span>
               <select id="pc-root-select" title="Target PC Workspace / Directory">
                 <option value=".">Local PC Workspace (Connect PC)</option>
               </select>
               <button id="pc-refresh-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh local PC files">↻</button>
-              <div id="pc-status-badge" class="pc-status-pill disconnected" title="Click to view PC Connect Command" onclick="togglePcConnectCard()">
-                <span class="status-dot"></span>
-                <span id="pc-status-badge-text">PC Offline</span>
-              </div>
             </div>
+            <button id="btn-pc-connect-nav" class="btn" style="padding:2px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px;border-color:rgba(56,189,248,0.4);color:#38bdf8" title="PC Connection Status" onclick="openPcAuthModal()">
+              <span id="pc-nav-status-dot" class="sync-dot" style="background:#f87171"></span>
+              <span id="pc-nav-status-text">💻 Connect PC</span>
+            </button>
             <button id="btn-switch-to-gh-nav" class="btn btn-switch-mode gh-mode-btn" title="Switch back to GitHub Cloud Studio">
               <span>⬅ 🐙 GitHub Studio</span>
             </button>
@@ -1583,138 +1427,125 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
         </header>
 
-        <!-- WORKSPACE (PC) -->
+        <!-- WORKSPACE (PC) - IDENTICAL GRID TO GITHUB STUDIO -->
         <main id="pc-workspace" class="studio-workspace">
           <!-- LEFT: PC EXPLORER -->
           <aside class="sidebar-panel">
-            <div class="sidebar-header">
-              <div class="sidebar-title">
-                <span>LOCAL PC EXPLORER</span>
+            <div class="sidebar-head">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span>PC Explorer</span>
+                <span id="pc-file-count" style="font-weight:600;color:var(--accent)">0 files</span>
               </div>
+              <button id="sidebar-pc-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Connection Status" onclick="openPcAuthModal()">
+                <span id="sidebar-pc-label">💻 Connect PC</span>
+              </button>
             </div>
             <div class="search-filter" style="position:relative">
               <input type="text" id="pc-file-search" placeholder="Search local PC files..." style="padding-right:24px">
               <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px" title="Clear Search">✕</button>
             </div>
             <div id="pc-file-tree" class="file-tree">
-              <!-- CONNECT PC INTERACTIVE CARD -->
-              <div id="pc-connect-card" class="pc-connect-card">
-                <div class="pc-connect-header">
-                  <div class="pc-radar-pulse"></div>
-                  <div>
-                    <div class="pc-connect-title">⚡ Connect Your PC</div>
-                    <div class="pc-connect-subtitle">Link your local drive & terminal directly to Cloud Studio</div>
-                  </div>
-                </div>
-
-                <div class="pc-cmd-tabs">
-                  <button type="button" id="tab-btn-ps" class="pc-tab-btn active" onclick="switchPcCmdTab('ps')">PowerShell (Recommended)</button>
-                  <button type="button" id="tab-btn-cmd" class="pc-tab-btn" onclick="switchPcCmdTab('cmd')">Command Prompt (CMD)</button>
-                </div>
-
-                <div class="pc-cmd-box">
-                  <code id="pc-cmd-snippet">irm https://executor.hashtagai.online/connect.ps1 | iex</code>
-                  <button type="button" id="pc-copy-cmd-btn" class="pc-copy-btn" title="Copy Command">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    <span id="pc-copy-btn-text">Copy</span>
-                  </button>
-                </div>
-
-                <div class="pc-connect-footer">
-                  <div class="pc-radar-status" id="pc-radar-status">
-                    <span class="status-pulse-dot"></span>
-                    <span id="pc-radar-status-text">Waiting for terminal command...</span>
-                  </div>
-                  <div class="pc-connect-instructions">Run this command in PowerShell or CMD on your PC to link instantly.</div>
-                </div>
+              <div style="padding:30px 15px;text-align:center;color:var(--muted);font-size:12px">
+                <div style="font-size:24px;margin-bottom:8px">💻</div>
+                <div style="font-weight:600;color:var(--text);margin-bottom:4px">No PC Connected</div>
+                <div>Link your local computer to browse and edit local files.</div>
+                <button type="button" class="btn btn-primary" style="margin-top:12px;padding:4px 12px;font-size:11px" onclick="openPcAuthModal()">
+                  <span>⚡ Connect Local PC</span>
+                </button>
               </div>
-              <div id="pc-file-list-container"></div>
             </div>
           </aside>
 
           <!-- CENTER: PC CODE EDITOR -->
           <section class="editor-panel">
             <div id="pc-editor-tabs" class="editor-tabs" style="display:flex;justify-content:space-between;align-items:center">
-              <div id="pc-tabs-list" style="display:flex;align-items:center;overflow-x:auto">
-                <div class="tab-item active" style="border-top-color:#38bdf8">
-                  <span>📄 index.html</span>
+              <div style="display:flex;align-items:center">
+                <div class="editor-tab active" id="pc-tab-primary">
+                  <span id="pc-tab-name">untitled</span>
+                  <span id="pc-tab-dirty" style="display:none;color:var(--warning)">●</span>
                 </div>
               </div>
-              <div style="display:flex;align-items:center;gap:6px;padding-right:8px">
+              <div style="display:flex;align-items:center;gap:6px;padding-right:10px">
                 <button id="pc-btn-toggle-wrap" class="btn" title="Toggle Word Wrap" style="padding:2px 8px;font-size:11px">Wrap: OFF</button>
               </div>
             </div>
-            <div class="editor-body">
+            <div class="editor-body-wrap">
               <div id="pc-line-numbers" class="line-numbers">1</div>
-              <textarea id="pc-code-editor" class="code-editor" spellcheck="false" wrap="off" placeholder="PC Studio Editor ready. Connect PC or open any file to edit..."></textarea>
+              <textarea id="pc-code-editor" class="code-textarea" wrap="off" spellcheck="false" placeholder="// Connect your PC or open any file to edit directly on local disk..."></textarea>
             </div>
           </section>
 
           <!-- RIGHT: PC LIVE PREVIEW & AI ASSISTANT -->
-          <section id="pc-aux-panel" class="aux-panel">
-            <div class="aux-tabs-header">
-              <div class="aux-tabs-list">
-                <button id="pc-tab-btn-preview" class="aux-tab-btn active" title="Switch to PC Live Web Preview">
-                  <div class="cyber-eye tab-size" id="pc-eye-tab">
-                    <div class="eye-socket">
-                      <div class="eye-lid top-lid"></div>
-                      <div class="eye-ball">
-                        <div class="eye-iris">
-                          <div class="eye-pupil">
-                            <div class="eye-glint"></div>
-                          </div>
+          <aside id="pc-aux-panel" class="aux-panel">
+            <!-- COLLAPSE HANDLE BUTTON -->
+            <button id="pc-btn-collapse-aux" class="aux-collapse-btn" title="Collapse Side Panel (Hide Preview & AI)">
+              <span>›</span>
+            </button>
+
+            <div class="aux-tabs">
+              <div id="pc-tab-btn-preview" class="aux-tab active" style="display:flex;align-items:center;justify-content:center;gap:7px">
+                <div class="cyber-eye" id="pc-eye-tab">
+                  <div class="eye-socket">
+                    <div class="eye-lid top-lid"></div>
+                    <div class="eye-ball">
+                      <div class="eye-iris">
+                        <div class="eye-pupil">
+                          <div class="eye-glint"></div>
                         </div>
                       </div>
-                      <div class="eye-lid bottom-lid"></div>
                     </div>
+                    <div class="eye-lid bottom-lid"></div>
                   </div>
-                  <span>Preview</span>
-                </button>
-                <button id="pc-tab-btn-ai" class="aux-tab-btn" title="Switch to PC AI Co-Pilot">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="10" rx="3"/>
-                    <circle cx="12" cy="5" r="2"/>
-                    <path d="M12 7v4"/>
-                    <line x1="8" y1="16" x2="8.01" y2="16" stroke-width="3"/>
-                    <line x1="16" y1="16" x2="16.01" y2="16" stroke-width="3"/>
-                    <path d="M9 19h6"/>
-                  </svg>
-                  <span>AI Co-Pilot</span>
-                </button>
+                </div>
+                <span>Live Web Preview</span>
               </div>
-              <div class="aux-tabs-actions">
-                <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;">
-                  <span id="pc-expand-aux-label">Widen</span>
-                </button>
-                <button id="pc-btn-close-aux-header" class="aux-collapse-btn" title="Minimise sidebar">✕</button>
+              <div id="pc-tab-btn-ai" class="aux-tab">🤖 PC AI Co-Pilot</div>
+              <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Toggle Wide Panel">
+                <span id="pc-expand-aux-icon">⛶</span>
+                <span id="pc-expand-aux-label">Widen</span>
+              </button>
+              <button id="pc-btn-close-aux-header" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Minimize / Hide Side Panel">
+                <span>›</span>
+                <span>Close</span>
+              </button>
+            </div>
+
+            <!-- PREVIEW TAB -->
+            <div id="pc-view-preview" class="preview-container">
+              <div class="preview-toolbar">
+                <div class="dev-group">
+                  <button id="pc-dev-desktop" class="dev-btn active" title="Desktop Screen">🖥️ <span class="dev-btn-label">Desktop</span></button>
+                  <button id="pc-dev-tablet" class="dev-btn" title="Tablet Screen">📟 <span class="dev-btn-label">Tablet</span></button>
+                  <button id="pc-dev-mobile" class="dev-btn" title="Mobile Screen">📱 <span class="dev-btn-label">Mobile</span></button>
+                </div>
+                <div class="preview-toolbar-actions">
+                  <span id="pc-preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
+                  <button id="pc-preview-refresh-btn" class="btn" style="padding:2px 8px;font-size:10px" title="Re-render">↻</button>
+                </div>
+              </div>
+              <div class="preview-viewport-wrap">
+                <div id="pc-preview-frame-holder" class="preview-frame-holder">
+                  <iframe id="pc-preview-frame" class="preview-frame"
+                    sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
               </div>
             </div>
 
-            <div class="aux-tab-content">
-              <!-- PC VIEW 1: PREVIEW -->
-              <div id="pc-view-preview" class="preview-container">
-                <div class="preview-toolbar">
-                  <button id="pc-btn-collapse-aux" class="btn" title="Minimise sidebar">◀ Close</button>
-                  <span class="preview-address" style="color:#7dd3fc">pc://workspace/preview</span>
+            <!-- AI TAB -->
+            <div id="pc-view-ai" class="ai-assistant-container is-hidden">
+              <div class="ai-chat-history" id="pc-ai-chat">
+                <div class="ai-msg assistant">
+                  <b>Hashtag PC Co-Pilot:</b><br><br>
+                  Connected to your local machine. I can inspect files, write code, run terminal diagnostics, and refactor directly on your computer.
                 </div>
-                <iframe id="pc-preview-frame" class="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
               </div>
-
-              <!-- PC VIEW 2: AI CO-PILOT -->
-              <div id="pc-view-ai" class="ai-assistant-container is-hidden" style="display:none">
-                <div class="ai-chat-history" id="pc-ai-chat">
-                  <div class="ai-msg assistant">
-                    <b>Hashtag PC Co-Pilot:</b><br><br>
-                    Connected to your PC workspace. I can read, refactor, and write code directly on your local machine. Run terminal commands, search directories, and build locally.
-                  </div>
-                </div>
-                <div class="ai-prompt-box">
-                  <textarea id="pc-ai-prompt" placeholder="Ask PC Co-Pilot to edit local files, refactor, or build... (Enter to send)"></textarea>
-                  <button id="pc-ai-send-btn" class="btn btn-commit pc-save-btn">Send ⚡</button>
-                </div>
+              <div class="ai-prompt-box">
+                <textarea id="pc-ai-prompt" placeholder="Ask PC Co-Pilot to edit local files, refactor, or build... (Enter to send)"></textarea>
+                <button id="pc-ai-send-btn" class="btn btn-commit pc-save-btn">Send ⚡</button>
               </div>
             </div>
-          </section>
+          </aside>
 
           <!-- DOCKED BUTTONS IN PC STUDIO -->
           <div id="pc-aux-dock-buttons" class="aux-dock-buttons">
@@ -1754,15 +1585,16 @@ STUDIO_HTML = r"""<!doctype html>
 
         <!-- STATUSBAR (PC) -->
         <footer class="studio-statusbar">
-          <div class="status-left">
-            <span class="status-item">
-              <span id="pc-sync-dot" class="sync-dot"></span>
-              <span id="pc-sync-status">PC Studio Ready</span>
-            </span>
+          <div class="status-item">
+            <span id="pc-sync-dot" class="status-indicator"></span>
+            <span id="pc-sync-status">PC Studio Ready</span>
           </div>
-          <div class="status-right">
-            <span id="pc-editor-meta" class="status-item">Lines: 1 · Chars: 0</span>
-            <span class="status-item" style="color:#38bdf8">Direct PC Disk Link</span>
+          <div class="status-item">
+            <span id="pc-editor-meta">Lines: 1 · Chars: 0</span>
+            <span>|</span>
+            <span id="pc-active-host">Local Disk</span>
+            <span>|</span>
+            <span style="color:#38bdf8">Direct PC Runtime</span>
           </div>
         </footer>
       </div>
@@ -1814,6 +1646,53 @@ STUDIO_HTML = r"""<!doctype html>
 
 
 <!-- GITHUB AUTH MODAL -->
+
+<!-- CONNECT LOCAL PC MODAL (Pixel-identical design to GitHub modal) -->
+<div id="pc-connect-modal" class="modal-backdrop">
+  <div class="modal" style="max-width:520px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">💻</span>
+        <h3 style="margin:0;font-size:16px;font-weight:700">Connect Local PC</h3>
+      </div>
+      <span id="pc-modal-status-badge" class="badge" style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">Disconnected</span>
+    </div>
+
+    <!-- Info Box (identical to GitHub modal blue box) -->
+    <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.5;color:var(--text)">
+      <div style="font-weight:700;color:#38bdf8;display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span>🌐</span> 1-Click Terminal Command Connection
+      </div>
+      <div>Run this command in PowerShell or Command Prompt (CMD) on your PC to securely link your local files to Cloud Studio with zero firewall or router configuration.</div>
+    </div>
+
+    <!-- Command Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button type="button" id="modal-tab-ps" class="btn" style="padding:4px 12px;font-size:11px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15)" onclick="switchPcModalTab('ps')">⚡ PowerShell (Recommended)</button>
+      <button type="button" id="modal-tab-cmd" class="btn" style="padding:4px 12px;font-size:11px;color:var(--muted)" onclick="switchPcModalTab('cmd')">💻 Command Prompt (CMD)</button>
+    </div>
+
+    <!-- Command Snippet Box -->
+    <div style="background:#030712;border:1px solid rgba(56,189,248,0.3);border-radius:6px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
+      <code id="modal-pc-cmd" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7dd3fc;word-break:break-all">irm https://executor.hashtagai.online/connect.ps1 | iex</code>
+      <button type="button" id="modal-pc-copy-btn" class="btn btn-primary" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="copyPcModalCmd()">
+        <span id="modal-pc-copy-text">Copy</span>
+      </button>
+    </div>
+
+    <!-- Status footer -->
+    <div id="modal-pc-status-line" style="font-size:11px;color:#facc15;display:flex;align-items:center;gap:6px;margin-bottom:16px">
+      <span class="status-indicator" style="background:#facc15;display:inline-block"></span>
+      <span id="modal-pc-status-msg">Waiting for terminal connection on PC...</span>
+    </div>
+
+    <div class="modal-actions" style="display:flex;justify-content:space-between;align-items:center">
+      <button type="button" id="modal-pc-disconnect-btn" class="btn btn-danger" style="display:none" onclick="disconnectPcSession()">Disconnect PC</button>
+      <button type="button" class="btn" style="margin-left:auto" onclick="closePcAuthModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="github-auth-modal" class="modal-backdrop">
   <div class="modal" style="max-width:500px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -3222,73 +3101,108 @@ STUDIO_HTML = r"""<!doctype html>
   }
 
   // ========================================================
-  // --- PC CONNECTOR & TERMINAL COMMAND ENGINE ---
+  // --- PC CONNECT MODAL & HEARTBEAT CONTROLLER ---
   // ========================================================
-  var currentPcCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
-  var pcCmdTab = "ps";
+  var currentPcModalCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
   var isPcConnected = false;
   var pcCurrentPath = ".";
   window.pcFilesLoaded = false;
 
-  window.switchPcCmdTab = function(tab) {
-    pcCmdTab = tab;
-    var btnPs = $("tab-btn-ps");
-    var btnCmd = $("tab-btn-cmd");
-    var snippet = $("pc-cmd-snippet");
-    if (tab === "ps") {
-      if (btnPs) btnPs.classList.add("active");
-      if (btnCmd) btnCmd.classList.remove("active");
-      currentPcCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
-    } else {
-      if (btnPs) btnPs.classList.remove("active");
-      if (btnCmd) btnCmd.classList.add("active");
-      currentPcCmd = "curl -sL https://executor.hashtagai.online/connect.bat -o %TEMP%\\connect.bat && %TEMP%\\connect.bat";
-    }
-    if (snippet) snippet.textContent = currentPcCmd;
+  window.openPcAuthModal = function() {
+    var m = $("pc-connect-modal");
+    if (m) m.classList.add("open");
   };
 
-  var pcCopyBtn = $("pc-copy-cmd-btn");
-  if (pcCopyBtn) {
-    pcCopyBtn.onclick = function() {
-      var copySuccess = function() {
-        var t = $("pc-copy-btn-text");
-        if (t) t.textContent = "✓ Copied!";
-        setTimeout(function() { if (t) t.textContent = "Copy"; }, 2000);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(currentPcCmd).then(copySuccess).catch(function() {
-          copyFallback();
-        });
-      } else {
-        copyFallback();
-      }
-      function copyFallback() {
-        var ta = document.createElement("textarea");
-        ta.value = currentPcCmd;
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand("copy"); copySuccess(); } catch (e) {}
-        document.body.removeChild(ta);
-      }
-    };
+  window.closePcAuthModal = function() {
+    var m = $("pc-connect-modal");
+    if (m) m.classList.remove("open");
+  };
+
+  // Close modal when clicking backdrop
+  var pcModalEl = $("pc-connect-modal");
+  if (pcModalEl) {
+    pcModalEl.addEventListener("click", function(e) {
+      if (e.target === pcModalEl) closePcAuthModal();
+    });
   }
 
-  window.togglePcConnectCard = function() {
-    var card = $("pc-connect-card");
-    if (card) {
-      card.style.display = (card.style.display === "none") ? "block" : "none";
+  window.switchPcModalTab = function(tab) {
+    var btnPs = $("modal-tab-ps");
+    var btnCmd = $("modal-tab-cmd");
+    var snippet = $("modal-pc-cmd");
+    if (tab === "ps") {
+      if (btnPs) {
+        btnPs.style.background = "rgba(56,189,248,0.15)";
+        btnPs.style.borderColor = "#38bdf8";
+        btnPs.style.color = "#38bdf8";
+        btnPs.style.fontWeight = "700";
+      }
+      if (btnCmd) {
+        btnCmd.style.background = "";
+        btnCmd.style.borderColor = "";
+        btnCmd.style.color = "var(--muted)";
+        btnCmd.style.fontWeight = "normal";
+      }
+      currentPcModalCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
+    } else {
+      if (btnCmd) {
+        btnCmd.style.background = "rgba(56,189,248,0.15)";
+        btnCmd.style.borderColor = "#38bdf8";
+        btnCmd.style.color = "#38bdf8";
+        btnCmd.style.fontWeight = "700";
+      }
+      if (btnPs) {
+        btnPs.style.background = "";
+        btnPs.style.borderColor = "";
+        btnPs.style.color = "var(--muted)";
+        btnPs.style.fontWeight = "normal";
+      }
+      currentPcModalCmd = "curl -sL https://executor.hashtagai.online/connect.bat -o %TEMP%\\connect.bat && %TEMP%\\connect.bat";
     }
+    if (snippet) snippet.textContent = currentPcModalCmd;
+  };
+
+  window.copyPcModalCmd = function() {
+    var copyDone = function() {
+      var t = $("modal-pc-copy-text");
+      if (t) t.textContent = "✓ Copied!";
+      setTimeout(function() { if (t) t.textContent = "Copy"; }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(currentPcModalCmd).then(copyDone).catch(function() {
+        fallbackCopy();
+      });
+    } else {
+      fallbackCopy();
+    }
+    function fallbackCopy() {
+      var ta = document.createElement("textarea");
+      ta.value = currentPcModalCmd;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); copyDone(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  };
+
+  window.disconnectPcSession = function() {
+    api("/v1/connector/action", { method: "POST", body: { action: "disconnect" } }).finally(function() {
+      checkPcConnectorStatus();
+    });
   };
 
   function checkPcConnectorStatus() {
     api("/v1/connector/status", { method: "GET" }).then(function(res) {
       if (!res) return;
       var connected = !!(res.connected || (res.connections && res.connections.length > 0));
-      var badge = $("pc-status-badge");
-      var badgeText = $("pc-status-badge-text");
-      var radarStatus = $("pc-radar-status");
-      var radarText = $("pc-radar-status-text");
-      var connectCard = $("pc-connect-card");
+      var navDot = $("pc-nav-status-dot");
+      var navText = $("pc-nav-status-text");
+      var modalBadge = $("pc-modal-status-badge");
+      var modalStatusMsg = $("modal-pc-status-msg");
+      var modalStatusLine = $("modal-pc-status-line");
+      var disBtn = $("modal-pc-disconnect-btn");
+      var sidebarLabel = $("sidebar-pc-label");
+      var activeHost = $("pc-active-host");
 
       if (connected) {
         isPcConnected = true;
@@ -3296,17 +3210,20 @@ STUDIO_HTML = r"""<!doctype html>
         var hostname = info.hostname || "Local PC";
         var osName = info.system || "Windows";
 
-        if (badge) {
-          badge.className = "pc-status-pill connected";
-          if (badgeText) badgeText.textContent = "● " + hostname + " (" + osName + ")";
+        if (navDot) navDot.style.background = "#52e396";
+        if (navText) navText.textContent = "● " + hostname;
+        if (sidebarLabel) sidebarLabel.textContent = "● " + hostname;
+        if (activeHost) activeHost.textContent = hostname + " (" + osName + ")";
+
+        if (modalBadge) {
+          modalBadge.textContent = "Connected";
+          modalBadge.style.background = "rgba(74,222,128,0.15)";
+          modalBadge.style.borderColor = "rgba(74,222,128,0.4)";
+          modalBadge.style.color = "#4ade80";
         }
-        if (radarStatus) {
-          radarStatus.className = "pc-radar-status connected";
-          if (radarText) radarText.textContent = "✓ Connected to " + hostname;
-        }
-        if (connectCard && window.pcFilesLoaded) {
-          connectCard.style.display = "none";
-        }
+        if (modalStatusMsg) modalStatusMsg.textContent = "Connected to " + hostname + " (" + osName + ")";
+        if (modalStatusLine) modalStatusLine.style.color = "#4ade80";
+        if (disBtn) disBtn.style.display = "inline-block";
 
         // Populate drives in pc-root-select if not yet populated
         var sel = $("pc-root-select");
@@ -3332,15 +3249,32 @@ STUDIO_HTML = r"""<!doctype html>
       } else {
         isPcConnected = false;
         window.pcFilesLoaded = false;
-        if (badge) {
-          badge.className = "pc-status-pill disconnected";
-          if (badgeText) badgeText.textContent = "PC Offline";
+        if (navDot) navDot.style.background = "#f87171";
+        if (navText) navText.textContent = "💻 Connect PC";
+        if (sidebarLabel) sidebarLabel.textContent = "💻 Connect PC";
+        if (activeHost) activeHost.textContent = "Local Disk";
+
+        if (modalBadge) {
+          modalBadge.textContent = "Disconnected";
+          modalBadge.style.background = "rgba(248,113,113,0.15)";
+          modalBadge.style.borderColor = "rgba(248,113,113,0.3)";
+          modalBadge.style.color = "#f87171";
         }
-        if (radarStatus) {
-          radarStatus.className = "pc-radar-status";
-          if (radarText) radarText.textContent = "Waiting for terminal command...";
+        if (modalStatusMsg) modalStatusMsg.textContent = "Waiting for terminal connection on PC...";
+        if (modalStatusLine) modalStatusLine.style.color = "#facc15";
+        if (disBtn) disBtn.style.display = "none";
+
+        var treeEl = $("pc-file-tree");
+        if (treeEl && !treeEl.querySelector("#pc-empty-connect-btn")) {
+          treeEl.innerHTML = '<div style="padding:30px 15px;text-align:center;color:var(--muted);font-size:12px">' +
+            '<div style="font-size:24px;margin-bottom:8px">💻</div>' +
+            '<div style="font-weight:600;color:var(--text);margin-bottom:4px">No PC Connected</div>' +
+            '<div>Link your local computer to browse and edit local files.</div>' +
+            '<button type="button" id="pc-empty-connect-btn" class="btn btn-primary" style="margin-top:12px;padding:4px 12px;font-size:11px" onclick="openPcAuthModal()">' +
+            '<span>⚡ Connect Local PC</span>' +
+            '</button>' +
+            '</div>';
         }
-        if (connectCard) connectCard.style.display = "block";
       }
     }).catch(function(err) {
       console.warn("PC Connector heartbeat error:", err);
@@ -3351,26 +3285,22 @@ STUDIO_HTML = r"""<!doctype html>
   function loadPcFiles(dirPath) {
     if (!isPcConnected) return;
     window.pcFilesLoaded = true;
-    var card = $("pc-connect-card");
-    if (card) card.style.display = "none";
 
-    var listContainer = $("pc-file-list-container");
-    if (!listContainer) {
-      var treeEl = $("pc-file-tree");
-      listContainer = document.createElement("div");
-      listContainer.id = "pc-file-list-container";
-      if (treeEl) treeEl.appendChild(listContainer);
-    }
-    listContainer.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px"><span class="spinner"></span> Loading local files from PC...</div>';
+    var treeEl = $("pc-file-tree");
+    if (!treeEl) return;
+    treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px"><span class="spinner"></span> Loading local files from PC...</div>';
 
     api("/v1/connector/files?path=" + encodeURIComponent(dirPath), { method: "GET" }).then(function(res) {
       if (!res.ok) {
-        listContainer.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Failed loading files: ' + esc(res.error || "") + '</div>';
+        treeEl.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Failed loading files: ' + esc(res.error || "") + '</div>';
         return;
       }
       var entries = res.entries || [];
+      var countEl = $("pc-file-count");
+      if (countEl) countEl.textContent = entries.length + " items";
+
       if (entries.length === 0) {
-        listContainer.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty.</div>';
+        treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty.</div>';
         return;
       }
       entries.sort(function(a, b) {
@@ -3391,9 +3321,9 @@ STUDIO_HTML = r"""<!doctype html>
         html += '</div>';
       });
       html += '</div>';
-      listContainer.innerHTML = html;
+      treeEl.innerHTML = html;
 
-      listContainer.querySelectorAll(".file-item").forEach(function(el) {
+      treeEl.querySelectorAll(".file-item").forEach(function(el) {
         el.onclick = function() {
           var p = this.getAttribute("data-path");
           var isD = this.getAttribute("data-is-dir") === "true";
@@ -3406,14 +3336,17 @@ STUDIO_HTML = r"""<!doctype html>
         };
       });
     }).catch(function(err) {
-      listContainer.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Error: ' + esc(err.message) + '</div>';
+      treeEl.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Error: ' + esc(err.message) + '</div>';
     });
   }
 
   function openPcFile(filePath) {
     pcState.activePath = filePath;
+    var fileName = filePath.split(/[\\/]/).pop();
     var titleEl = $("pc-active-file-title");
     if (titleEl) titleEl.innerHTML = '<span>📄 ' + esc(filePath) + '</span>';
+    var tabName = $("pc-tab-name");
+    if (tabName) tabName.textContent = fileName;
 
     api("/v1/connector/file?path=" + encodeURIComponent(filePath), { method: "GET" }).then(function(res) {
       if (!res.ok) {
@@ -3427,7 +3360,7 @@ STUDIO_HTML = r"""<!doctype html>
         updatePcPreview();
       }
       var status = $("pc-sync-status");
-      if (status) status.textContent = "Opened " + filePath.split(/[\\/]/).pop();
+      if (status) status.textContent = "Opened " + fileName;
     }).catch(function(err) {
       alert("Error opening file: " + err.message);
     });
@@ -3468,6 +3401,8 @@ STUDIO_HTML = r"""<!doctype html>
     pcEditor.addEventListener("input", function() {
       updatePcLineNumbers();
       updatePcPreview();
+      var dirty = $("pc-tab-dirty");
+      if (dirty) dirty.style.display = "inline";
     });
     pcEditor.addEventListener("scroll", function() {
       var lines = $("pc-line-numbers");
@@ -3545,14 +3480,18 @@ STUDIO_HTML = r"""<!doctype html>
       pcAuxExpandState = (pcAuxExpandState + 1) % 3;
       ws.classList.remove("aux-expanded", "aux-maximized", "preview-closed");
       var label = $("pc-expand-aux-label");
+      var icon = $("pc-expand-aux-icon");
       if (pcAuxExpandState === 1) {
         ws.classList.add("aux-expanded");
         if (label) label.textContent = "Maximize";
+        if (icon) icon.textContent = "⛶";
       } else if (pcAuxExpandState === 2) {
         ws.classList.add("aux-maximized");
         if (label) label.textContent = "Restore";
+        if (icon) icon.textContent = "✕";
       } else {
         if (label) label.textContent = "Widen";
+        if (icon) icon.textContent = "⛶";
       }
     };
   }
@@ -3589,13 +3528,14 @@ STUDIO_HTML = r"""<!doctype html>
   if (pcCommitBtn) {
     pcCommitBtn.onclick = function() {
       if (!isPcConnected) {
-        alert("No PC connected! Run the connector command in PowerShell or CMD on your PC first.");
+        openPcAuthModal();
         return;
       }
       var ed = $("pc-code-editor");
       var content = ed ? ed.value : "";
       var dot = $("pc-sync-dot");
       var status = $("pc-sync-status");
+      var dirty = $("pc-tab-dirty");
       if (status) status.textContent = "Saving to PC disk...";
 
       api("/v1/connector/file", {
@@ -3607,6 +3547,7 @@ STUDIO_HTML = r"""<!doctype html>
           return;
         }
         if (status) status.textContent = "Saved to PC Disk!";
+        if (dirty) dirty.style.display = "none";
         if (dot) {
           dot.style.background = "#52e396";
           setTimeout(function() { dot.style.background = ""; }, 1800);
