@@ -326,7 +326,12 @@ async def connector_file(path: str):
 
 
 @app.post("/v1/connector/file")
-async def connector_write_file(payload: dict):
+async def connector_write_file(payload: Any = Body(...)):
+    if isinstance(payload, str):
+        try: payload = json.loads(payload)
+        except Exception: pass
+    if not isinstance(payload, dict):
+        payload = {}
     path = payload.get("path")
     content = payload.get("content", "")
     if not pc_connector.is_connected:

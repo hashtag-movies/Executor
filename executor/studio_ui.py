@@ -232,7 +232,7 @@ STUDIO_HTML = r"""<!doctype html>
       margin: 4px 0;
     }
 
-    /* CSS-Only Preview Fullscreen Overlay (Never fullscreens entire browser window) */
+    /* CSS-Only Preview Fullscreen Overlay */
     .preview-container.is-fullscreen {
       position: fixed !important;
       inset: 0 !important;
@@ -301,6 +301,85 @@ STUDIO_HTML = r"""<!doctype html>
       height: 375px !important;
       max-width: 96vw !important;
       max-height: calc(100vh - 84px) !important;
+    }
+
+    /* Aux Panel and AI Co-Pilot Scrollbar Perfection */
+    .aux-panel {
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100% !important;
+      max-height: 100% !important;
+      min-height: 0 !important;
+      min-width: 0;
+      overflow: hidden !important;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .ai-assistant-container {
+      flex: 1 1 0% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: calc(100% - 38px) !important;
+      max-height: calc(100% - 38px) !important;
+      min-height: 0 !important;
+      padding: 10px 12px 10px 12px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      position: relative;
+    }
+    .ai-chat-messages {
+      flex: 1 1 0% !important;
+      min-height: 0 !important;
+      height: 0 !important;
+      max-height: 100% !important;
+      overflow-y: scroll !important;
+      overflow-x: hidden !important;
+      padding: 4px 6px 16px 6px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      font-size: 12.5px !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.85);
+      touch-action: pan-y;
+    }
+    .ai-chat-messages::-webkit-scrollbar {
+      width: 8px !important;
+    }
+    .ai-chat-messages::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.85) !important;
+      border-radius: 8px;
+    }
+    .ai-chat-messages::-webkit-scrollbar-thumb {
+      background: #38bdf8 !important;
+      border-radius: 8px;
+      border: 2px solid #0f172a;
+    }
+    .ai-chat-messages::-webkit-scrollbar-thumb:hover {
+      background: #7dd3fc !important;
+    }
+    .ai-composer {
+      flex-shrink: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      padding: 10px !important;
+      background: rgba(13, 20, 36, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 8px !important;
+      margin-top: auto !important;
+      box-sizing: border-box !important;
     }
 
     /* TOP NAVBAR */
@@ -1369,7 +1448,7 @@ STUDIO_HTML = r"""<!doctype html>
         </button>
       </div>
       <div class="search-filter" style="position:relative">
-        <input type="text" id="file-search" placeholder="Search files in repository..." style="padding-right:24px">
+        <input type="text" id="file-search" placeholder="Search files in repository..." autocomplete="off" spellcheck="false" style="padding-right:24px">
         <button id="clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px" title="Clear Search">✕</button>
       </div>
       <div id="file-tree" class="file-tree">
@@ -1537,7 +1616,7 @@ STUDIO_HTML = r"""<!doctype html>
     <!-- ======================================================== -->
     <div id="page-pc-studio" class="studio-page">
       <div class="studio-app pc-theme">
-        <!-- TOP BAR (PC) -->
+        <!-- TOP BAR (PC) - Clean navbar without redundant PC button -->
         <header class="studio-nav pc-nav">
           <div class="nav-left">
             <div class="brand-title">
@@ -1553,10 +1632,6 @@ STUDIO_HTML = r"""<!doctype html>
               <button id="pc-back-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Go back to parent directory (⬆)">⬆</button>
               <button id="pc-refresh-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh local PC files">↻</button>
             </div>
-            <button id="btn-pc-connect-nav" class="btn" style="padding:2px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px;border-color:rgba(56,189,248,0.4);color:#38bdf8" title="PC Connection Status" onclick="openPcAuthModal()">
-              <span id="pc-nav-status-dot" class="sync-dot" style="background:#f87171"></span>
-              <span id="pc-nav-status-text">💻 Connect PC</span>
-            </button>
             <button id="btn-switch-to-gh-nav" class="btn btn-switch-mode gh-mode-btn" title="Switch back to GitHub Cloud Studio" onclick="switchToGitHubStudio()">
               <span>⬅ 🐙 GitHub Studio</span>
             </button>
@@ -1586,9 +1661,12 @@ STUDIO_HTML = r"""<!doctype html>
                 <span>PC Explorer</span>
                 <span id="pc-file-count" style="font-weight:600;color:var(--accent)">0 files</span>
               </div>
-              <button id="sidebar-pc-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Machine Status" onclick="openPcAuthModal()">
-                <span id="sidebar-pc-label">💻 Connect PC</span>
-              </button>
+              <div style="display:flex;align-items:center;gap:6px">
+                <button id="pc-new-file-btn" class="btn btn-primary" style="padding:2px 8px;font-size:11px;font-weight:600" title="Create New File on PC" onclick="openPcNewFileModal()">➕ New File</button>
+                <button id="sidebar-pc-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Machine Status" onclick="openPcAuthModal()">
+                  <span id="sidebar-pc-label">💻 Connect PC</span>
+                </button>
+              </div>
             </div>
             
             <!-- Breadcrumbs path navigation -->
@@ -1597,7 +1675,7 @@ STUDIO_HTML = r"""<!doctype html>
             </div>
 
             <div class="search-filter" style="position:relative">
-              <input type="text" id="pc-file-search" placeholder="Search local PC files..." style="padding-right:24px">
+              <input type="text" id="pc-file-search" placeholder="Search local PC files..." autocomplete="off" spellcheck="false" style="padding-right:24px">
               <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px">✕</button>
             </div>
             <div id="pc-file-tree" class="file-tree">
@@ -1825,6 +1903,35 @@ STUDIO_HTML = r"""<!doctype html>
   <div class="ctx-item" id="ctx-copy-btn">
     <span>📋</span>
     <span>Copy File Path</span>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: CREATE NEW FILE ON PC -->
+<!-- ======================================================== -->
+<div id="pc-new-file-modal" class="modal-backdrop">
+  <div class="modal" style="max-width:440px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">📄</span>
+        <h3 style="margin:0;font-size:16px;font-weight:700">Create New File on PC</h3>
+      </div>
+      <button type="button" class="btn" style="padding:2px 8px;font-size:12px" onclick="closePcNewFileModal()">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      <span>Location: </span><code id="pc-new-file-dir" style="color:#7dd3fc">...</code>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">New File Name:</label>
+      <input type="text" id="pc-new-file-name-input" placeholder="e.g. app.js, index.html, notes.md" autocomplete="off" spellcheck="false" style="width:100%;background:#030712;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:8px 12px;color:#fff;font-size:12px">
+    </div>
+    <div id="pc-new-file-status" style="font-size:11px;color:#94a3b8;margin-bottom:14px;min-height:16px"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button type="button" class="btn" onclick="closePcNewFileModal()">Cancel</button>
+      <button type="button" id="pc-new-file-confirm-btn" class="btn btn-primary" onclick="confirmPcCreateFile()">
+        <span>Create File</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2121,10 +2228,14 @@ STUDIO_HTML = r"""<!doctype html>
     }
     var controller = new AbortController();
     var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
+    var bodyData = undefined;
+    if (options.body !== undefined && options.body !== null) {
+      bodyData = (typeof options.body === "string") ? options.body : JSON.stringify(options.body);
+    }
     return fetch(url, {
       method: options.method || "GET",
       headers: headers,
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      body: bodyData,
       signal: controller.signal
     }).then(function(r) {
       clearTimeout(timeoutId);
@@ -3529,14 +3640,10 @@ STUDIO_HTML = r"""<!doctype html>
     window.pcFilesLoaded = false;
 
     // Reset UI components immediately
-    var navDot = $("pc-nav-status-dot");
-    var navText = $("pc-nav-status-text");
     var sideLabel = $("sidebar-pc-label");
     var modalBadge = $("pc-modal-status-badge");
     var modalMsg = $("modal-pc-status-msg");
     var profileCard = $("pc-profile-card");
-    if (navDot) navDot.style.background = "#f87171";
-    if (navText) navText.textContent = "💻 Connect PC";
     if (sideLabel) sideLabel.textContent = "💻 Connect PC";
     if (modalBadge) {
       modalBadge.textContent = "Disconnected";
@@ -3580,8 +3687,6 @@ STUDIO_HTML = r"""<!doctype html>
       var connected = !!(res && res.connected);
       isPcConnected = connected;
 
-      var navDot = $("pc-nav-status-dot");
-      var navText = $("pc-nav-status-text");
       var sideLabel = $("sidebar-pc-label");
       var modalBadge = $("pc-modal-status-badge");
       var modalMsg = $("modal-pc-status-msg");
@@ -3589,13 +3694,11 @@ STUDIO_HTML = r"""<!doctype html>
       var disconnectBtn = $("modal-pc-disconnect-btn");
 
       if (connected) {
-        if (navDot) navDot.style.background = "#52e396";
         var machine = res.hostname || (res.info && res.info.hostname) || "PC";
         pcInfo = res.info || {};
         pcInfo.hostname = machine;
         pcDrivesList = res.drives || pcInfo.drives || [];
 
-        if (navText) navText.textContent = "💻 " + machine;
         if (sideLabel) sideLabel.textContent = "💻 " + machine;
         var sideBtn = $("sidebar-pc-btn");
         if (sideBtn) sideBtn.title = "Connected to " + machine + " - Click to manage";
@@ -3622,8 +3725,6 @@ STUDIO_HTML = r"""<!doctype html>
           loadPcFiles(pcCurrentPath);
         }
       } else {
-        if (navDot) navDot.style.background = "#f87171";
-        if (navText) navText.textContent = "💻 Connect PC";
         if (sideLabel) sideLabel.textContent = "💻 Connect PC";
         if (modalBadge) {
           modalBadge.textContent = "Disconnected";
@@ -3775,6 +3876,14 @@ STUDIO_HTML = r"""<!doctype html>
     window.pcFilesLoaded = true;
     pcCurrentPath = dirPath;
 
+    // Reset search input value when switching folders so files are never accidentally hidden
+    var pcSearchInput = $("pc-file-search");
+    if (pcSearchInput && !window._isPcSearching) {
+      pcSearchInput.value = "";
+      var cBtn = $("pc-clear-search-btn");
+      if (cBtn) cBtn.style.display = "none";
+    }
+
     var treeEl = $("pc-file-tree");
     if (!treeEl) return;
     treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px"><span class="spinner"></span> Loading local files from PC...</div>';
@@ -3812,7 +3921,7 @@ STUDIO_HTML = r"""<!doctype html>
       }
 
       if (entries.length === 0 && !parentDir) {
-        treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty.</div>';
+        treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty. Click "➕ New File" to create one.</div>';
         return;
       }
 
@@ -3841,17 +3950,6 @@ STUDIO_HTML = r"""<!doctype html>
             openPcFile(p);
           }
         };
-
-        // Attach right-click context menu handler
-        el.oncontextmenu = function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          var p = this.getAttribute("data-path");
-          var isD = this.getAttribute("data-is-dir") === "true";
-          var nm = this.getAttribute("data-name") || p.split(/[\\/]/).pop();
-          if (this.classList.contains("dir-parent-item")) return;
-          showContextMenu(e.clientX, e.clientY, "pc", p, isD, nm);
-        };
       });
     }).catch(function(err) {
       treeEl.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Error: ' + esc(err.message) + '</div>';
@@ -3876,6 +3974,58 @@ STUDIO_HTML = r"""<!doctype html>
       loadPcFiles(pcCurrentPath || ".");
     };
   }
+
+  // --- PC NEW FILE CREATION MODAL LOGIC ---
+  window.openPcNewFileModal = function() {
+    if (!isPcConnected) {
+      alert("Please connect your PC first before creating files.");
+      return;
+    }
+    var m = $("pc-new-file-modal");
+    if (!m) return;
+    $("pc-new-file-dir").textContent = pcCurrentPath || ".";
+    var inp = $("pc-new-file-name-input");
+    if (inp) {
+      inp.value = "";
+      setTimeout(function() { inp.focus(); }, 100);
+    }
+    $("pc-new-file-status").textContent = "";
+    m.classList.add("open");
+  };
+
+  window.closePcNewFileModal = function() {
+    var m = $("pc-new-file-modal");
+    if (m) m.classList.remove("open");
+  };
+
+  window.confirmPcCreateFile = function() {
+    var inp = $("pc-new-file-name-input");
+    var name = inp ? inp.value.trim() : "";
+    if (!name) {
+      alert("Please enter a file name.");
+      return;
+    }
+    var sep = pcCurrentPath.includes("/") ? "/" : "\\";
+    var fullPath = pcCurrentPath + ((pcCurrentPath.endsWith("/") || pcCurrentPath.endsWith("\\")) ? "" : sep) + name;
+    var statusEl = $("pc-new-file-status");
+    var btn = $("pc-new-file-confirm-btn");
+    if (statusEl) statusEl.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Creating file on PC...';
+    if (btn) btn.disabled = true;
+
+    api("/v1/connector/file", {
+      method: "POST",
+      body: { path: fullPath, content: "" }
+    }).then(function(res) {
+      if (btn) btn.disabled = false;
+      if (!res.ok) throw new Error(res.error || "Failed to create file");
+      closePcNewFileModal();
+      loadPcFiles(pcCurrentPath);
+      openPcFile(fullPath);
+    }).catch(function(err) {
+      if (btn) btn.disabled = false;
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
+    });
+  };
 
   function openPcFile(filePath) {
     pcState.activePath = filePath;
@@ -4121,7 +4271,7 @@ STUDIO_HTML = r"""<!doctype html>
     });
   }
 
-  // Save to PC Disk Button
+  // Save to PC Disk Button (passes clean object, no double stringify)
   var pcSaveBtn = $("pc-commit-btn");
   if (pcSaveBtn) {
     pcSaveBtn.onclick = function() {
@@ -4140,7 +4290,7 @@ STUDIO_HTML = r"""<!doctype html>
 
       api("/v1/connector/file", {
         method: "POST",
-        body: JSON.stringify({ path: path, content: content })
+        body: { path: path, content: content }
       }).then(function(res) {
         if (!res.ok) {
           alert("Failed saving file: " + (res.error || ""));
@@ -4234,10 +4384,11 @@ STUDIO_HTML = r"""<!doctype html>
     };
   }
 
-  // PC Search filter
+  // PC Search filter with tracking flag
   var pcSearch = $("pc-file-search");
   if (pcSearch) {
     pcSearch.addEventListener("input", function() {
+      window._isPcSearching = true;
       var val = this.value.toLowerCase().trim();
       var clearBtn = $("pc-clear-search-btn");
       if (clearBtn) clearBtn.style.display = val ? "block" : "none";
@@ -4256,6 +4407,7 @@ STUDIO_HTML = r"""<!doctype html>
   var pcClearSearch = $("pc-clear-search-btn");
   if (pcClearSearch) {
     pcClearSearch.onclick = function() {
+      window._isPcSearching = false;
       if (pcSearch) {
         pcSearch.value = "";
         pcSearch.dispatchEvent(new Event("input"));
@@ -4263,7 +4415,7 @@ STUDIO_HTML = r"""<!doctype html>
     };
   }
 
-  // PC AI Co-Pilot chat send
+  // PC AI Co-Pilot chat send - routes to console/request with full active context
   function sendPcAiPrompt() {
     var promptEl = $("pc-ai-prompt");
     var chat = $("pc-ai-chat");
@@ -4286,16 +4438,24 @@ STUDIO_HTML = r"""<!doctype html>
     var edContent = $("pc-code-editor") ? $("pc-code-editor").value : "";
     var currentFile = pcState.activePath || "untitled";
 
-    api("/v1/ai/chat", {
+    api("/v1/console/request", {
       method: "POST",
-      body: JSON.stringify({
-        messages: [{
-          role: "user",
-          content: "Context: Local PC File `" + currentFile + "`:\n```\n" + edContent.slice(0, 4000) + "\n```\n\nUser question: " + q
-        }]
-      })
+      body: {
+        request: q,
+        message: q,
+        body_id: "pc-cloud-studio",
+        context: {
+          target_pc: pcInfo.hostname || "PC",
+          active_path: currentFile,
+          active_file: currentFile,
+          file_content: edContent
+        }
+      }
     }).then(function(res) {
-      var ans = res.response || res.answer || res.reply || "Done.";
+      var ans = res.response || res.result || res.answer || res.reply || res.text || "Done.";
+      if (typeof ans === "object") {
+        ans = ans.response || ans.message || JSON.stringify(ans, null, 2);
+      }
       sMsg.innerHTML = typeof renderStudioMarkdown === "function" ? renderStudioMarkdown(ans) : ('<pre style="white-space:pre-wrap">' + esc(ans) + '</pre>');
       chat.scrollTop = chat.scrollHeight;
     }).catch(function(err) {
@@ -4355,6 +4515,38 @@ STUDIO_HTML = r"""<!doctype html>
     }
   });
 
+  // Attach event delegation for Right-Click Context Menu on BOTH GitHub and PC trees
+  var ghFileTree = $("file-tree");
+  if (ghFileTree) {
+    ghFileTree.addEventListener("contextmenu", function(e) {
+      var item = e.target.closest(".tree-item");
+      if (item) {
+        e.preventDefault();
+        e.stopPropagation();
+        var p = item.getAttribute("data-path");
+        if (p) {
+          var nm = p.split("/").pop();
+          showContextMenu(e.clientX, e.clientY, "gh", p, false, nm);
+        }
+      }
+    });
+  }
+
+  var pcFileTree = $("pc-file-tree");
+  if (pcFileTree) {
+    pcFileTree.addEventListener("contextmenu", function(e) {
+      var item = e.target.closest(".file-item:not(.dir-parent-item)");
+      if (item) {
+        e.preventDefault();
+        e.stopPropagation();
+        var p = item.getAttribute("data-path");
+        var isD = item.getAttribute("data-is-dir") === "true";
+        var nm = item.getAttribute("data-name") || p.split(/[\\/]/).pop();
+        showContextMenu(e.clientX, e.clientY, "pc", p, isD, nm);
+      }
+    });
+  }
+
   // Context Menu Actions
   var ctxTransferBtn = $("ctx-transfer-btn");
   if (ctxTransferBtn) {
@@ -4411,27 +4603,63 @@ STUDIO_HTML = r"""<!doctype html>
     var modal = $("modal-transfer-to-gh");
     if (!modal) return;
     $("trans-gh-source-path").textContent = pcFilePath;
-    $("trans-gh-repo-path").value = fileName || pcFilePath.split(/[\\/]/).pop();
-    $("trans-gh-commit-msg").value = "feat: transfer " + (fileName || pcFilePath.split(/[\\/]/).pop()) + " from local PC";
+    var baseName = fileName || pcFilePath.split(/[\\/]/).pop();
+    $("trans-gh-repo-path").value = baseName;
+    $("trans-gh-commit-msg").value = "feat: transfer " + baseName + " from local PC";
     $("trans-gh-status-line").textContent = "";
 
     var repoSel = $("trans-gh-target-repo");
     if (repoSel) {
-      repoSel.innerHTML = '<option value="">Loading repositories...</option>';
-      api("/v1/github/project/repos").then(function(res) {
-        var repos = res.repos || [];
-        if (!repos.length) {
+      // Fast pre-population from current session options or state.repos
+      var reposList = [];
+      var ghSelect = $("repo-select");
+      if (ghSelect && ghSelect.options && ghSelect.options.length) {
+        Array.from(ghSelect.options).forEach(function(opt) {
+          if (opt.value && !opt.value.startsWith("(")) {
+            reposList.push(opt.value);
+          }
+        });
+      }
+      if (typeof state !== "undefined" && state.repos && state.repos.length) {
+        state.repos.forEach(function(r) {
+          var name = r.full_name || r.name;
+          if (name && !reposList.includes(name)) reposList.push(name);
+        });
+      }
+
+      function populateRepos(list) {
+        if (!list || !list.length) {
           repoSel.innerHTML = '<option value="">No repositories found (Connect GitHub)</option>';
           return;
         }
         var h = "";
-        repos.forEach(function(r) {
-          var sel = (typeof state !== "undefined" && state.repo === r.full_name) ? "selected" : "";
-          h += '<option value="' + esc(r.full_name) + '" ' + sel + '>' + esc(r.full_name) + '</option>';
+        list.forEach(function(r) {
+          var val = typeof r === "string" ? r : (r.full_name || r.name);
+          var curRepo = (typeof state !== "undefined" && state.repo) ? state.repo : "";
+          var sel = (val === curRepo) ? "selected" : "";
+          h += '<option value="' + esc(val) + '" ' + sel + '>' + esc(val) + '</option>';
         });
         repoSel.innerHTML = h;
+      }
+
+      if (reposList.length) {
+        populateRepos(reposList);
+      } else {
+        repoSel.innerHTML = '<option value="">Loading repositories...</option>';
+      }
+
+      // Always fetch latest from server too
+      api("/v1/github/project/repos").then(function(res) {
+        var fetched = res && (res.repositories || res.repos || (Array.isArray(res) ? res : []));
+        if (fetched && fetched.length) {
+          populateRepos(fetched);
+        } else if (!reposList.length) {
+          repoSel.innerHTML = '<option value="">No repositories found (Connect GitHub)</option>';
+        }
       }).catch(function(err) {
-        repoSel.innerHTML = '<option value="">Failed loading repositories: ' + esc(err.message) + '</option>';
+        if (!reposList.length) {
+          repoSel.innerHTML = '<option value="">Failed loading repositories: ' + esc(err.message) + '</option>';
+        }
       });
     }
 
@@ -4473,13 +4701,13 @@ STUDIO_HTML = r"""<!doctype html>
 
       return api("/v1/github/project/file", {
         method: "POST",
-        body: JSON.stringify({
+        body: {
           repo: repo,
           branch: branch,
           path: repoPath,
           content: content,
           message: commitMsg || ("feat: transfer " + repoPath + " from local PC")
-        })
+        }
       });
     }).then(function(ghRes) {
       if (submitBtn) submitBtn.disabled = false;
@@ -4577,10 +4805,10 @@ STUDIO_HTML = r"""<!doctype html>
 
       return api("/v1/connector/file", {
         method: "POST",
-        body: JSON.stringify({
+        body: {
           path: targetFull,
           content: content
-        })
+        }
       });
     }).then(function(pcRes) {
       if (submitBtn) submitBtn.disabled = false;
