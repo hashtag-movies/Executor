@@ -9,23 +9,101 @@ responsibilities of Hashtag Core and the Body permission layer.
 from __future__ import annotations
 
 import base64
-from typing import Any
+import logging
+import time
+from typing import Any, Callable, Optional
 
 import requests
+
+logger = logging.getLogger("executor.github")
+
+
+class TokenBucketRateLimiter:
+    """Token bucket rate limiter for GitHub API.
+
+    GitHub allows 5000 requests/hour for authenticated users.
+    We use a conservative 4500/hour = 1.25 req/sec baseline.
+    Burst allowance handles short spikes.
+    """
+
+    def __init__(
+        self,
+        rate_per_hour: int = 4500,
+        burst: int = 50,
+    ):
+        self.rate_per_second = rate_per_hour / 3600.0
+        self.burst = burst
+        self.tokens = float(burst)
+        self.last_update = time.monotonic()
+        self._lock = __import__("threading").Lock()
+
+    def _refill(self) -> None:
+        now = time.monotonic()
+        elapsed = now - self.last_update
+        self.tokens = min(self.burst, self.tokens + elapsed * self.rate_per_second)
+        self.last_update = now
+
+    def acquire(self, tokens: int = 1, timeout: float = 30.0) -> bool:
+        """Acquire tokens, blocking until available or timeout."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            with self._lock:
+                self._refill()
+                if self.tokens >= tokens:
+                    self.tokens -= tokens
+                    return True
+            time.sleep(0.05)
+        return False
+
+    def update_from_headers(self, headers: dict[str, str]) -> None:
+        """Update bucket state from GitHub rate limit headers."""
+        try:
+            remaining = headers.get("X-RateLimit-Remaining")
+            reset = headers.get("X-RateLimit-Reset")
+            limit = headers.get("X-RateLimit-Limit")
+
+            if remaining is not None and reset is not None:
+                with self._lock:
+                    # If we're close to limit, throttle more aggressively
+                    rem = int(remaining)
+                    if rem < 100:
+                        # Reduce token generation rate
+                        self.rate_per_second = max(0.1, self.rate_per_second * 0.5)
+                    elif rem > 1000:
+                        # Restore normal rate
+                        self.rate_per_second = 4500 / 3600.0
+
+                    # If reset time is in the future, calculate tokens from reset
+                    reset_ts = int(reset)
+                    now_ts = int(time.time())
+                    if reset_ts > now_ts:
+                        seconds_to_reset = reset_ts - now_ts
+                        self.tokens = min(self.burst, rem * 0.8)
+        except Exception:
+            pass  # Best effort only
 
 
 class GitHubClient:
     """GitHub REST API client used by the Executor Body."""
+
+    # Retry configuration
+    MAX_RETRIES = 3
+    BASE_BACKOFF = 1.0  # seconds
+    MAX_BACKOFF = 30.0
+    RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
     def __init__(
         self,
         token: str,
         api_url: str = "https://api.github.com",
         timeout: int = 30,
+        rate_limiter: Optional[TokenBucketRateLimiter] = None,
     ):
         self.api_url = api_url.rstrip("/")
         self.timeout = timeout
+        self.rate_limiter = rate_limiter or TokenBucketRateLimiter()
 
+        self.token = str(token).strip() if token else ""
         self.session = requests.Session()
 
         self.session.headers.update(
@@ -39,6 +117,119 @@ class GitHubClient:
             self.session.headers["Authorization"] = (
                 f"Bearer {token}"
             )
+
+    # ------------------------------------------------------------------
+    # Internal HTTP helpers with rate limiting & retry/backoff
+    # ------------------------------------------------------------------
+
+    def _url(self, path: str) -> str:
+        return f"{self.api_url}/{path.lstrip('/')}"
+
+    def _request_with_retry(
+        self,
+        method: str,
+        path: str,
+        **kwargs,
+    ) -> requests.Response:
+        """Execute HTTP request with rate limiting and exponential backoff retry."""
+        url = self._url(path)
+
+        # Acquire rate limit token before request
+        if not self.rate_limiter.acquire(timeout=30.0):
+            raise RuntimeError("Rate limiter timeout: unable to acquire token")
+
+        last_exception = None
+        for attempt in range(self.MAX_RETRIES + 1):
+            try:
+                response = self.session.request(
+                    method,
+                    url,
+                    timeout=self.timeout,
+                    **kwargs,
+                )
+
+                # Update rate limiter from response headers
+                self.rate_limiter.update_from_headers(response.headers)
+
+                # Check for retryable status codes
+                if response.status_code in self.RETRYABLE_STATUS:
+                    if attempt < self.MAX_RETRIES:
+                        # Handle 429 with Retry-After header if present
+                        if response.status_code == 429:
+                            retry_after = response.headers.get("Retry-After")
+                            if retry_after:
+                                try:
+                                    wait_time = min(float(retry_after), self.MAX_BACKOFF)
+                                except ValueError:
+                                    wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                            else:
+                                wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                        else:
+                            wait_time = self.BASE_BACKOFF * (2 ** attempt)
+
+                        # Add jitter
+                        import random
+                        wait_time *= (0.5 + random.random())
+                        wait_time = min(wait_time, self.MAX_BACKOFF)
+
+                        logger.warning(
+                            "GitHub API %s %s (attempt %d/%d), backing off %.1fs",
+                            response.status_code, url, attempt + 1, self.MAX_RETRIES, wait_time
+                        )
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        response.raise_for_status()
+
+                # Success - raise for other error codes (4xx except 429)
+                response.raise_for_status()
+                return response
+
+            except requests.Timeout as exc:
+                last_exception = exc
+                if attempt < self.MAX_RETRIES:
+                    wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                    logger.warning("GitHub API timeout (attempt %d/%d), retrying in %.1fs", attempt + 1, self.MAX_RETRIES, wait_time)
+                    time.sleep(wait_time)
+                    continue
+            except requests.RequestException as exc:
+                last_exception = exc
+                if attempt < self.MAX_RETRIES:
+                    wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                    logger.warning("GitHub API error: %s (attempt %d/%d), retrying in %.1fs", exc, attempt + 1, self.MAX_RETRIES, wait_time)
+                    time.sleep(wait_time)
+                    continue
+
+        # All retries exhausted
+        raise RuntimeError(f"GitHub API request failed after {self.MAX_RETRIES} retries: {last_exception}") from last_exception
+
+    def _get(self, path: str) -> Any:
+        response = self._request_with_retry("GET", path)
+        return response.json()
+
+    def _post(
+        self,
+        path: str,
+        payload: dict[str, Any],
+    ) -> Any:
+        response = self._request_with_retry("POST", path, json=payload)
+        return response.json()
+
+    def _put(
+        self,
+        path: str,
+        payload: dict[str, Any],
+    ) -> Any:
+        response = self._request_with_retry("PUT", path, json=payload)
+        return response.json()
+
+    def _delete(self, path: str) -> Any:
+        response = self._request_with_retry("DELETE", path)
+        return response.json()
+
+    def _patch(self, path: str, payload: dict[str, Any]) -> Any:
+        response = self._request_with_retry("PATCH", path, json=payload)
+        return response.json()
 
     # ------------------------------------------------------------------
     # Internal HTTP helpers
@@ -400,16 +591,75 @@ class GitHubClient:
     ) -> str:
         """Download a zip archive of the repository at a given ref/branch."""
         from pathlib import Path
+
+        # Acquire rate limit token
+        if not self.rate_limiter.acquire(timeout=30.0):
+            raise RuntimeError("Rate limiter timeout: unable to acquire token")
+
         url = self._url(f"repos/{owner}/{repo}/zipball/{ref}")
-        response = self.session.get(url, stream=True, timeout=120)
-        response.raise_for_status()
-        out = Path(output_path)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        with open(out, "wb") as f:
-            for chunk in response.iter_content(chunk_size=16384):
-                if chunk:
-                    f.write(chunk)
-        return str(out.resolve())
+
+        last_exception = None
+        for attempt in range(self.MAX_RETRIES + 1):
+            try:
+                response = self.session.get(url, stream=True, timeout=120)
+
+                # Update rate limiter from response headers
+                self.rate_limiter.update_from_headers(response.headers)
+
+                if response.status_code in self.RETRYABLE_STATUS:
+                    if attempt < self.MAX_RETRIES:
+                        if response.status_code == 429:
+                            retry_after = response.headers.get("Retry-After")
+                            if retry_after:
+                                try:
+                                    wait_time = min(float(retry_after), self.MAX_BACKOFF)
+                                except ValueError:
+                                    wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                            else:
+                                wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                        else:
+                            wait_time = self.BASE_BACKOFF * (2 ** attempt)
+
+                        import random
+                        wait_time *= (0.5 + random.random())
+                        wait_time = min(wait_time, self.MAX_BACKOFF)
+
+                        logger.warning(
+                            "GitHub zip download %s (attempt %d/%d), backing off %.1fs",
+                            response.status_code, attempt + 1, self.MAX_RETRIES, wait_time
+                        )
+                        response.close()
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        response.raise_for_status()
+
+                response.raise_for_status()
+
+                out = Path(output_path)
+                out.parent.mkdir(parents=True, exist_ok=True)
+                with open(out, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=16384):
+                        if chunk:
+                            f.write(chunk)
+                return str(out.resolve())
+
+            except requests.Timeout as exc:
+                last_exception = exc
+                if attempt < self.MAX_RETRIES:
+                    wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                    logger.warning("GitHub zip download timeout (attempt %d/%d), retrying in %.1fs", attempt + 1, self.MAX_RETRIES, wait_time)
+                    time.sleep(wait_time)
+                    continue
+            except requests.RequestException as exc:
+                last_exception = exc
+                if attempt < self.MAX_RETRIES:
+                    wait_time = self.BASE_BACKOFF * (2 ** attempt)
+                    logger.warning("GitHub zip download error: %s (attempt %d/%d), retrying in %.1fs", exc, attempt + 1, self.MAX_RETRIES, wait_time)
+                    time.sleep(wait_time)
+                    continue
+
+        raise RuntimeError(f"GitHub zip download failed after {self.MAX_RETRIES} retries: {last_exception}") from last_exception
 
     def delete_file(
         self,
@@ -431,13 +681,10 @@ class GitHubClient:
             "sha": sha,
             "branch": branch,
         }
-        response = self.session.delete(
-            self._url(f"repos/{owner}/{repo}/contents/{path}"),
-            json=payload,
-            timeout=self.timeout,
+        return self._delete(
+            f"repos/{owner}/{repo}/contents/{path}",
+            payload,
         )
-        response.raise_for_status()
-        return response.json()
 
     def write_file_from_existing(
         self,
@@ -539,11 +786,10 @@ class GitHubClient:
             "parents": [parent_sha],
         })
 
-        self.session.patch(
-            self._url(f"repos/{owner}/{repo}/git/refs/heads/{branch}"),
-            json={"sha": new_commit["sha"]},
-            timeout=self.timeout,
-        ).raise_for_status()
+        self._patch(
+            f"repos/{owner}/{repo}/git/refs/heads/{branch}",
+            {"sha": new_commit["sha"]},
+        )
 
         return {
             "ok": True,

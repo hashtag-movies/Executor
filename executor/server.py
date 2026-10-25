@@ -371,7 +371,10 @@ def _get_request_github_client(request: Request, payload: Optional[dict] = None)
                 token = candidate
     if token and str(token).strip():
         from .github import GitHubClient
-        return GitHubClient(token=str(token).strip()), str(token).strip()
+        tok_str = str(token).strip()
+        client = GitHubClient(token=tok_str)
+        client.token = tok_str
+        return client, tok_str
     return None, None
 
 @app.get("/v1/github/status")

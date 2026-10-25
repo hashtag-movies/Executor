@@ -1159,14 +1159,9 @@ STUDIO_HTML = r"""<!doctype html>
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="studio-body">
-<div class="studio-viewport-stage">
-  <div id="studio-slider" class="studio-slider">
-    <!-- ======================================================== -->
-    <!-- SLIDE 1: GITHUB CLOUD STUDIO                             -->
-    <!-- ======================================================== -->
-    <div id="page-github-studio" class="studio-page">
-      <div class="studio-app">
+<body>
+
+<div class="studio-app">
   <!-- TOP BAR -->
   <header class="studio-nav">
     <div class="nav-left">
@@ -1355,8 +1350,8 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
         </div>
       </button>
-      <!-- SWITCH TO PC CLOUD STUDIO (Marked button) -->
-      <button id="dock-btn-to-pc" class="aux-dock-btn dock-pc" title="Switch to PC Cloud Studio (Edit PC Files Locally)">
+      <!-- SWITCH TO PC CLOUD STUDIO BUTTON (Sliding Page Trigger) -->
+      <button id="dock-btn-to-pc" class="aux-dock-btn dock-pc" title="Switch to PC Cloud Studio">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
           <line x1="8" y1="21" x2="16" y2="21"/>
@@ -1380,7 +1375,7 @@ STUDIO_HTML = r"""<!doctype html>
       <span style="color:var(--accent)">Hashtag Cloud Runtime</span>
     </div>
   </footer>
-      </div>
+</div>
     </div>
 
     <!-- ======================================================== -->
@@ -1442,21 +1437,22 @@ STUDIO_HTML = r"""<!doctype html>
             </div>
             <div class="search-filter" style="position:relative">
               <input type="text" id="pc-file-search" placeholder="Search local PC files..." style="padding-right:24px">
-              <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px" title="Clear Search">✕</button>
+              <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px">✕</button>
             </div>
             <div id="pc-file-tree" class="file-tree">
-              <div style="padding:30px 15px;text-align:center;color:var(--muted);font-size:12px">
-                <div style="font-size:24px;margin-bottom:8px">💻</div>
-                <div style="font-weight:600;color:var(--text);margin-bottom:4px">No PC Connected</div>
-                <div>Link your local computer to browse and edit local files.</div>
-                <button type="button" class="btn btn-primary" style="margin-top:12px;padding:4px 12px;font-size:11px" onclick="openPcAuthModal()">
+              <!-- Initial Connection Card (Clean & matches GitHub not-connected state) -->
+              <div style="padding:18px 14px;text-align:center;color:var(--muted);font-size:12px">
+                <div style="font-size:28px;margin-bottom:8px">💻</div>
+                <div style="font-weight:700;color:var(--text);margin-bottom:6px">PC Disconnected</div>
+                <div style="margin-bottom:12px;line-height:1.4">Connect your PC using the 1-click terminal command to explore & edit files directly on your machine.</div>
+                <button type="button" class="btn btn-primary" style="padding:4px 14px;font-size:11px" onclick="openPcAuthModal()">
                   <span>⚡ Connect Local PC</span>
                 </button>
               </div>
             </div>
           </aside>
 
-          <!-- CENTER: PC CODE EDITOR -->
+          <!-- CENTER: CODE EDITOR -->
           <section class="editor-panel">
             <div id="pc-editor-tabs" class="editor-tabs" style="display:flex;justify-content:space-between;align-items:center">
               <div style="display:flex;align-items:center">
@@ -1475,7 +1471,7 @@ STUDIO_HTML = r"""<!doctype html>
             </div>
           </section>
 
-          <!-- RIGHT: PC LIVE PREVIEW & AI ASSISTANT -->
+          <!-- RIGHT: PC LIVE PREVIEW & AI ASSISTANT (PIXEL IDENTICAL TO GITHUB CLOUD STUDIO) -->
           <aside id="pc-aux-panel" class="aux-panel">
             <!-- COLLAPSE HANDLE BUTTON -->
             <button id="pc-btn-collapse-aux" class="aux-collapse-btn" title="Collapse Side Panel (Hide Preview & AI)">
@@ -1499,7 +1495,7 @@ STUDIO_HTML = r"""<!doctype html>
                 </div>
                 <span>Live Web Preview</span>
               </div>
-              <div id="pc-tab-btn-ai" class="aux-tab">🤖 PC AI Co-Pilot</div>
+              <div id="pc-tab-btn-ai" class="aux-tab">🤖 AI Co-Pilot</div>
               <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Toggle Wide Panel">
                 <span id="pc-expand-aux-icon">⛶</span>
                 <span id="pc-expand-aux-label">Widen</span>
@@ -1514,42 +1510,47 @@ STUDIO_HTML = r"""<!doctype html>
             <div id="pc-view-preview" class="preview-container">
               <div class="preview-toolbar">
                 <div class="dev-group">
-                  <button id="pc-dev-desktop" class="dev-btn active" title="Desktop Screen">🖥️ <span class="dev-btn-label">Desktop</span></button>
-                  <button id="pc-dev-tablet" class="dev-btn" title="Tablet Screen">📟 <span class="dev-btn-label">Tablet</span></button>
-                  <button id="pc-dev-mobile" class="dev-btn" title="Mobile Screen">📱 <span class="dev-btn-label">Mobile</span></button>
+                  <button id="pc-dev-desktop" class="dev-btn active" title="Desktop Screen (100% Fluid)">🖥️ <span class="dev-btn-label">Desktop</span></button>
+                  <button id="pc-dev-tablet" class="dev-btn" title="Tablet Screen (768x1024)">📟 <span class="dev-btn-label">Tablet</span></button>
+                  <button id="pc-dev-mobile" class="dev-btn" title="Mobile Screen (375x812)">📱 <span class="dev-btn-label">Mobile</span></button>
+                  <button id="pc-dev-rotate" class="dev-btn" title="Rotate Screen Orientation">🔄 <span class="dev-btn-label">Rotate</span></button>
                 </div>
                 <div class="preview-toolbar-actions">
                   <span id="pc-preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
-                  <button id="pc-preview-refresh-btn" class="btn" style="padding:2px 8px;font-size:10px" title="Re-render">↻</button>
+                  <button id="pc-preview-fullscreen-btn" class="btn btn-primary" title="Full Screen Preview (F)" style="padding:2px 8px;font-size:11px;font-weight:600">⛶ Fullscreen</button>
+                  <button id="pc-preview-popout-btn" class="btn" title="Open in New Real Browser Tab" style="padding:2px 8px;font-size:11px">↗ Pop Out</button>
+                  <button id="pc-refresh-preview-btn" class="btn" style="padding:2px 8px;font-size:10px" title="Re-render">↻</button>
                 </div>
               </div>
               <div class="preview-viewport-wrap">
                 <div id="pc-preview-frame-holder" class="preview-frame-holder">
                   <iframe id="pc-preview-frame" class="preview-frame"
-                    sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups"
-                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
                 </div>
               </div>
             </div>
 
-            <!-- AI TAB -->
-            <div id="pc-view-ai" class="ai-assistant-container is-hidden">
-              <div class="ai-chat-history" id="pc-ai-chat">
+            <!-- AI ASSISTANT TAB (EXACT SAME COMPOSER & BUBBLES AS GITHUB CLOUD STUDIO) -->
+            <div id="pc-view-ai" class="ai-assistant-container" style="display:none">
+              <div id="pc-ai-chat" class="ai-chat-messages">
                 <div class="ai-msg assistant">
-                  <b>Hashtag PC Co-Pilot:</b><br><br>
-                  Connected to your local machine. I can inspect files, write code, run terminal diagnostics, and refactor directly on your computer.
+                  👋 <b>Hashtag PC Cloud Co-Pilot</b> ready! Connected to your local machine. I can inspect files, write code, run terminal diagnostics, and refactor directly on your computer.
                 </div>
               </div>
-              <div class="ai-prompt-box">
-                <textarea id="pc-ai-prompt" placeholder="Ask PC Co-Pilot to edit local files, refactor, or build... (Enter to send)"></textarea>
-                <button id="pc-ai-send-btn" class="btn btn-commit pc-save-btn">Send ⚡</button>
+              <div class="ai-composer">
+                <textarea id="pc-ai-prompt" placeholder="Ask Hashtag PC Co-Pilot to edit local files, refactor, or build... (Enter to send)"></textarea>
+                <button id="pc-ai-send-btn" class="btn btn-primary" style="align-self:flex-end">
+                  <span>Ask Hashtag</span> <span>➜</span>
+                </button>
               </div>
             </div>
           </aside>
 
           <!-- DOCKED BUTTONS IN PC STUDIO -->
           <div id="pc-aux-dock-buttons" class="aux-dock-buttons">
-            <button id="pc-dock-btn-ai" class="aux-dock-btn dock-ai" title="Open PC AI Co-Pilot">
+            <button id="pc-dock-btn-ai" class="aux-dock-btn dock-ai" title="Open Hashtag PC AI Co-Pilot">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="11" width="18" height="10" rx="3"/>
                 <circle cx="12" cy="5" r="2"/>
@@ -1584,24 +1585,23 @@ STUDIO_HTML = r"""<!doctype html>
         </main>
 
         <!-- STATUSBAR (PC) -->
-        <footer class="studio-statusbar">
+        <footer class="studio-statusbar pc-statusbar">
           <div class="status-item">
             <span id="pc-sync-dot" class="status-indicator"></span>
-            <span id="pc-sync-status">PC Studio Ready</span>
+            <span id="pc-sync-status">Ready</span>
           </div>
           <div class="status-item">
             <span id="pc-editor-meta">Lines: 1 · Chars: 0</span>
             <span>|</span>
-            <span id="pc-active-host">Local Disk</span>
+            <span id="pc-active-root">Target: Local PC</span>
             <span>|</span>
-            <span style="color:#38bdf8">Direct PC Runtime</span>
+            <span style="color:#38bdf8">Hashtag PC Local Bridge</span>
           </div>
         </footer>
       </div>
     </div>
 
   </div>
-</div>
 </div>
 
 <!-- COMMIT MODAL -->
@@ -1645,9 +1645,8 @@ STUDIO_HTML = r"""<!doctype html>
 </div>
 
 
-<!-- GITHUB AUTH MODAL -->
 
-<!-- CONNECT LOCAL PC MODAL (Pixel-identical design to GitHub modal) -->
+<!-- PC CONNECT MODAL (Pixel-identical modal layout to GitHub modal) -->
 <div id="pc-connect-modal" class="modal-backdrop">
   <div class="modal" style="max-width:520px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -1656,6 +1655,16 @@ STUDIO_HTML = r"""<!doctype html>
         <h3 style="margin:0;font-size:16px;font-weight:700">Connect Local PC</h3>
       </div>
       <span id="pc-modal-status-badge" class="badge" style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">Disconnected</span>
+    </div>
+
+    <!-- Active Connected PC Card -->
+    <div id="pc-profile-card" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:12px;margin-bottom:14px;align-items:center;gap:12px">
+      <div style="font-size:28px">💻</div>
+      <div style="flex:1">
+        <div id="pc-modal-machine-name" style="font-size:13px;font-weight:700;color:#fff">Local Workstation</div>
+        <div id="pc-modal-os-name" style="font-size:11px;color:var(--muted)">Windows · Live Bridge Active</div>
+      </div>
+      <span class="badge" style="background:rgba(56,189,248,0.2);color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">Connected</span>
     </div>
 
     <!-- Info Box (identical to GitHub modal blue box) -->
@@ -1668,7 +1677,7 @@ STUDIO_HTML = r"""<!doctype html>
 
     <!-- Command Tabs -->
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button type="button" id="modal-tab-ps" class="btn" style="padding:4px 12px;font-size:11px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15)" onclick="switchPcModalTab('ps')">⚡ PowerShell (Recommended)</button>
+      <button type="button" id="modal-tab-ps" class="btn" style="padding:4px 12px;font-size:11px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15)" onclick="switchPcModalTab('ps')">⚡ PowerShell (Windows)</button>
       <button type="button" id="modal-tab-cmd" class="btn" style="padding:4px 12px;font-size:11px;color:var(--muted)" onclick="switchPcModalTab('cmd')">💻 Command Prompt (CMD)</button>
     </div>
 
@@ -1681,18 +1690,21 @@ STUDIO_HTML = r"""<!doctype html>
     </div>
 
     <!-- Status footer -->
-    <div id="modal-pc-status-line" style="font-size:11px;color:#facc15;display:flex;align-items:center;gap:6px;margin-bottom:16px">
-      <span class="status-indicator" style="background:#facc15;display:inline-block"></span>
-      <span id="modal-pc-status-msg">Waiting for terminal connection on PC...</span>
+    <div id="modal-pc-status-line" style="font-size:11px;color:#facc15;display:flex;align-items:center;gap:6px;margin-bottom:14px">
+      <span class="spinner" style="width:12px;height:12px"></span>
+      <span id="modal-pc-status-msg">Waiting for PC connection...</span>
     </div>
 
-    <div class="modal-actions" style="display:flex;justify-content:space-between;align-items:center">
-      <button type="button" id="modal-pc-disconnect-btn" class="btn btn-danger" style="display:none" onclick="disconnectPcSession()">Disconnect PC</button>
-      <button type="button" class="btn" style="margin-left:auto" onclick="closePcAuthModal()">Close</button>
+    <!-- Modal Actions -->
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button type="button" id="modal-pc-disconnect-btn" class="btn" style="display:none;color:var(--danger);border-color:rgba(248,113,113,0.3)" onclick="disconnectPc()">Disconnect</button>
+      <button type="button" id="cancel-pc-auth-btn" class="btn" onclick="closePcAuthModal()">Close</button>
+      <button type="button" class="btn btn-primary" onclick="closePcAuthModal()">Done</button>
     </div>
   </div>
 </div>
 
+<!-- GITHUB AUTH MODAL -->
 <div id="github-auth-modal" class="modal-backdrop">
   <div class="modal" style="max-width:500px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -2863,10 +2875,19 @@ STUDIO_HTML = r"""<!doctype html>
       code = el ? (el.innerText || el.textContent) : "";
     }
     if (code) {
-      $("code-editor").value = code;
-      markDirty();
-      updateLineNumbers();
-      updatePreview();
+      if (document.body.classList.contains("mode-pc")) {
+        var pcEd = $("pc-code-editor");
+        if (pcEd) pcEd.value = code;
+        var dirty = $("pc-tab-dirty");
+        if (dirty) dirty.style.display = "inline";
+        updatePcLineNumbers();
+        updatePcPreview();
+      } else {
+        $("code-editor").value = code;
+        markDirty();
+        updateLineNumbers();
+        updatePreview();
+      }
       alert("✓ Applied code directly into the editor!");
     }
   };
@@ -3066,7 +3087,7 @@ STUDIO_HTML = r"""<!doctype html>
   updatePreview();
 
   // ========================================================
-  // --- STUDIO DUAL-MODE SLIDER CONTROLLER (Slide Animation) ---
+  // --- STUDIO SLIDER & DUAL-MODE VIEWPORT CONTROLLER ---
   // ========================================================
   function switchToPcStudio() {
     document.body.classList.add("mode-pc");
@@ -3157,128 +3178,106 @@ STUDIO_HTML = r"""<!doctype html>
         btnPs.style.color = "var(--muted)";
         btnPs.style.fontWeight = "normal";
       }
-      currentPcModalCmd = "curl -sL https://executor.hashtagai.online/connect.bat -o %TEMP%\\connect.bat && %TEMP%\\connect.bat";
+      currentPcModalCmd = "curl -sSf https://executor.hashtagai.online/connect.cmd | cmd";
     }
     if (snippet) snippet.textContent = currentPcModalCmd;
   };
 
   window.copyPcModalCmd = function() {
-    var copyDone = function() {
-      var t = $("modal-pc-copy-text");
-      if (t) t.textContent = "✓ Copied!";
-      setTimeout(function() { if (t) t.textContent = "Copy"; }, 2000);
-    };
+    var snippet = $("modal-pc-cmd");
+    var copyText = $("modal-pc-copy-text");
+    var textToCopy = snippet ? (snippet.innerText || snippet.textContent) : currentPcModalCmd;
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(currentPcModalCmd).then(copyDone).catch(function() {
-        fallbackCopy();
+      navigator.clipboard.writeText(textToCopy).then(function() {
+        if (copyText) copyText.textContent = "✓ Copied!";
+        setTimeout(function() { if (copyText) copyText.textContent = "Copy"; }, 2000);
       });
     } else {
-      fallbackCopy();
-    }
-    function fallbackCopy() {
       var ta = document.createElement("textarea");
-      ta.value = currentPcModalCmd;
+      ta.value = textToCopy;
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand("copy"); copyDone(); } catch (e) {}
+      document.execCommand("copy");
       document.body.removeChild(ta);
+      if (copyText) copyText.textContent = "✓ Copied!";
+      setTimeout(function() { if (copyText) copyText.textContent = "Copy"; }, 2000);
     }
   };
 
-  window.disconnectPcSession = function() {
-    api("/v1/connector/action", { method: "POST", body: { action: "disconnect" } }).finally(function() {
+  window.disconnectPc = function() {
+    api("/v1/connector/disconnect", { method: "POST" }).then(function() {
+      isPcConnected = false;
+      window.pcFilesLoaded = false;
       checkPcConnectorStatus();
-    });
+    }).catch(function() {});
   };
 
+  // Heartbeat Poller for PC Status
   function checkPcConnectorStatus() {
     api("/v1/connector/status", { method: "GET" }).then(function(res) {
-      if (!res) return;
-      var connected = !!(res.connected || (res.connections && res.connections.length > 0));
+      var connected = !!(res && res.connected);
+      isPcConnected = connected;
+
       var navDot = $("pc-nav-status-dot");
       var navText = $("pc-nav-status-text");
+      var sideLabel = $("sidebar-pc-label");
       var modalBadge = $("pc-modal-status-badge");
-      var modalStatusMsg = $("modal-pc-status-msg");
-      var modalStatusLine = $("modal-pc-status-line");
-      var disBtn = $("modal-pc-disconnect-btn");
-      var sidebarLabel = $("sidebar-pc-label");
-      var activeHost = $("pc-active-host");
+      var modalMsg = $("modal-pc-status-msg");
+      var profileCard = $("pc-profile-card");
+      var disconnectBtn = $("modal-pc-disconnect-btn");
 
       if (connected) {
-        isPcConnected = true;
-        var info = res.info || (res.connections && res.connections[0] && res.connections[0].system_info) || {};
-        var hostname = info.hostname || "Local PC";
-        var osName = info.system || "Windows";
-
         if (navDot) navDot.style.background = "#52e396";
-        if (navText) navText.textContent = "● " + hostname;
-        if (sidebarLabel) sidebarLabel.textContent = "● " + hostname;
-        if (activeHost) activeHost.textContent = hostname + " (" + osName + ")";
-
+        var machine = res.hostname || "PC";
+        if (navText) navText.textContent = "💻 " + machine;
+        if (sideLabel) sideLabel.textContent = "💻 " + machine;
         if (modalBadge) {
           modalBadge.textContent = "Connected";
-          modalBadge.style.background = "rgba(74,222,128,0.15)";
-          modalBadge.style.borderColor = "rgba(74,222,128,0.4)";
-          modalBadge.style.color = "#4ade80";
+          modalBadge.style.background = "rgba(82,227,150,0.15)";
+          modalBadge.style.color = "#52e396";
+          modalBadge.style.borderColor = "rgba(82,227,150,0.4)";
         }
-        if (modalStatusMsg) modalStatusMsg.textContent = "Connected to " + hostname + " (" + osName + ")";
-        if (modalStatusLine) modalStatusLine.style.color = "#4ade80";
-        if (disBtn) disBtn.style.display = "inline-block";
+        if (modalMsg) modalMsg.innerHTML = '<span style="color:#52e396">✓ Live bridge connected to ' + esc(machine) + ' (' + esc(res.os || "OS") + ')</span>';
+        if (profileCard) {
+          profileCard.style.display = "flex";
+          var mName = $("pc-modal-machine-name");
+          var oName = $("pc-modal-os-name");
+          if (mName) mName.textContent = machine;
+          if (oName) oName.textContent = (res.os || "Local Machine") + " · Active directory: " + (res.root || ".");
+        }
+        if (disconnectBtn) disconnectBtn.style.display = "inline-block";
 
-        // Populate drives in pc-root-select if not yet populated
-        var sel = $("pc-root-select");
-        if (sel && !sel.dataset.populated && info.drives && info.drives.length > 0) {
-          sel.innerHTML = "";
-          var cwdOpt = document.createElement("option");
-          cwdOpt.value = info.cwd || ".";
-          cwdOpt.textContent = "Project: " + (info.cwd ? info.cwd.split(/[\\/]/).pop() : "Local Folder");
-          sel.appendChild(cwdOpt);
-
-          info.drives.forEach(function(d) {
-            var opt = document.createElement("option");
-            opt.value = d;
-            opt.textContent = "Drive " + d;
-            sel.appendChild(opt);
-          });
-          sel.dataset.populated = "true";
-          pcCurrentPath = sel.value;
-          loadPcFiles(pcCurrentPath);
-        } else if (!window.pcFilesLoaded) {
+        if (!window.pcFilesLoaded) {
           loadPcFiles(pcCurrentPath);
         }
       } else {
-        isPcConnected = false;
-        window.pcFilesLoaded = false;
         if (navDot) navDot.style.background = "#f87171";
         if (navText) navText.textContent = "💻 Connect PC";
-        if (sidebarLabel) sidebarLabel.textContent = "💻 Connect PC";
-        if (activeHost) activeHost.textContent = "Local Disk";
-
+        if (sideLabel) sideLabel.textContent = "💻 Connect PC";
         if (modalBadge) {
           modalBadge.textContent = "Disconnected";
           modalBadge.style.background = "rgba(248,113,113,0.15)";
-          modalBadge.style.borderColor = "rgba(248,113,113,0.3)";
           modalBadge.style.color = "#f87171";
+          modalBadge.style.borderColor = "rgba(248,113,113,0.3)";
         }
-        if (modalStatusMsg) modalStatusMsg.textContent = "Waiting for terminal connection on PC...";
-        if (modalStatusLine) modalStatusLine.style.color = "#facc15";
-        if (disBtn) disBtn.style.display = "none";
+        if (modalMsg) modalMsg.textContent = "Waiting for terminal command execution on your PC...";
+        if (profileCard) profileCard.style.display = "none";
+        if (disconnectBtn) disconnectBtn.style.display = "none";
 
         var treeEl = $("pc-file-tree");
-        if (treeEl && !treeEl.querySelector("#pc-empty-connect-btn")) {
-          treeEl.innerHTML = '<div style="padding:30px 15px;text-align:center;color:var(--muted);font-size:12px">' +
-            '<div style="font-size:24px;margin-bottom:8px">💻</div>' +
-            '<div style="font-weight:600;color:var(--text);margin-bottom:4px">No PC Connected</div>' +
-            '<div>Link your local computer to browse and edit local files.</div>' +
-            '<button type="button" id="pc-empty-connect-btn" class="btn btn-primary" style="margin-top:12px;padding:4px 12px;font-size:11px" onclick="openPcAuthModal()">' +
+        if (treeEl && !treeEl.querySelector(".file-list-items")) {
+          treeEl.innerHTML = '<div style="padding:18px 14px;text-align:center;color:var(--muted);font-size:12px">' +
+            '<div style="font-size:28px;margin-bottom:8px">💻</div>' +
+            '<div style="font-weight:700;color:var(--text);margin-bottom:6px">PC Disconnected</div>' +
+            '<div style="margin-bottom:12px;line-height:1.4">Connect your PC using the 1-click terminal command to explore & edit files directly on your machine.</div>' +
+            '<button type="button" class="btn btn-primary" style="padding:4px 14px;font-size:11px" onclick="openPcAuthModal()">' +
             '<span>⚡ Connect Local PC</span>' +
             '</button>' +
             '</div>';
         }
       }
-    }).catch(function(err) {
-      console.warn("PC Connector heartbeat error:", err);
-    });
+    }).catch(function() {});
   }
 
   // Load PC Files via REST
@@ -3361,6 +3360,8 @@ STUDIO_HTML = r"""<!doctype html>
       }
       var status = $("pc-sync-status");
       if (status) status.textContent = "Opened " + fileName;
+      var dirty = $("pc-tab-dirty");
+      if (dirty) dirty.style.display = "none";
     }).catch(function(err) {
       alert("Error opening file: " + err.message);
     });
@@ -3369,9 +3370,10 @@ STUDIO_HTML = r"""<!doctype html>
   // --- PC STUDIO CONTROLLERS ---
   var pcState = {
     activePath: "index.html",
-    isDirty: false,
-    history: []
+    isDirty: false
   };
+
+  var pcPreviewTimer = null;
 
   function updatePcLineNumbers() {
     var editor = $("pc-code-editor");
@@ -3380,7 +3382,7 @@ STUDIO_HTML = r"""<!doctype html>
     var count = (editor.value.match(/\n/g) || []).length + 1;
     var html = "";
     for (var i = 1; i <= count; i++) {
-      html += i + "<br>";
+      html += "<div>" + i + "</div>";
     }
     lineBox.innerHTML = html;
     var meta = $("pc-editor-meta");
@@ -3390,9 +3392,155 @@ STUDIO_HTML = r"""<!doctype html>
   function updatePcPreview() {
     var frame = $("pc-preview-frame");
     if (!frame) return;
-    var editor = $("pc-code-editor");
-    var content = editor ? editor.value : "";
-    frame.srcdoc = content || '<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#94a3b8;background:#090d16;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><h3>PC Studio Live Preview</h3></body></html>';
+
+    var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
+    var path = (pcState.activePath || "index.html").toLowerCase();
+
+    // Check if Markdown file
+    if (path.endsWith(".md") || path.endsWith(".markdown")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+                   + '<style>body{font-family:system-ui,-apple-system,sans-serif;background:#0d1424;color:#edf4ff;padding:28px 36px;line-height:1.6;max-width:860px;margin:0 auto}pre{background:#070b14;padding:14px;border-radius:8px;overflow:auto;color:#78a9ff;border:1px solid rgba(255,255,255,0.08)}h1,h2,h3{color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px}code{background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#38bdf8}table{border-collapse:collapse;width:100%}th,td{border:1px solid rgba(255,255,255,0.15);padding:8px 12px;text-align:left}</style>'
+                   + '</head><body>' + (typeof renderStudioMarkdown === "function" ? renderStudioMarkdown(content) : ('<pre>' + esc(content) + '</pre>')) + '</body></html>';
+      return;
+    }
+
+    // Check if CSS file
+    if (path.endsWith(".css")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' + content + '</style>'
+                   + '<style>body{font-family:system-ui,sans-serif;padding:30px;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;gap:16px;align-items:center}.demo-box{padding:24px;border-radius:12px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);max-width:500px;text-align:center}button{padding:8px 16px;border-radius:8px;cursor:pointer}</style>'
+                   + '</head><body><div class="demo-box"><h2>🎨 CSS Live Testbed</h2><p>Previewing <code>' + esc(pcState.activePath || "styles.css") + '</code> styles live on PC.</p><button>Sample Button</button></div></body></html>';
+      return;
+    }
+
+    // Check if standalone JavaScript file
+    if (path.endsWith(".js") || path.endsWith(".ts")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+                   + '<style>body{font-family:monospace;background:#0d1424;color:#78a9ff;padding:20px;margin:0}#console-log{background:#070b14;padding:16px;border-radius:8px;border:1px solid rgba(120,169,255,0.2);min-height:220px;white-space:pre-wrap}.log-line{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)}.log-err{color:#f87171}</style>'
+                   + '</head><body><h3 style="color:#fff;margin-top:0">⚡ Live JavaScript Console (' + esc(pcState.activePath || "script.js") + ')</h3><div id="console-log"></div>'
+                   + '<script>'
+                   + 'var logEl = document.getElementById("console-log");'
+                   + 'function log(msg, isErr) { var d = document.createElement("div"); d.className = "log-line" + (isErr ? " log-err" : ""); d.textContent = (isErr ? "❌ " : "▶ ") + msg; logEl.appendChild(d); }'
+                   + 'console.log = function() { var args = Array.prototype.slice.call(arguments); log(args.map(function(a){ return typeof a === "object" ? JSON.stringify(a) : a; }).join(" ")); };'
+                   + 'console.error = function() { var args = Array.prototype.slice.call(arguments); log(args.map(function(a){ return typeof a === "object" ? JSON.stringify(a) : a; }).join(" "), true); };'
+                   + 'window.onerror = function(m, u, l) { log(m + " (line " + l + ")", true); };'
+                   + 'try { ' + content + ' } catch(e) { log(e.stack || e.message, true); }'
+                   + '</' + 'script></body></html>';
+      return;
+    }
+
+    if (!content || !content.trim()) {
+      frame.removeAttribute("src");
+      frame.srcdoc = "<!doctype html><html><body style='background:#0f172a;color:#94a3b8;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h3>👁️ PC Live Web Preview</h3><p>Enter HTML code in the editor or select a local file to render live from your PC.</p></div></body></html>";
+      return;
+    }
+
+    // Default HTML rendering
+    frame.removeAttribute("src");
+    frame.srcdoc = content;
+    frame.style.opacity = "1";
+  }
+
+  // Device switcher for PC Preview
+  var pcCurrentDevice = "desktop";
+  var pcIsLandscape = false;
+
+  function setPcPreviewDevice(device) {
+    pcCurrentDevice = device;
+    var holder = $("pc-preview-frame-holder");
+    if (!holder) return;
+    holder.className = "preview-frame-holder";
+
+    if ($("pc-dev-desktop")) $("pc-dev-desktop").classList.remove("active");
+    if ($("pc-dev-tablet")) $("pc-dev-tablet").classList.remove("active");
+    if ($("pc-dev-mobile")) $("pc-dev-mobile").classList.remove("active");
+
+    if (device === "desktop") {
+      if ($("pc-dev-desktop")) $("pc-dev-desktop").classList.add("active");
+      if ($("pc-preview-dim-badge")) $("pc-preview-dim-badge").textContent = "100% Fluid";
+      pcIsLandscape = false;
+      if ($("pc-dev-rotate")) {
+        $("pc-dev-rotate").classList.remove("active");
+        $("pc-dev-rotate").style.color = "";
+      }
+    } else if (device === "tablet") {
+      if ($("pc-dev-tablet")) $("pc-dev-tablet").classList.add("active");
+      holder.classList.add("device-tablet");
+      if (pcIsLandscape) holder.classList.add("landscape");
+      if ($("pc-preview-dim-badge")) $("pc-preview-dim-badge").textContent = pcIsLandscape ? "1024 × 768 · Tablet" : "768 × 1024 · Tablet";
+      if ($("pc-dev-rotate")) {
+        $("pc-dev-rotate").classList.toggle("active", pcIsLandscape);
+        $("pc-dev-rotate").style.color = pcIsLandscape ? "var(--accent)" : "";
+      }
+    } else if (device === "mobile") {
+      if ($("pc-dev-mobile")) $("pc-dev-mobile").classList.add("active");
+      holder.classList.add("device-mobile");
+      if (pcIsLandscape) holder.classList.add("landscape");
+      if ($("pc-preview-dim-badge")) $("pc-preview-dim-badge").textContent = pcIsLandscape ? "812 × 375 · Mobile" : "375 × 812 · Mobile";
+      if ($("pc-dev-rotate")) {
+        $("pc-dev-rotate").classList.toggle("active", pcIsLandscape);
+        $("pc-dev-rotate").style.color = pcIsLandscape ? "var(--accent)" : "";
+      }
+    }
+  }
+
+  if ($("pc-dev-desktop")) $("pc-dev-desktop").onclick = function() { setPcPreviewDevice("desktop"); };
+  if ($("pc-dev-tablet")) $("pc-dev-tablet").onclick = function() { setPcPreviewDevice("tablet"); };
+  if ($("pc-dev-mobile")) $("pc-dev-mobile").onclick = function() { setPcPreviewDevice("mobile"); };
+  if ($("pc-dev-rotate")) {
+    $("pc-dev-rotate").onclick = function() {
+      if (pcCurrentDevice === "desktop") return;
+      pcIsLandscape = !pcIsLandscape;
+      setPcPreviewDevice(pcCurrentDevice);
+    };
+  }
+
+  // Fullscreen Preview for PC
+  var pcFullscreenState = { isFullscreen: false };
+  function togglePcFullscreen() {
+    var prev = $("pc-view-preview");
+    if (!prev) return;
+    var ws = $("pc-workspace");
+    if (ws) ws.classList.remove("preview-closed");
+    
+    var fBtn = $("pc-preview-fullscreen-btn");
+    pcFullscreenState.isFullscreen = !pcFullscreenState.isFullscreen;
+    if (pcFullscreenState.isFullscreen) {
+      prev.classList.add("fullscreen-preview-active");
+      if (fBtn) {
+        fBtn.textContent = "✕ Exit";
+        fBtn.style.color = "var(--danger)";
+      }
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(function() {});
+      }
+    } else {
+      prev.classList.remove("fullscreen-preview-active");
+      if (fBtn) {
+        fBtn.textContent = "⛶ Fullscreen";
+        fBtn.style.color = "";
+      }
+      if (document.exitFullscreen && document.fullscreenElement) {
+        document.exitFullscreen().catch(function() {});
+      }
+    }
+  }
+
+  if ($("pc-preview-fullscreen-btn")) $("pc-preview-fullscreen-btn").onclick = togglePcFullscreen;
+
+  if ($("pc-preview-popout-btn")) {
+    $("pc-preview-popout-btn").onclick = function() {
+      var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
+      var blob = new Blob([content], { type: "text/html" });
+      var url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    };
+  }
+
+  if ($("pc-refresh-preview-btn")) {
+    $("pc-refresh-preview-btn").onclick = updatePcPreview;
   }
 
   // PC editor input syncing
@@ -3400,7 +3548,8 @@ STUDIO_HTML = r"""<!doctype html>
   if (pcEditor) {
     pcEditor.addEventListener("input", function() {
       updatePcLineNumbers();
-      updatePcPreview();
+      clearTimeout(pcPreviewTimer);
+      pcPreviewTimer = setTimeout(updatePcPreview, 250);
       var dirty = $("pc-tab-dirty");
       if (dirty) dirty.style.display = "inline";
     });
@@ -3408,69 +3557,68 @@ STUDIO_HTML = r"""<!doctype html>
       var lines = $("pc-line-numbers");
       if (lines) lines.scrollTop = this.scrollTop;
     });
+    pcEditor.addEventListener("keydown", function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        var saveBtn = $("pc-commit-btn");
+        if (saveBtn) saveBtn.click();
+      }
+    });
   }
 
-  // PC Aux Panel Collapse & Dock Triggers
-  function collapsePcAux() {
-    var ws = $("pc-workspace");
-    if (!ws) return;
-    ws.classList.add("preview-closed");
-    ws.classList.remove("aux-expanded", "aux-maximized");
+  // PC Aux Panel Tab Switching
+  if ($("pc-tab-btn-preview")) {
+    $("pc-tab-btn-preview").onclick = function() {
+      $("pc-tab-btn-preview").classList.add("active");
+      if ($("pc-tab-btn-ai")) $("pc-tab-btn-ai").classList.remove("active");
+      if ($("pc-view-preview")) $("pc-view-preview").style.display = "flex";
+      if ($("pc-view-ai")) $("pc-view-ai").style.display = "none";
+    };
   }
-  var pcBtnCol = $("pc-btn-collapse-aux");
-  if (pcBtnCol) pcBtnCol.onclick = collapsePcAux;
-  var pcBtnCloseHdr = $("pc-btn-close-aux-header");
-  if (pcBtnCloseHdr) pcBtnCloseHdr.onclick = collapsePcAux;
+  if ($("pc-tab-btn-ai")) {
+    $("pc-tab-btn-ai").onclick = function() {
+      $("pc-tab-btn-ai").classList.add("active");
+      if ($("pc-tab-btn-preview")) $("pc-tab-btn-preview").classList.remove("active");
+      if ($("pc-view-preview")) $("pc-view-preview").style.display = "none";
+      if ($("pc-view-ai")) $("pc-view-ai").style.display = "flex";
+    };
+  }
 
+  // PC Aux Collapse Button
+  var pcBtnCollapseAux = $("pc-btn-collapse-aux");
+  if (pcBtnCollapseAux) {
+    pcBtnCollapseAux.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.toggle("preview-closed");
+    };
+  }
+  var pcBtnCloseAux = $("pc-btn-close-aux-header");
+  if (pcBtnCloseAux) {
+    pcBtnCloseAux.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.add("preview-closed");
+    };
+  }
+
+  // PC Dock Buttons
+  var pcDockPreview = $("pc-dock-btn-preview");
+  if (pcDockPreview) {
+    pcDockPreview.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      if ($("pc-tab-btn-preview")) $("pc-tab-btn-preview").click();
+    };
+  }
   var pcDockAi = $("pc-dock-btn-ai");
   if (pcDockAi) {
     pcDockAi.onclick = function() {
       var ws = $("pc-workspace");
       if (ws) ws.classList.remove("preview-closed");
-      var tAi = $("pc-tab-btn-ai");
-      if (tAi) tAi.click();
-      var aiInput = $("pc-ai-prompt");
-      if (aiInput) setTimeout(function() { aiInput.focus(); }, 150);
+      if ($("pc-tab-btn-ai")) $("pc-tab-btn-ai").click();
     };
   }
 
-  var pcDockPrev = $("pc-dock-btn-preview");
-  if (pcDockPrev) {
-    pcDockPrev.onclick = function() {
-      var ws = $("pc-workspace");
-      if (ws) ws.classList.remove("preview-closed");
-      var tPrev = $("pc-tab-btn-preview");
-      if (tPrev) tPrev.click();
-    };
-  }
-
-  // PC Aux Tabs: Preview vs AI Assistant
-  var pcTabPrev = $("pc-tab-btn-preview");
-  if (pcTabPrev) {
-    pcTabPrev.onclick = function() {
-      $("pc-tab-btn-preview").classList.add("active");
-      $("pc-tab-btn-ai").classList.remove("active");
-      $("pc-view-preview").style.display = "flex";
-      $("pc-view-preview").classList.remove("is-hidden");
-      $("pc-view-ai").style.display = "none";
-      $("pc-view-ai").classList.add("is-hidden");
-      updatePcPreview();
-    };
-  }
-
-  var pcTabAi = $("pc-tab-btn-ai");
-  if (pcTabAi) {
-    pcTabAi.onclick = function() {
-      $("pc-tab-btn-ai").classList.add("active");
-      $("pc-tab-btn-preview").classList.remove("active");
-      $("pc-view-preview").style.display = "none";
-      $("pc-view-preview").classList.add("is-hidden");
-      $("pc-view-ai").style.display = "flex";
-      $("pc-view-ai").classList.remove("is-hidden");
-    };
-  }
-
-  // PC Widen Button
+  // PC Widen / Maximize Aux Button
   var pcExpandAux = $("pc-btn-expand-aux");
   if (pcExpandAux) {
     var pcAuxExpandState = 0;
@@ -3485,13 +3633,16 @@ STUDIO_HTML = r"""<!doctype html>
         ws.classList.add("aux-expanded");
         if (label) label.textContent = "Maximize";
         if (icon) icon.textContent = "⛶";
+        pcExpandAux.title = "Maximize panel across screen";
       } else if (pcAuxExpandState === 2) {
         ws.classList.add("aux-maximized");
         if (label) label.textContent = "Restore";
         if (icon) icon.textContent = "✕";
+        pcExpandAux.title = "Restore normal panel size";
       } else {
         if (label) label.textContent = "Widen";
         if (icon) icon.textContent = "⛶";
+        pcExpandAux.title = "Widen panel to 650px";
       }
     };
   }
@@ -3506,27 +3657,45 @@ STUDIO_HTML = r"""<!doctype html>
       if (pcIsWrapped) {
         ed.setAttribute("wrap", "soft");
         ed.style.whiteSpace = "pre-wrap";
-        ed.style.wordBreak = "break-word";
-        ed.style.overflowWrap = "break-word";
-        ed.style.overflowX = "hidden";
-        this.textContent = "Wrap: ON";
-        this.style.color = "var(--accent)";
+        pcBtnWrap.textContent = "Wrap: ON";
+        pcBtnWrap.style.color = "var(--accent)";
       } else {
         ed.setAttribute("wrap", "off");
         ed.style.whiteSpace = "pre";
-        ed.style.wordBreak = "normal";
-        ed.style.overflowWrap = "normal";
-        ed.style.overflowX = "auto";
-        this.textContent = "Wrap: OFF";
-        this.style.color = "";
+        pcBtnWrap.textContent = "Wrap: OFF";
+        pcBtnWrap.style.color = "";
       }
     };
   }
 
-  // Save to PC Disk handler
-  var pcCommitBtn = $("pc-commit-btn");
-  if (pcCommitBtn) {
-    pcCommitBtn.onclick = function() {
+  // PC File Search Filter
+  var pcSearchInput = $("pc-file-search");
+  var pcClearSearch = $("pc-clear-search-btn");
+  if (pcSearchInput) {
+    pcSearchInput.addEventListener("input", function() {
+      var q = (this.value || "").toLowerCase().trim();
+      if (pcClearSearch) pcClearSearch.style.display = q ? "block" : "none";
+      var items = document.querySelectorAll("#pc-file-tree .file-item");
+      items.forEach(function(item) {
+        var p = (item.getAttribute("data-path") || "").toLowerCase();
+        item.style.display = (!q || p.indexOf(q) !== -1) ? "flex" : "none";
+      });
+    });
+  }
+  if (pcClearSearch) {
+    pcClearSearch.onclick = function() {
+      if (pcSearchInput) {
+        pcSearchInput.value = "";
+        pcSearchInput.dispatchEvent(new Event("input"));
+        pcSearchInput.focus();
+      }
+    };
+  }
+
+  // PC Save to Disk button
+  var pcSaveBtn = $("pc-commit-btn");
+  if (pcSaveBtn) {
+    pcSaveBtn.onclick = function() {
       if (!isPcConnected) {
         openPcAuthModal();
         return;
@@ -3726,29 +3895,41 @@ STUDIO_HTML = r"""<!doctype html>
       }
     }, { passive: true });
 
-    // 4. Code Editor Typing Tracker (Locks gaze directly on editor)
-    var editor = $("code-editor");
-    if (editor) {
-      function onEditorActivity() {
-        isTyping = true;
-        clearTimeout(typingTimer);
+    // 4. Code Editor Typing Tracker (Locks gaze directly on active editor)
+    var ghEditor = $("code-editor");
+    var localPcEditor = $("pc-code-editor");
 
-        var edRect = editor.getBoundingClientRect();
-        var targetX = edRect.left + Math.min(edRect.width * 0.35, 300);
-        var targetY = edRect.top + Math.min(edRect.height * 0.4, 250);
+    function onEditorActivity(activeEditorEl) {
+      if (!activeEditorEl) return;
+      isTyping = true;
+      clearTimeout(typingTimer);
 
-        lookAt(targetX, targetY);
+      var edRect = activeEditorEl.getBoundingClientRect();
+      var targetX = edRect.left + Math.min(edRect.width * 0.35, 300);
+      var targetY = edRect.top + Math.min(edRect.height * 0.4, 250);
 
-        typingTimer = setTimeout(function() {
-          isTyping = false;
-          lookAt(lastMouseX, lastMouseY);
-        }, 1200);
-      }
+      lookAt(targetX, targetY);
 
-      editor.addEventListener("input", onEditorActivity, { passive: true });
-      editor.addEventListener("keydown", function(e) {
+      typingTimer = setTimeout(function() {
+        isTyping = false;
+        lookAt(lastMouseX, lastMouseY);
+      }, 1200);
+    }
+
+    if (ghEditor) {
+      ghEditor.addEventListener("input", function() { onEditorActivity(ghEditor); }, { passive: true });
+      ghEditor.addEventListener("keydown", function(e) {
         if (e.key && (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter")) {
-          onEditorActivity();
+          onEditorActivity(ghEditor);
+        }
+      }, { passive: true });
+    }
+
+    if (localPcEditor) {
+      localPcEditor.addEventListener("input", function() { onEditorActivity(localPcEditor); }, { passive: true });
+      localPcEditor.addEventListener("keydown", function(e) {
+        if (e.key && (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter")) {
+          onEditorActivity(localPcEditor);
         }
       }, { passive: true });
     }
