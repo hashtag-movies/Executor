@@ -89,7 +89,7 @@ from .permissions import PermissionDecision, PermissionScope
 from .protocol import Operation
 from .console_ui import CONSOLE_HTML
 from .studio_ui import STUDIO_HTML
-from .connector import pc_connector, generate_client_script
+from .connector import pc_connector, generate_client_script, ConnectionState
 
 
 app = FastAPI(
@@ -171,14 +171,16 @@ body = HashtagBody()
 
 @app.get("/health")
 def health():
+    is_conn = bool(pc_connector.is_connected) if hasattr(pc_connector, "is_connected") else False
+    primary = pc_connector.get_primary_connection() if (is_conn and hasattr(pc_connector, "get_primary_connection")) else None
     return {
         "ok": True,
         "service": "Hashtag the Executor",
         "version": "1.3.0",
         "status": "online",
         "body_id": "hashtag-executor",
-        "pc_connected": pc_connector.is_connected,
-        "pc_info": pc_connector.system_info,
+        "pc_connected": is_conn,
+        "pc_info": primary.system_info if (primary and is_conn) else {},
     }
 
 
@@ -217,28 +219,44 @@ async def connector_ws(websocket: WebSocket):
 
 @app.get("/v1/connector/status")
 def connector_status():
-    is_conn = bool(pc_connector.is_connected)
-    primary = pc_connector.get_primary_connection() if is_conn else None
-    active_conns = [c.to_dict() for c in pc_connector.list_connections() if c.is_healthy and c.state == ConnectionState.CONNECTED] if is_conn else []
-    cnt = len(active_conns)
-    if cnt == 0:
-        is_conn = False
-        primary = None
-    info = primary.system_info if (primary and is_conn) else {}
-    hostname = primary.hostname if (primary and is_conn) else (info.get("hostname", ""))
-    drives = info.get("drives", []) if (primary and is_conn) else []
-    return {
-        "ok": True,
-        "connected": is_conn,
-        "connected_count": cnt,
-        "total_count": len(pc_connector.list_connections()) if hasattr(pc_connector, "list_connections") else 0,
-        "info": info if is_conn else {},
-        "hostname": hostname if is_conn else "",
-        "drives": drives if is_conn else [],
-        "primary_connection_id": primary.connection_id if primary else None,
-        "queued_actions": pc_connector.get_queued_actions_count() if hasattr(pc_connector, "get_queued_actions_count") else 0,
-        "connections": active_conns if is_conn else [],
-    }
+    try:
+        is_conn = bool(pc_connector.is_connected) if hasattr(pc_connector, "is_connected") else False
+        primary = pc_connector.get_primary_connection() if (is_conn and hasattr(pc_connector, "get_primary_connection")) else None
+        active_conns = [c.to_dict() for c in pc_connector.list_connections() if c.is_healthy] if (is_conn and hasattr(pc_connector, "list_connections")) else []
+        cnt = len(active_conns)
+        if cnt == 0:
+            is_conn = False
+            primary = None
+        info = primary.system_info if (primary and is_conn) else {}
+        hostname = primary.hostname if (primary and is_conn) else (info.get("hostname", ""))
+        drives = info.get("drives", []) if (primary and is_conn) else []
+        return {
+            "ok": True,
+            "connected": is_conn,
+            "connected_count": cnt,
+            "total_count": len(pc_connector.list_connections()) if hasattr(pc_connector, "list_connections") else 0,
+            "info": info if is_conn else {},
+            "hostname": hostname if is_conn else "",
+            "drives": drives if is_conn else [],
+            "primary_connection_id": primary.connection_id if primary else None,
+            "queued_actions": pc_connector.get_queued_actions_count() if hasattr(pc_connector, "get_queued_actions_count") else 0,
+            "connections": active_conns if is_conn else [],
+        }
+    except Exception as e:
+        logger.error("Error in connector_status: %s", e)
+        return {
+            "ok": True,
+            "connected": False,
+            "connected_count": 0,
+            "total_count": 0,
+            "info": {},
+            "hostname": "",
+            "drives": [],
+            "primary_connection_id": None,
+            "queued_actions": 0,
+            "connections": [],
+            "error": str(e)
+        }
 
 
 @app.post("/v1/connector/disconnect")
