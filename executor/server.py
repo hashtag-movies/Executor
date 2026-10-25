@@ -326,7 +326,15 @@ async def connector_file(path: str):
 
 
 @app.post("/v1/connector/file")
-async def connector_write_file(payload: Any = Body(...)):
+async def connector_write_file(request: Request):
+    try:
+        payload = await request.json()
+    except Exception:
+        try:
+            raw_body = await request.body()
+            payload = json.loads(raw_body.decode("utf-8")) if raw_body else {}
+        except Exception:
+            payload = {}
     if isinstance(payload, str):
         try: payload = json.loads(payload)
         except Exception: pass
