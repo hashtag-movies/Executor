@@ -3094,6 +3094,754 @@ STUDIO_HTML = r"""<!doctype html>
   updatePreview();
 
   // ========================================================
+  // --- PC STUDIO STATE & CONTROLLERS ---
+  // ========================================================
+  var pcState = {
+    activePath: "index.html",
+    isDirty: false
+  };
+  var currentPcModalCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
+  var isPcConnected = false;
+  var pcCurrentPath = ".";
+  var pcPreviewTimer = null;
+  window.pcFilesLoaded = false;
+
+  // ========================================================
+  // --- STUDIO SLIDER & DUAL-MODE VIEWPORT CONTROLLER ---
+  // ========================================================
+  window.switchToPcStudio = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    document.body.classList.add("mode-pc");
+    localStorage.setItem("hashtag_studio_mode", "pc");
+    var slider = document.querySelector(".studio-slider");
+    if (slider) {
+      slider.style.transform = "translate3d(-100vw, 0, 0)";
+    }
+    if (typeof updatePcPreview === "function") updatePcPreview();
+    if (typeof checkPcConnectorStatus === "function") checkPcConnectorStatus();
+  };
+
+  window.switchToGitHubStudio = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    document.body.classList.remove("mode-pc");
+    localStorage.setItem("hashtag_studio_mode", "github");
+    var slider = document.querySelector(".studio-slider");
+    if (slider) {
+      slider.style.transform = "translate3d(0, 0, 0)";
+    }
+    if (typeof updatePreview === "function") updatePreview();
+  };
+
+  // Slide trigger buttons (GitHub -> PC)
+  var btnToPcDock = $("dock-btn-to-pc");
+  if (btnToPcDock) btnToPcDock.onclick = window.switchToPcStudio;
+
+  var btnToPcNav = $("btn-switch-to-pc-nav");
+  if (btnToPcNav) btnToPcNav.onclick = window.switchToPcStudio;
+
+  // Slide trigger buttons (PC -> GitHub)
+  var btnToGhDock = $("dock-btn-to-gh");
+  if (btnToGhDock) btnToGhDock.onclick = window.switchToGitHubStudio;
+
+  var btnToGhNav = $("btn-switch-to-gh-nav");
+  if (btnToGhNav) btnToGhNav.onclick = window.switchToGitHubStudio;
+
+  // Restore last mode on page load
+  if (localStorage.getItem("hashtag_studio_mode") === "pc") {
+    document.body.classList.add("mode-pc");
+    var initSlider = document.querySelector(".studio-slider");
+    if (initSlider) {
+      initSlider.style.transform = "translate3d(-100vw, 0, 0)";
+    }
+  }
+
+  // ========================================================
+  // --- PC CONNECT MODAL & HEARTBEAT CONTROLLER ---
+  // ========================================================
+
+  window.openPcAuthModal = function() {
+    var m = $("pc-connect-modal");
+    if (m) m.classList.add("open");
+  };
+
+  window.closePcAuthModal = function() {
+    var m = $("pc-connect-modal");
+    if (m) m.classList.remove("open");
+  };
+
+  // Close modal when clicking backdrop
+  var pcModalEl = $("pc-connect-modal");
+  if (pcModalEl) {
+    pcModalEl.addEventListener("click", function(e) {
+      if (e.target === pcModalEl) closePcAuthModal();
+    });
+  }
+
+  window.switchPcModalTab = function(tab) {
+    var btnPs = $("modal-tab-ps");
+    var btnCmd = $("modal-tab-cmd");
+    var snippet = $("modal-pc-cmd");
+    if (tab === "ps") {
+      if (btnPs) {
+        btnPs.style.background = "rgba(56,189,248,0.15)";
+        btnPs.style.borderColor = "#38bdf8";
+        btnPs.style.color = "#38bdf8";
+        btnPs.style.fontWeight = "700";
+      }
+      if (btnCmd) {
+        btnCmd.style.background = "";
+        btnCmd.style.borderColor = "";
+        btnCmd.style.color = "var(--muted)";
+        btnCmd.style.fontWeight = "normal";
+      }
+      currentPcModalCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
+    } else {
+      if (btnCmd) {
+        btnCmd.style.background = "rgba(56,189,248,0.15)";
+        btnCmd.style.borderColor = "#38bdf8";
+        btnCmd.style.color = "#38bdf8";
+        btnCmd.style.fontWeight = "700";
+      }
+      if (btnPs) {
+        btnPs.style.background = "";
+        btnPs.style.borderColor = "";
+        btnPs.style.color = "var(--muted)";
+        btnPs.style.fontWeight = "normal";
+      }
+      currentPcModalCmd = "curl -sSf https://executor.hashtagai.online/connect.cmd | cmd";
+    }
+    if (snippet) snippet.textContent = currentPcModalCmd;
+  };
+
+  window.copyPcModalCmd = function() {
+    var snippet = $("modal-pc-cmd");
+    var copyText = $("modal-pc-copy-text");
+    var textToCopy = snippet ? (snippet.innerText || snippet.textContent) : currentPcModalCmd;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(function() {
+        if (copyText) copyText.textContent = "✓ Copied!";
+        setTimeout(function() { if (copyText) copyText.textContent = "Copy"; }, 2000);
+      });
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = textToCopy;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (copyText) copyText.textContent = "✓ Copied!";
+      setTimeout(function() { if (copyText) copyText.textContent = "Copy"; }, 2000);
+    }
+  };
+
+  window.disconnectPc = function() {
+    api("/v1/connector/disconnect", { method: "POST" }).then(function() {
+      isPcConnected = false;
+      window.pcFilesLoaded = false;
+      checkPcConnectorStatus();
+    }).catch(function() {});
+  };
+
+  // Heartbeat Poller for PC Status
+  function checkPcConnectorStatus() {
+    api("/v1/connector/status", { method: "GET" }).then(function(res) {
+      var connected = !!(res && res.connected);
+      isPcConnected = connected;
+
+      var navDot = $("pc-nav-status-dot");
+      var navText = $("pc-nav-status-text");
+      var sideLabel = $("sidebar-pc-label");
+      var modalBadge = $("pc-modal-status-badge");
+      var modalMsg = $("modal-pc-status-msg");
+      var profileCard = $("pc-profile-card");
+      var disconnectBtn = $("modal-pc-disconnect-btn");
+
+      if (connected) {
+        if (navDot) navDot.style.background = "#52e396";
+        var machine = res.hostname || "PC";
+        if (navText) navText.textContent = "💻 " + machine;
+        if (sideLabel) sideLabel.textContent = "💻 " + machine;
+        if (modalBadge) {
+          modalBadge.textContent = "Connected";
+          modalBadge.style.background = "rgba(82,227,150,0.15)";
+          modalBadge.style.color = "#52e396";
+          modalBadge.style.borderColor = "rgba(82,227,150,0.4)";
+        }
+        if (modalMsg) modalMsg.innerHTML = '<span style="color:#52e396">✓ Live bridge connected to ' + esc(machine) + ' (' + esc(res.os || "OS") + ')</span>';
+        if (profileCard) {
+          profileCard.style.display = "flex";
+          var mName = $("pc-modal-machine-name");
+          var oName = $("pc-modal-os-name");
+          if (mName) mName.textContent = machine;
+          if (oName) oName.textContent = (res.os || "Local Machine") + " · Active directory: " + (res.root || ".");
+        }
+        if (disconnectBtn) disconnectBtn.style.display = "inline-block";
+
+        if (!window.pcFilesLoaded) {
+          loadPcFiles(pcCurrentPath);
+        }
+      } else {
+        if (navDot) navDot.style.background = "#f87171";
+        if (navText) navText.textContent = "💻 Connect PC";
+        if (sideLabel) sideLabel.textContent = "💻 Connect PC";
+        if (modalBadge) {
+          modalBadge.textContent = "Disconnected";
+          modalBadge.style.background = "rgba(248,113,113,0.15)";
+          modalBadge.style.color = "#f87171";
+          modalBadge.style.borderColor = "rgba(248,113,113,0.3)";
+        }
+        if (modalMsg) modalMsg.textContent = "Waiting for terminal command execution on your PC...";
+        if (profileCard) profileCard.style.display = "none";
+        if (disconnectBtn) disconnectBtn.style.display = "none";
+
+        var treeEl = $("pc-file-tree");
+        if (treeEl && !treeEl.querySelector(".file-list-items")) {
+          treeEl.innerHTML = '<div style="padding:18px 14px;text-align:center;color:var(--muted);font-size:12px">' +
+            '<div style="font-size:28px;margin-bottom:8px">💻</div>' +
+            '<div style="font-weight:700;color:var(--text);margin-bottom:6px">PC Disconnected</div>' +
+            '<div style="margin-bottom:12px;line-height:1.4">Connect your PC using the 1-click terminal command to explore & edit files directly on your machine.</div>' +
+            '<button type="button" class="btn btn-primary" style="padding:4px 14px;font-size:11px" onclick="openPcAuthModal()">' +
+            '<span>⚡ Connect Local PC</span>' +
+            '</button>' +
+            '</div>';
+        }
+      }
+    }).catch(function() {});
+  }
+
+  // Load PC Files via REST
+  function loadPcFiles(dirPath) {
+    if (!isPcConnected) return;
+    window.pcFilesLoaded = true;
+
+    var treeEl = $("pc-file-tree");
+    if (!treeEl) return;
+    treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px"><span class="spinner"></span> Loading local files from PC...</div>';
+
+    api("/v1/connector/files?path=" + encodeURIComponent(dirPath), { method: "GET" }).then(function(res) {
+      if (!res.ok) {
+        treeEl.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Failed loading files: ' + esc(res.error || "") + '</div>';
+        return;
+      }
+      var entries = res.entries || [];
+      var countEl = $("pc-file-count");
+      if (countEl) countEl.textContent = entries.length + " items";
+
+      if (entries.length === 0) {
+        treeEl.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty.</div>';
+        return;
+      }
+      entries.sort(function(a, b) {
+        if (a.is_dir && !b.is_dir) return -1;
+        if (!a.is_dir && b.is_dir) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      var html = '<div class="file-list-items" style="padding:4px 0">';
+      entries.forEach(function(item) {
+        var icon = item.is_dir ? "📁" : "📄";
+        var isDir = item.is_dir ? "true" : "false";
+        var sep = (dirPath.endsWith("/") || dirPath.endsWith("\\")) ? "" : "/";
+        var fullPath = dirPath + sep + item.name;
+        html += '<div class="file-item ' + (item.is_dir ? 'dir-item' : '') + '" data-path="' + esc(fullPath) + '" data-is-dir="' + isDir + '" style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;border-radius:4px">';
+        html += '<span>' + icon + '</span>';
+        html += '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(item.name) + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+      treeEl.innerHTML = html;
+
+      treeEl.querySelectorAll(".file-item").forEach(function(el) {
+        el.onclick = function() {
+          var p = this.getAttribute("data-path");
+          var isD = this.getAttribute("data-is-dir") === "true";
+          if (isD) {
+            pcCurrentPath = p;
+            loadPcFiles(p);
+          } else {
+            openPcFile(p);
+          }
+        };
+      });
+    }).catch(function(err) {
+      treeEl.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Error: ' + esc(err.message) + '</div>';
+    });
+  }
+
+  function openPcFile(filePath) {
+    pcState.activePath = filePath;
+    var fileName = filePath.split(/[\\/]/).pop();
+    var titleEl = $("pc-active-file-title");
+    if (titleEl) titleEl.innerHTML = '<span>📄 ' + esc(filePath) + '</span>';
+    var tabName = $("pc-tab-name");
+    if (tabName) tabName.textContent = fileName;
+
+    api("/v1/connector/file?path=" + encodeURIComponent(filePath), { method: "GET" }).then(function(res) {
+      if (!res.ok) {
+        alert("Failed reading file: " + (res.error || ""));
+        return;
+      }
+      var ed = $("pc-code-editor");
+      if (ed) {
+        ed.value = res.content || "";
+        updatePcLineNumbers();
+        updatePcPreview();
+      }
+      var status = $("pc-sync-status");
+      if (status) status.textContent = "Opened " + fileName;
+      var dirty = $("pc-tab-dirty");
+      if (dirty) dirty.style.display = "none";
+    }).catch(function(err) {
+      alert("Error opening file: " + err.message);
+    });
+  }
+
+  // --- PC STUDIO CONTROLLERS ---
+  var pcState = {
+    activePath: "index.html",
+    isDirty: false
+  };
+
+  var pcPreviewTimer = null;
+
+  function updatePcLineNumbers() {
+    var editor = $("pc-code-editor");
+    var lineBox = $("pc-line-numbers");
+    if (!editor || !lineBox) return;
+    var count = (editor.value.match(/\n/g) || []).length + 1;
+    var html = "";
+    for (var i = 1; i <= count; i++) {
+      html += "<div>" + i + "</div>";
+    }
+    lineBox.innerHTML = html;
+    var meta = $("pc-editor-meta");
+    if (meta) meta.textContent = "Lines: " + count + " · Chars: " + editor.value.length;
+  }
+
+  function updatePcPreview() {
+    var frame = $("pc-preview-frame");
+    if (!frame) return;
+
+    var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
+    var path = (pcState.activePath || "index.html").toLowerCase();
+
+    // Check if Markdown file
+    if (path.endsWith(".md") || path.endsWith(".markdown")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+                   + '<style>body{font-family:system-ui,-apple-system,sans-serif;background:#0d1424;color:#edf4ff;padding:28px 36px;line-height:1.6;max-width:860px;margin:0 auto}pre{background:#070b14;padding:14px;border-radius:8px;overflow:auto;color:#78a9ff;border:1px solid rgba(255,255,255,0.08)}h1,h2,h3{color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px}code{background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#38bdf8}table{border-collapse:collapse;width:100%}th,td{border:1px solid rgba(255,255,255,0.15);padding:8px 12px;text-align:left}</style>'
+                   + '</head><body>' + (typeof renderStudioMarkdown === "function" ? renderStudioMarkdown(content) : ('<pre>' + esc(content) + '</pre>')) + '</body></html>';
+      return;
+    }
+
+    // Check if CSS file
+    if (path.endsWith(".css")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' + content + '</style>'
+                   + '<style>body{font-family:system-ui,sans-serif;padding:30px;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;gap:16px;align-items:center}.demo-box{padding:24px;border-radius:12px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);max-width:500px;text-align:center}button{padding:8px 16px;border-radius:8px;cursor:pointer}</style>'
+                   + '</head><body><div class="demo-box"><h2>🎨 CSS Live Testbed</h2><p>Previewing <code>' + esc(pcState.activePath || "styles.css") + '</code> styles live on PC.</p><button>Sample Button</button></div></body></html>';
+      return;
+    }
+
+    // Check if standalone JavaScript file
+    if (path.endsWith(".js") || path.endsWith(".ts")) {
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+                   + '<style>body{font-family:monospace;background:#0d1424;color:#78a9ff;padding:20px;margin:0}#console-log{background:#070b14;padding:16px;border-radius:8px;border:1px solid rgba(120,169,255,0.2);min-height:220px;white-space:pre-wrap}.log-line{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)}.log-err{color:#f87171}</style>'
+                   + '</head><body><h3 style="color:#fff;margin-top:0">⚡ Live JavaScript Console (' + esc(pcState.activePath || "script.js") + ')</h3><div id="console-log"></div>'
+                   + '<script>'
+                   + 'var logEl = document.getElementById("console-log");'
+                   + 'function log(msg, isErr) { var d = document.createElement("div"); d.className = "log-line" + (isErr ? " log-err" : ""); d.textContent = (isErr ? "❌ " : "▶ ") + msg; logEl.appendChild(d); }'
+                   + 'console.log = function() { var args = Array.prototype.slice.call(arguments); log(args.map(function(a){ return typeof a === "object" ? JSON.stringify(a) : a; }).join(" ")); };'
+                   + 'console.error = function() { var args = Array.prototype.slice.call(arguments); log(args.map(function(a){ return typeof a === "object" ? JSON.stringify(a) : a; }).join(" "), true); };'
+                   + 'window.onerror = function(m, u, l) { log(m + " (line " + l + ")", true); };'
+                   + 'try { ' + content + ' } catch(e) { log(e.stack || e.message, true); }'
+                   + '</' + 'script></body></html>';
+      return;
+    }
+
+    if (!content || !content.trim()) {
+      frame.removeAttribute("src");
+      frame.srcdoc = "<!doctype html><html><body style='background:#0f172a;color:#94a3b8;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h3>👁️ PC Live Web Preview</h3><p>Enter HTML code in the editor or select a local file to render live from your PC.</p></div></body></html>";
+      return;
+    }
+
+    // Default HTML rendering
+    frame.removeAttribute("src");
+    frame.srcdoc = content;
+    frame.style.opacity = "1";
+  }
+
+  // Device switcher for PC Preview
+  var pcCurrentDevice = "desktop";
+  var pcIsLandscape = false;
+
+  function setPcPreviewDevice(device) {
+    pcCurrentDevice = device;
+    var holder = $("pc-preview-frame-holder");
+    if (!holder) return;
+    holder.className = "preview-frame-holder";
+
+    if ($("pc-dev-desktop")) $("pc-dev-desktop").classList.remove("active");
+    if ($("pc-dev-tablet")) $("pc-dev-tablet").classList.remove("active");
+    if ($("pc-dev-mobile")) $("pc-dev-mobile").classList.remove("active");
+
+    if (device === "desktop") {
+      if ($("pc-dev-desktop")) $("pc-dev-desktop").classList.add("active");
+      if ($("pc-preview-dim-badge")) $("pc-preview-dim-badge").textContent = "100% Fluid";
+      pcIsLandscape = false;
+      if ($("pc-dev-rotate")) {
+        $("pc-dev-rotate").classList.remove("active");
+        $("pc-dev-rotate").style.color = "";
+      }
+    } else if (device === "tablet") {
+      if ($("pc-dev-tablet")) $("pc-dev-tablet").classList.add("active");
+      holder.classList.add("device-tablet");
+      if (pcIsLandscape) holder.classList.add("landscape");
+      if ($("pc-preview-dim-badge")) $("pc-preview-dim-badge").textContent = pcIsLandscape ? "1024 × 768 · Tablet" : "768 × 1024 · Tablet";
+      if ($("pc-dev-rotate")) {
+        $("pc-dev-rotate").classList.toggle("active", pcIsLandscape);
+        $("pc-dev-rotate").style.color = pcIsLandscape ? "var(--accent)" : "";
+      }
+    } else if (device === "mobile") {
+      if ($("pc-dev-mobile")) $("pc-dev-mobile").classList.add("active");
+      holder.classList.add("device-mobile");
+      if (pcIsLandscape) holder.classList.add("landscape");
+      if ($("pc-preview-dim-badge")) $("pc-preview-dim-badge").textContent = pcIsLandscape ? "812 × 375 · Mobile" : "375 × 812 · Mobile";
+      if ($("pc-dev-rotate")) {
+        $("pc-dev-rotate").classList.toggle("active", pcIsLandscape);
+        $("pc-dev-rotate").style.color = pcIsLandscape ? "var(--accent)" : "";
+      }
+    }
+  }
+
+  if ($("pc-dev-desktop")) $("pc-dev-desktop").onclick = function() { setPcPreviewDevice("desktop"); };
+  if ($("pc-dev-tablet")) $("pc-dev-tablet").onclick = function() { setPcPreviewDevice("tablet"); };
+  if ($("pc-dev-mobile")) $("pc-dev-mobile").onclick = function() { setPcPreviewDevice("mobile"); };
+  if ($("pc-dev-rotate")) {
+    $("pc-dev-rotate").onclick = function() {
+      if (pcCurrentDevice === "desktop") return;
+      pcIsLandscape = !pcIsLandscape;
+      setPcPreviewDevice(pcCurrentDevice);
+    };
+  }
+
+  // Fullscreen Preview for PC
+  var pcFullscreenState = { isFullscreen: false };
+  function togglePcFullscreen() {
+    var prev = $("pc-view-preview");
+    if (!prev) return;
+    var ws = $("pc-workspace");
+    if (ws) ws.classList.remove("preview-closed");
+    
+    var fBtn = $("pc-preview-fullscreen-btn");
+    pcFullscreenState.isFullscreen = !pcFullscreenState.isFullscreen;
+    if (pcFullscreenState.isFullscreen) {
+      prev.classList.add("fullscreen-preview-active");
+      if (fBtn) {
+        fBtn.textContent = "✕ Exit";
+        fBtn.style.color = "var(--danger)";
+      }
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(function() {});
+      }
+    } else {
+      prev.classList.remove("fullscreen-preview-active");
+      if (fBtn) {
+        fBtn.textContent = "⛶ Fullscreen";
+        fBtn.style.color = "";
+      }
+      if (document.exitFullscreen && document.fullscreenElement) {
+        document.exitFullscreen().catch(function() {});
+      }
+    }
+  }
+
+  if ($("pc-preview-fullscreen-btn")) $("pc-preview-fullscreen-btn").onclick = togglePcFullscreen;
+
+  if ($("pc-preview-popout-btn")) {
+    $("pc-preview-popout-btn").onclick = function() {
+      var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
+      var blob = new Blob([content], { type: "text/html" });
+      var url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    };
+  }
+
+  if ($("pc-refresh-preview-btn")) {
+    $("pc-refresh-preview-btn").onclick = updatePcPreview;
+  }
+
+  // PC editor input syncing
+  var pcEditor = $("pc-code-editor");
+  if (pcEditor) {
+    pcEditor.addEventListener("input", function() {
+      updatePcLineNumbers();
+      clearTimeout(pcPreviewTimer);
+      pcPreviewTimer = setTimeout(updatePcPreview, 250);
+      var dirty = $("pc-tab-dirty");
+      if (dirty) dirty.style.display = "inline";
+    });
+    pcEditor.addEventListener("scroll", function() {
+      var lines = $("pc-line-numbers");
+      if (lines) lines.scrollTop = this.scrollTop;
+    });
+    pcEditor.addEventListener("keydown", function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        var saveBtn = $("pc-commit-btn");
+        if (saveBtn) saveBtn.click();
+      }
+    });
+  }
+
+  // PC Aux Panel Tab Switching
+  if ($("pc-tab-btn-preview")) {
+    $("pc-tab-btn-preview").onclick = function() {
+      $("pc-tab-btn-preview").classList.add("active");
+      if ($("pc-tab-btn-ai")) $("pc-tab-btn-ai").classList.remove("active");
+      if ($("pc-view-preview")) $("pc-view-preview").style.display = "flex";
+      if ($("pc-view-ai")) $("pc-view-ai").style.display = "none";
+    };
+  }
+  if ($("pc-tab-btn-ai")) {
+    $("pc-tab-btn-ai").onclick = function() {
+      $("pc-tab-btn-ai").classList.add("active");
+      if ($("pc-tab-btn-preview")) $("pc-tab-btn-preview").classList.remove("active");
+      if ($("pc-view-preview")) $("pc-view-preview").style.display = "none";
+      if ($("pc-view-ai")) $("pc-view-ai").style.display = "flex";
+    };
+  }
+
+  // PC Aux Collapse Button
+  var pcBtnCollapseAux = $("pc-btn-collapse-aux");
+  if (pcBtnCollapseAux) {
+    pcBtnCollapseAux.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.toggle("preview-closed");
+    };
+  }
+  var pcBtnCloseAux = $("pc-btn-close-aux-header");
+  if (pcBtnCloseAux) {
+    pcBtnCloseAux.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.add("preview-closed");
+    };
+  }
+
+  // PC Dock Buttons
+  var pcDockPreview = $("pc-dock-btn-preview");
+  if (pcDockPreview) {
+    pcDockPreview.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      if ($("pc-tab-btn-preview")) $("pc-tab-btn-preview").click();
+    };
+  }
+  var pcDockAi = $("pc-dock-btn-ai");
+  if (pcDockAi) {
+    pcDockAi.onclick = function() {
+      var ws = $("pc-workspace");
+      if (ws) ws.classList.remove("preview-closed");
+      if ($("pc-tab-btn-ai")) $("pc-tab-btn-ai").click();
+    };
+  }
+
+  // PC Widen / Maximize Aux Button
+  var pcExpandAux = $("pc-btn-expand-aux");
+  if (pcExpandAux) {
+    var pcAuxExpandState = 0;
+    pcExpandAux.onclick = function() {
+      var ws = $("pc-workspace");
+      if (!ws) return;
+      pcAuxExpandState = (pcAuxExpandState + 1) % 3;
+      ws.classList.remove("aux-expanded", "aux-maximized", "preview-closed");
+      var label = $("pc-expand-aux-label");
+      var icon = $("pc-expand-aux-icon");
+      if (pcAuxExpandState === 1) {
+        ws.classList.add("aux-expanded");
+        if (label) label.textContent = "Maximize";
+        if (icon) icon.textContent = "⛶";
+        pcExpandAux.title = "Maximize panel across screen";
+      } else if (pcAuxExpandState === 2) {
+        ws.classList.add("aux-maximized");
+        if (label) label.textContent = "Restore";
+        if (icon) icon.textContent = "✕";
+        pcExpandAux.title = "Restore normal panel size";
+      } else {
+        if (label) label.textContent = "Widen";
+        if (icon) icon.textContent = "⛶";
+        pcExpandAux.title = "Widen panel to 650px";
+      }
+    };
+  }
+
+  // PC Wrap Toggle
+  var pcIsWrapped = false;
+  var pcBtnWrap = $("pc-btn-toggle-wrap");
+  if (pcBtnWrap) {
+    pcBtnWrap.onclick = function() {
+      pcIsWrapped = !pcIsWrapped;
+      var ed = $("pc-code-editor");
+      if (pcIsWrapped) {
+        ed.setAttribute("wrap", "soft");
+        ed.style.whiteSpace = "pre-wrap";
+        pcBtnWrap.textContent = "Wrap: ON";
+        pcBtnWrap.style.color = "var(--accent)";
+      } else {
+        ed.setAttribute("wrap", "off");
+        ed.style.whiteSpace = "pre";
+        pcBtnWrap.textContent = "Wrap: OFF";
+        pcBtnWrap.style.color = "";
+      }
+    };
+  }
+
+  // PC File Search Filter
+  var pcSearchInput = $("pc-file-search");
+  var pcClearSearch = $("pc-clear-search-btn");
+  if (pcSearchInput) {
+    pcSearchInput.addEventListener("input", function() {
+      var q = (this.value || "").toLowerCase().trim();
+      if (pcClearSearch) pcClearSearch.style.display = q ? "block" : "none";
+      var items = document.querySelectorAll("#pc-file-tree .file-item");
+      items.forEach(function(item) {
+        var p = (item.getAttribute("data-path") || "").toLowerCase();
+        item.style.display = (!q || p.indexOf(q) !== -1) ? "flex" : "none";
+      });
+    });
+  }
+  if (pcClearSearch) {
+    pcClearSearch.onclick = function() {
+      if (pcSearchInput) {
+        pcSearchInput.value = "";
+        pcSearchInput.dispatchEvent(new Event("input"));
+        pcSearchInput.focus();
+      }
+    };
+  }
+
+  // PC Save to Disk button
+  var pcSaveBtn = $("pc-commit-btn");
+  if (pcSaveBtn) {
+    pcSaveBtn.onclick = function() {
+      if (!isPcConnected) {
+        openPcAuthModal();
+        return;
+      }
+      var ed = $("pc-code-editor");
+      var content = ed ? ed.value : "";
+      var dot = $("pc-sync-dot");
+      var status = $("pc-sync-status");
+      var dirty = $("pc-tab-dirty");
+      if (status) status.textContent = "Saving to PC disk...";
+
+      api("/v1/connector/file", {
+        method: "POST",
+        body: { path: pcState.activePath, content: content }
+      }).then(function(res) {
+        if (!res.ok) {
+          if (status) status.textContent = "Error saving: " + (res.error || "");
+          return;
+        }
+        if (status) status.textContent = "Saved to PC Disk!";
+        if (dirty) dirty.style.display = "none";
+        if (dot) {
+          dot.style.background = "#52e396";
+          setTimeout(function() { dot.style.background = ""; }, 1800);
+        }
+      }).catch(function(err) {
+        if (status) status.textContent = "Save error: " + err.message;
+      });
+    };
+  }
+
+  // Refresh button
+  var pcRefreshBtn = $("pc-refresh-btn");
+  if (pcRefreshBtn) {
+    pcRefreshBtn.onclick = function() {
+      checkPcConnectorStatus();
+      if (isPcConnected) loadPcFiles(pcCurrentPath);
+    };
+  }
+
+  // Root select change
+  var pcRootSelect = $("pc-root-select");
+  if (pcRootSelect) {
+    pcRootSelect.onchange = function() {
+      pcCurrentPath = this.value;
+      if (isPcConnected) loadPcFiles(pcCurrentPath);
+    };
+  }
+
+  // PC AI Prompt sender
+  function sendPcAiPrompt() {
+    var promptEl = $("pc-ai-prompt");
+    var txt = promptEl.value.trim();
+    if (!txt) return;
+    promptEl.value = "";
+
+    var chat = $("pc-ai-chat");
+    var userBubble = document.createElement("div");
+    userBubble.className = "ai-msg user";
+    userBubble.textContent = txt;
+    chat.appendChild(userBubble);
+
+    var botBubble = document.createElement("div");
+    botBubble.className = "ai-msg assistant";
+    botBubble.innerHTML = '<span class="spinner"></span> Hashtag PC AI is inspecting machine & code...';
+    chat.appendChild(botBubble);
+    chat.scrollTop = chat.scrollHeight;
+
+    var activeCode = $("pc-code-editor").value;
+    api("/v1/console/request", {
+      method: "POST",
+      body: {
+        request: txt,
+        message: txt,
+        body_id: "pc-studio",
+        context: {
+          target_repo: "local-pc",
+          active_path: pcState.activePath,
+          file_content: activeCode
+        }
+      }
+    }).then(function(res) {
+      var summary = "✓ Done! Hashtag PC processed the request.";
+      if (res.response) summary = res.response;
+      else if (res.plan && res.plan.message) summary = res.plan.message;
+      else if (res.execution && res.execution.result) {
+        var r = res.execution.result;
+        if (typeof r.text === "string") summary = r.text;
+        else if (r.message) summary = r.message;
+      }
+      botBubble.innerHTML = '<b>Hashtag PC Co-Pilot:</b><br><br>' + renderStudioMarkdown(summary);
+      chat.scrollTop = chat.scrollHeight;
+    }).catch(function(err) {
+      botBubble.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
+      chat.scrollTop = chat.scrollHeight;
+    });
+  }
+
+  var pcAiSend = $("pc-ai-send-btn");
+  if (pcAiSend) pcAiSend.onclick = sendPcAiPrompt;
+  var pcAiPrompt = $("pc-ai-prompt");
+  if (pcAiPrompt) {
+    pcAiPrompt.onkeydown = function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendPcAiPrompt();
+      }
+    };
+  }
+
+  // Heartbeat trigger
+  checkPcConnectorStatus();
+  setInterval(checkPcConnectorStatus, 2500);
+
+
+  // ========================================================
   // --- CYBER EYE ENGINE (EXACTLY 2 EYES: PREVIEW TAB EYE & DOCK BUTTON EYE) ---
   (function initCyberEyeEngine() {
     var eyes = [
