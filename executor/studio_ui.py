@@ -1315,9 +1315,14 @@ STUDIO_HTML = r"""<!doctype html>
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body>
-
-<div class="studio-app">
+<body class="studio-body">
+<div class="studio-viewport-stage">
+  <div id="studio-slider" class="studio-slider">
+    <!-- ======================================================== -->
+    <!-- SLIDE 1: GITHUB CLOUD STUDIO                             -->
+    <!-- ======================================================== -->
+    <div id="page-github-studio" class="studio-page">
+      <div class="studio-app">
   <!-- TOP BAR -->
   <header class="studio-nav">
     <div class="nav-left">
@@ -1531,6 +1536,240 @@ STUDIO_HTML = r"""<!doctype html>
       <span style="color:var(--accent)">Hashtag Cloud Runtime</span>
     </div>
   </footer>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SLIDE 2: PC CLOUD STUDIO (Direct Local Machine Workspace) -->
+    <!-- ======================================================== -->
+    <div id="page-pc-studio" class="studio-page">
+      <div class="studio-app pc-theme">
+        <!-- TOP BAR (PC) -->
+        <header class="studio-nav pc-nav">
+          <div class="nav-left">
+            <div class="brand-title">
+              <img src="/assets/hashtag_logo.jpg" alt="Logo" style="width:24px;height:24px;border-radius:6px;object-fit:cover;box-shadow:0 0 10px rgba(56,189,248,0.4);">
+              <span>Hashtag</span>
+              <span class="badge pc-badge">PC Cloud Studio</span>
+            </div>
+            <div class="repo-select-wrap pc-path-wrap">
+              <span style="font-size:12px">💻</span>
+              <select id="pc-root-select" title="Target PC Workspace / Directory">
+                <option value=".">Local PC Workspace (Connect PC)</option>
+              </select>
+              <button id="pc-refresh-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh local PC files">↻</button>
+              <div id="pc-status-badge" class="pc-status-pill disconnected" title="Click to view PC Connect Command" onclick="togglePcConnectCard()">
+                <span class="status-dot"></span>
+                <span id="pc-status-badge-text">PC Offline</span>
+              </div>
+            </div>
+            <button id="btn-switch-to-gh-nav" class="btn btn-switch-mode gh-mode-btn" title="Switch back to GitHub Cloud Studio">
+              <span>⬅ 🐙 GitHub Studio</span>
+            </button>
+          </div>
+
+          <div class="nav-center">
+            <div id="pc-active-file-title" style="font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">
+              <span>📄 Connect your PC or select a file</span>
+            </div>
+          </div>
+
+          <div class="nav-right">
+            <button id="pc-commit-btn" class="btn btn-commit pc-save-btn" title="Save changes directly to PC disk (Ctrl+S)">
+              <span>💾 Save to PC</span>
+            </button>
+            <a href="/ai" class="btn" target="_blank" style="border-color:rgba(56,189,248,0.4);color:#38bdf8;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
+            <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
+          </div>
+        </header>
+
+        <!-- WORKSPACE (PC) -->
+        <main id="pc-workspace" class="studio-workspace">
+          <!-- LEFT: PC EXPLORER -->
+          <aside class="sidebar-panel">
+            <div class="sidebar-header">
+              <div class="sidebar-title">
+                <span>LOCAL PC EXPLORER</span>
+              </div>
+            </div>
+            <div class="search-filter" style="position:relative">
+              <input type="text" id="pc-file-search" placeholder="Search local PC files..." style="padding-right:24px">
+              <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px" title="Clear Search">✕</button>
+            </div>
+            <div id="pc-file-tree" class="file-tree">
+              <!-- CONNECT PC INTERACTIVE CARD -->
+              <div id="pc-connect-card" class="pc-connect-card">
+                <div class="pc-connect-header">
+                  <div class="pc-radar-pulse"></div>
+                  <div>
+                    <div class="pc-connect-title">⚡ Connect Your PC</div>
+                    <div class="pc-connect-subtitle">Link your local drive & terminal directly to Cloud Studio</div>
+                  </div>
+                </div>
+
+                <div class="pc-cmd-tabs">
+                  <button type="button" id="tab-btn-ps" class="pc-tab-btn active" onclick="switchPcCmdTab('ps')">PowerShell (Recommended)</button>
+                  <button type="button" id="tab-btn-cmd" class="pc-tab-btn" onclick="switchPcCmdTab('cmd')">Command Prompt (CMD)</button>
+                </div>
+
+                <div class="pc-cmd-box">
+                  <code id="pc-cmd-snippet">irm https://executor.hashtagai.online/connect.ps1 | iex</code>
+                  <button type="button" id="pc-copy-cmd-btn" class="pc-copy-btn" title="Copy Command">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span id="pc-copy-btn-text">Copy</span>
+                  </button>
+                </div>
+
+                <div class="pc-connect-footer">
+                  <div class="pc-radar-status" id="pc-radar-status">
+                    <span class="status-pulse-dot"></span>
+                    <span id="pc-radar-status-text">Waiting for terminal command...</span>
+                  </div>
+                  <div class="pc-connect-instructions">Run this command in PowerShell or CMD on your PC to link instantly.</div>
+                </div>
+              </div>
+              <div id="pc-file-list-container"></div>
+            </div>
+          </aside>
+
+          <!-- CENTER: PC CODE EDITOR -->
+          <section class="editor-panel">
+            <div id="pc-editor-tabs" class="editor-tabs" style="display:flex;justify-content:space-between;align-items:center">
+              <div id="pc-tabs-list" style="display:flex;align-items:center;overflow-x:auto">
+                <div class="tab-item active" style="border-top-color:#38bdf8">
+                  <span>📄 index.html</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;padding-right:8px">
+                <button id="pc-btn-toggle-wrap" class="btn" title="Toggle Word Wrap" style="padding:2px 8px;font-size:11px">Wrap: OFF</button>
+              </div>
+            </div>
+            <div class="editor-body">
+              <div id="pc-line-numbers" class="line-numbers">1</div>
+              <textarea id="pc-code-editor" class="code-editor" spellcheck="false" wrap="off" placeholder="PC Studio Editor ready. Connect PC or open any file to edit..."></textarea>
+            </div>
+          </section>
+
+          <!-- RIGHT: PC LIVE PREVIEW & AI ASSISTANT -->
+          <section id="pc-aux-panel" class="aux-panel">
+            <div class="aux-tabs-header">
+              <div class="aux-tabs-list">
+                <button id="pc-tab-btn-preview" class="aux-tab-btn active" title="Switch to PC Live Web Preview">
+                  <div class="cyber-eye tab-size" id="pc-eye-tab">
+                    <div class="eye-socket">
+                      <div class="eye-lid top-lid"></div>
+                      <div class="eye-ball">
+                        <div class="eye-iris">
+                          <div class="eye-pupil">
+                            <div class="eye-glint"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="eye-lid bottom-lid"></div>
+                    </div>
+                  </div>
+                  <span>Preview</span>
+                </button>
+                <button id="pc-tab-btn-ai" class="aux-tab-btn" title="Switch to PC AI Co-Pilot">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="10" rx="3"/>
+                    <circle cx="12" cy="5" r="2"/>
+                    <path d="M12 7v4"/>
+                    <line x1="8" y1="16" x2="8.01" y2="16" stroke-width="3"/>
+                    <line x1="16" y1="16" x2="16.01" y2="16" stroke-width="3"/>
+                    <path d="M9 19h6"/>
+                  </svg>
+                  <span>AI Co-Pilot</span>
+                </button>
+              </div>
+              <div class="aux-tabs-actions">
+                <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;">
+                  <span id="pc-expand-aux-label">Widen</span>
+                </button>
+                <button id="pc-btn-close-aux-header" class="aux-collapse-btn" title="Minimise sidebar">✕</button>
+              </div>
+            </div>
+
+            <div class="aux-tab-content">
+              <!-- PC VIEW 1: PREVIEW -->
+              <div id="pc-view-preview" class="preview-container">
+                <div class="preview-toolbar">
+                  <button id="pc-btn-collapse-aux" class="btn" title="Minimise sidebar">◀ Close</button>
+                  <span class="preview-address" style="color:#7dd3fc">pc://workspace/preview</span>
+                </div>
+                <iframe id="pc-preview-frame" class="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+              </div>
+
+              <!-- PC VIEW 2: AI CO-PILOT -->
+              <div id="pc-view-ai" class="ai-assistant-container is-hidden" style="display:none">
+                <div class="ai-chat-history" id="pc-ai-chat">
+                  <div class="ai-msg assistant">
+                    <b>Hashtag PC Co-Pilot:</b><br><br>
+                    Connected to your PC workspace. I can read, refactor, and write code directly on your local machine. Run terminal commands, search directories, and build locally.
+                  </div>
+                </div>
+                <div class="ai-prompt-box">
+                  <textarea id="pc-ai-prompt" placeholder="Ask PC Co-Pilot to edit local files, refactor, or build... (Enter to send)"></textarea>
+                  <button id="pc-ai-send-btn" class="btn btn-commit pc-save-btn">Send ⚡</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- DOCKED BUTTONS IN PC STUDIO -->
+          <div id="pc-aux-dock-buttons" class="aux-dock-buttons">
+            <button id="pc-dock-btn-ai" class="aux-dock-btn dock-ai" title="Open PC AI Co-Pilot">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="3"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8.01" y2="16" stroke-width="3"/>
+                <line x1="16" y1="16" x2="16.01" y2="16" stroke-width="3"/>
+                <path d="M9 19h6"/>
+              </svg>
+            </button>
+            <button id="pc-dock-btn-preview" class="aux-dock-btn dock-preview" title="Open Live Web Preview">
+              <div class="cyber-eye dock-size" id="pc-eye-dock">
+                <div class="eye-socket">
+                  <div class="eye-lid top-lid"></div>
+                  <div class="eye-ball">
+                    <div class="eye-iris">
+                      <div class="eye-pupil">
+                        <div class="eye-glint"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="eye-lid bottom-lid"></div>
+                </div>
+              </div>
+            </button>
+            <!-- RETURN BUTTON IN EXACT SAME DOCKED LOCATION TO GO BACK TO GITHUB STUDIO -->
+            <button id="dock-btn-to-gh" class="aux-dock-btn dock-gh" title="Switch back to GitHub Cloud Studio">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            </button>
+          </div>
+        </main>
+
+        <!-- STATUSBAR (PC) -->
+        <footer class="studio-statusbar">
+          <div class="status-left">
+            <span class="status-item">
+              <span id="pc-sync-dot" class="sync-dot"></span>
+              <span id="pc-sync-status">PC Studio Ready</span>
+            </span>
+          </div>
+          <div class="status-right">
+            <span id="pc-editor-meta" class="status-item">Lines: 1 · Chars: 0</span>
+            <span class="status-item" style="color:#38bdf8">Direct PC Disk Link</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+  </div>
+</div>
 </div>
 
 <!-- COMMIT MODAL -->
