@@ -53,6 +53,7 @@ except ImportError:
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import requests
 import uuid
@@ -94,6 +95,15 @@ from .connector import pc_connector, generate_client_script
 app = FastAPI(
     title="Hashtag the Executor",
     version="1.3.0",
+)
+
+# CORS middleware for console UI
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Correlation ID middleware for FastAPI
@@ -217,6 +227,55 @@ def connector_status():
         "queued_actions": pc_connector.get_queued_actions_count(),
         "connections": [c.to_dict() for c in pc_connector.list_connections()],
     }
+
+@app.post("/v1/connector/action")
+async def connector_action(payload: dict):
+    action = payload.get("action")
+    params = payload.get("params") or {}
+    connection_id = payload.get("connection_id")
+    if not pc_connector.is_connected:
+        return {"ok": False, "error": "No PC is currently connected. Please run the PowerShell or CMD connector command on your PC."}
+    try:
+        res = await pc_connector.send_action(action, params, connection_id=connection_id)
+        return {"ok": True, "result": res}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.get("/v1/connector/files")
+async def connector_files(path: str = "."):
+    if not pc_connector.is_connected:
+        return {"ok": False, "error": "No PC is currently connected"}
+    try:
+        res = await pc_connector.send_action("list", {"path": path})
+        return {"ok": True, "entries": res.get("entries", []), "path": res.get("path", path)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.get("/v1/connector/file")
+async def connector_file(path: str):
+    if not pc_connector.is_connected:
+        return {"ok": False, "error": "No PC is currently connected"}
+    try:
+        res = await pc_connector.send_action("read", {"path": path})
+        return {"ok": True, "content": res.get("content", ""), "path": path}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/v1/connector/file")
+async def connector_write_file(payload: dict):
+    path = payload.get("path")
+    content = payload.get("content", "")
+    if not pc_connector.is_connected:
+        return {"ok": False, "error": "No PC is currently connected"}
+    try:
+        res = await pc_connector.send_action("write", {"path": path, "content": content})
+        return {"ok": True, "result": res}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 
 
 @app.get("/connect.py", response_class=PlainTextResponse)

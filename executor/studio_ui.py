@@ -136,12 +136,172 @@ STUDIO_HTML = r"""<!doctype html>
     /* PC Theme accents */
     .pc-badge {
       background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(168,85,247,0.25)) !important;
-      border: 1px solid rgba(56,189,248,0.45) !important;
-      color: #38bdf8 !important;
+      border: 1px solid rgba(56,189,248,0.5) !important;
+      color: #7dd3fc !important;
     }
     .pc-save-btn {
       background: linear-gradient(135deg, #0284c7, #2563eb) !important;
       border-color: #38bdf8 !important;
+      color: #fff !important;
+    }
+    .pc-save-btn:hover {
+      box-shadow: 0 0 14px rgba(56,189,248,0.5) !important;
+    }
+
+    /* === PC CONNECT CARD STYLES === */
+    .pc-connect-card {
+      margin: 12px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(13, 20, 36, 0.95), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.15);
+    }
+    .pc-connect-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .pc-radar-pulse {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 10px #38bdf8;
+      animation: pcPulse 1.8s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pcPulse {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+    .pc-connect-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+    .pc-connect-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+    .pc-cmd-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .pc-tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--muted);
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .pc-tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .pc-cmd-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(3, 7, 18, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 6px;
+      padding: 6px 10px;
+      gap: 8px;
+    }
+    .pc-cmd-box code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: #7dd3fc;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .pc-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .pc-copy-btn:hover {
+      background: rgba(56, 189, 248, 0.3);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .pc-connect-footer {
+      margin-top: 10px;
+    }
+    .pc-radar-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #facc15;
+    }
+    .pc-radar-status.connected {
+      color: #4ade80;
+    }
+    .status-pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      display: inline-block;
+    }
+    .pc-connect-instructions {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+    /* Navbar pill */
+    .pc-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .pc-status-pill.disconnected {
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.4);
+      background: rgba(248, 113, 113, 0.08);
+    }
+    .pc-status-pill.connected {
+      color: #4ade80;
+      border-color: rgba(74, 222, 128, 0.4);
+      background: rgba(74, 222, 128, 0.08);
+    }
+    .pc-status-pill .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
     }
 
     /* TOP NAVBAR */
@@ -535,12 +695,9 @@ STUDIO_HTML = r"""<!doctype html>
       display: flex;
       flex-direction: column;
       height: 100%;
-      min-height: 0;
-      max-height: 100%;
       min-width: 0;
       overflow: visible;
       position: relative;
-      box-sizing: border-box;
     }
     .aux-collapse-btn {
       position: absolute;
@@ -754,10 +911,6 @@ STUDIO_HTML = r"""<!doctype html>
       color: var(--accent);
       border-bottom-color: var(--accent);
       background: rgba(120, 169, 255, 0.05);
-    }
-    .preview-container.is-hidden,
-    .ai-assistant-container.is-hidden {
-      display: none !important;
     }
     .preview-container {
       flex: 1;
@@ -992,118 +1145,88 @@ STUDIO_HTML = r"""<!doctype html>
       box-sizing: border-box;
     }
     .ai-assistant-container {
-      flex: 1 1 0%;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      height: calc(100% - 38px);
+      height: 100%;
       min-height: 0;
-      max-height: calc(100% - 38px);
-      padding: 10px 12px 12px 12px;
-      box-sizing: border-box;
+      padding: 14px 16px 16px 16px;
+      box-sizing: border-box !important;
       overflow: hidden;
       width: 100%;
-      position: relative;
     }
     .ai-chat-messages {
       flex: 1 1 0%;
-      min-height: 0;
+      min-height: 0 !important;
       overflow-y: auto !important;
       overflow-x: hidden !important;
-      padding: 4px 4px 20px 4px;
+      padding: 4px 6px 28px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 12.5px;
       box-sizing: border-box;
       width: 100%;
-      overscroll-behavior-y: contain;
-      scrollbar-width: thin;
-      scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.85);
     }
     .ai-chat-messages::-webkit-scrollbar {
-      width: 8px !important;
-    }
-    .ai-chat-messages::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.85);
-      border-radius: 6px;
+      width: 6px;
     }
     .ai-chat-messages::-webkit-scrollbar-thumb {
-      background: #38bdf8;
-      border-radius: 6px;
+      background: rgba(120, 169, 255, 0.25);
+      border-radius: 4px;
     }
     .ai-chat-messages::-webkit-scrollbar-thumb:hover {
-      background: #7dd3fc;
+      background: rgba(120, 169, 255, 0.5);
     }
     .ai-msg {
-      padding: 10px 12px;
+      padding: 12px 14px;
       border-radius: 10px;
       line-height: 1.55;
       box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
       word-break: break-word;
       overflow-wrap: break-word;
-      margin-bottom: 12px;
     }
     .ai-msg.user {
       background: rgba(120, 169, 255, 0.15);
       border: 1px solid rgba(120, 169, 255, 0.25);
+      align-self: flex-end;
       color: #fff;
-      margin-left: auto;
-      max-width: 85%;
+      max-width: 90%;
     }
     .ai-msg.assistant {
       background: var(--panel2);
       border: 1px solid var(--border);
+      align-self: stretch;
       color: var(--text);
-      margin-right: auto;
-      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
     }
     .ai-msg pre {
-      width: 100%;
       max-width: 100%;
-      min-width: 0;
       overflow-x: auto !important;
       white-space: pre !important;
       word-break: normal !important;
       box-sizing: border-box;
-      margin: 8px 0;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border);
-      scrollbar-width: thin;
-      scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.85);
-    }
-    .ai-msg pre::-webkit-scrollbar {
-      height: 7px !important;
-    }
-    .ai-msg pre::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.85);
-      border-radius: 6px;
-    }
-    .ai-msg pre::-webkit-scrollbar-thumb {
-      background: #38bdf8;
-      border-radius: 6px;
-    }
-    .ai-msg pre code {
-      white-space: pre !important;
-      display: inline-block;
-      min-width: 100%;
     }
     .ai-composer {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-top: 8px;
+      gap: 8px;
+      margin-top: 10px;
       flex-shrink: 0;
       box-sizing: border-box;
       width: 100%;
     }
     .ai-composer textarea {
       width: 100%;
-      height: 52px;
-      min-height: 52px;
-      max-height: 52px;
+      height: 68px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
       color: var(--text);
-      padding: 8px 10px;
+      padding: 10px 12px;
       font-size: 12px;
       outline: none;
       resize: none;
@@ -1194,13 +1317,7 @@ STUDIO_HTML = r"""<!doctype html>
 </head>
 <body>
 
-<div class="studio-viewport-stage">
-  <div id="studio-slider" class="studio-slider">
-    <!-- ======================================================== -->
-    <!-- SLIDE 1: GITHUB CLOUD STUDIO                             -->
-    <!-- ======================================================== -->
-    <div id="page-github-studio" class="studio-page">
-      <div class="studio-app">
+<div class="studio-app">
   <!-- TOP BAR -->
   <header class="studio-nav">
     <div class="nav-left">
@@ -1218,7 +1335,7 @@ STUDIO_HTML = r"""<!doctype html>
       </div>
       <button id="new-repo-btn" class="btn" title="Create New Repository in GitHub">+ New Repo</button>
       <button id="btn-switch-to-pc-nav" class="btn btn-switch-mode" title="Switch to PC Cloud Studio">
-        <span>💻 PC Studio</span> <span>➔</span>
+        <span>💻 PC Cloud Studio ➡</span>
       </button>
     </div>
 
@@ -1347,7 +1464,7 @@ STUDIO_HTML = r"""<!doctype html>
       </div>
 
       <!-- AI ASSISTANT TAB -->
-      <div id="view-ai" class="ai-assistant-container is-hidden" style="display:none">
+      <div id="view-ai" class="ai-assistant-container" style="display:none">
         <div id="ai-chat" class="ai-chat-messages">
           <div class="ai-msg assistant">
             👋 <b>Hashtag AI Cloud Co-Pilot</b> ready! I can write code, generate pages, fix errors, or refactor components directly in your GitHub project without touching your local PC.
@@ -1414,226 +1531,6 @@ STUDIO_HTML = r"""<!doctype html>
       <span style="color:var(--accent)">Hashtag Cloud Runtime</span>
     </div>
   </footer>
-      </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- SLIDE 2: PC CLOUD STUDIO (Direct Local Machine Workspace) -->
-    <!-- ======================================================== -->
-    <div id="page-pc-studio" class="studio-page">
-      <div class="studio-app pc-theme">
-        <!-- TOP BAR (PC) -->
-        <header class="studio-nav pc-nav">
-          <div class="nav-left">
-            <div class="brand-title">
-              <img src="/assets/hashtag_logo.jpg" alt="Logo" style="width:24px;height:24px;border-radius:6px;object-fit:cover;box-shadow:0 0 10px rgba(56,189,248,0.4);">
-              <span>Hashtag</span>
-              <span class="badge pc-badge">PC Cloud Studio</span>
-            </div>
-            <div class="repo-select-wrap pc-path-wrap">
-              <span style="font-size:12px">💻</span>
-              <select id="pc-root-select" title="Target PC Workspace / Directory">
-                <option value="workspace">Local PC Workspace (~/Executor)</option>
-                <option value="home">PC User Home</option>
-                <option value="custom">Custom Folder Path...</option>
-              </select>
-              <button id="pc-refresh-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh local PC files">↻</button>
-            </div>
-            <button id="pc-new-folder-btn" class="btn" title="Create New Folder on PC">+ New Folder</button>
-            <button id="btn-switch-to-gh-nav" class="btn btn-switch-mode gh-mode-btn" title="Switch back to GitHub Cloud Studio">
-              <span>⬅ 🐙 GitHub Studio</span>
-            </button>
-          </div>
-
-          <div class="nav-center">
-            <div id="pc-active-file-title" style="font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">
-              <span>📄 Select a file from PC explorer</span>
-            </div>
-          </div>
-
-          <div class="nav-right">
-            <button id="pc-new-file-btn" class="btn" title="Create New File on PC">➕ New File</button>
-            <button id="pc-commit-btn" class="btn btn-commit pc-save-btn" title="Save changes directly to PC disk (Ctrl+S)">
-              <span>💾 Save to PC</span>
-            </button>
-            <button id="pc-delete-btn" class="btn btn-danger" style="display:none" title="Delete file from PC">🗑️ Delete</button>
-            <a href="/ai" class="btn" target="_blank" style="border-color:rgba(56,189,248,0.4);color:#38bdf8;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
-            <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
-          </div>
-        </header>
-
-        <!-- WORKSPACE (PC) -->
-        <main id="pc-workspace" class="studio-workspace">
-          <!-- SIDEBAR: PC FILES -->
-          <aside class="sidebar-panel">
-            <div class="sidebar-head">
-              <div style="display:flex;align-items:center;gap:6px">
-                <span>PC Explorer</span>
-                <span id="pc-file-count" style="font-weight:600;color:#38bdf8">Local Disk</span>
-              </div>
-              <button id="pc-device-status-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Connection Status">
-                <span style="color:#52e396">● PC Online</span>
-              </button>
-            </div>
-            <div class="search-filter" style="position:relative">
-              <input type="text" id="pc-file-search" placeholder="Search local PC files..." style="padding-right:24px">
-              <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px" title="Clear Search">✕</button>
-            </div>
-            <div id="pc-file-tree" class="file-tree">
-              <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">
-                <span style="color:#38bdf8;font-weight:600">💻 PC Cloud Studio</span><br><br>
-                <span>Local filesystem ready. Select any file or ask PC AI to inspect your project.</span>
-              </div>
-            </div>
-          </aside>
-
-          <!-- CENTER: PC CODE EDITOR -->
-          <section class="editor-panel">
-            <div id="pc-editor-tabs" class="editor-tabs" style="display:flex;justify-content:space-between;align-items:center">
-              <div style="display:flex;align-items:center">
-                <div class="editor-tab active" id="pc-tab-primary">
-                  <span id="pc-tab-name">untitled</span>
-                  <span id="pc-tab-dirty" style="display:none;color:var(--warning)">●</span>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:6px;padding-right:10px">
-                <button id="pc-btn-format-code" class="btn" title="Beautify / Format HTML, CSS, JS code" style="padding:2px 8px;font-size:11px">✨ Format</button>
-                <button id="pc-btn-toggle-wrap" class="btn" title="Toggle Word Wrap" style="padding:2px 8px;font-size:11px">Wrap: OFF</button>
-              </div>
-            </div>
-            <div class="editor-body-wrap">
-              <div id="pc-line-numbers" class="line-numbers">1</div>
-              <textarea id="pc-code-editor" class="code-textarea" wrap="off" spellcheck="false" placeholder="// PC Cloud Studio: Open, edit, and write directly to your local PC machine..."></textarea>
-            </div>
-          </section>
-
-          <!-- RIGHT: PC AUX PANEL -->
-          <aside id="pc-aux-panel" class="aux-panel">
-            <button id="pc-btn-collapse-aux" class="aux-collapse-btn" title="Collapse Side Panel">
-              <span>›</span>
-            </button>
-
-            <div class="aux-tabs">
-              <div id="pc-tab-btn-preview" class="aux-tab active" style="display:flex;align-items:center;justify-content:center;gap:7px">
-                <div class="cyber-eye" id="pc-eye-tab">
-                  <div class="eye-socket">
-                    <div class="eye-lid top-lid"></div>
-                    <div class="eye-ball">
-                      <div class="eye-iris">
-                        <div class="eye-pupil">
-                          <div class="eye-glint"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="eye-lid bottom-lid"></div>
-                  </div>
-                </div>
-                <span>Live Web Preview</span>
-              </div>
-              <div id="pc-tab-btn-ai" class="aux-tab">🤖 PC AI Co-Pilot</div>
-              <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.35);display:flex;align-items:center;gap:4px" title="Toggle Wide Panel">
-                <span id="pc-expand-aux-icon">⛶</span>
-                <span id="pc-expand-aux-label">Widen</span>
-              </button>
-              <button id="pc-btn-close-aux-header" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Minimize / Hide Side Panel">
-                <span>›</span>
-                <span>Close</span>
-              </button>
-            </div>
-
-            <!-- PREVIEW TAB (PC) -->
-            <div id="pc-view-preview" class="preview-container">
-              <div class="preview-toolbar">
-                <div class="dev-group">
-                  <button id="pc-dev-desktop" class="dev-btn active" title="Desktop Screen">🖥️ <span class="dev-btn-label">Desktop</span></button>
-                  <button id="pc-dev-tablet" class="dev-btn" title="Tablet Screen">📟 <span class="dev-btn-label">Tablet</span></button>
-                  <button id="pc-dev-mobile" class="dev-btn" title="Mobile Screen">📱 <span class="dev-btn-label">Mobile</span></button>
-                  <button id="pc-dev-rotate" class="dev-btn" title="Rotate Screen Orientation">🔄 <span class="dev-btn-label">Rotate</span></button>
-                </div>
-                <div class="preview-toolbar-actions">
-                  <span id="pc-preview-dim-badge" style="font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right">100% Fluid</span>
-                  <button id="pc-preview-fullscreen-btn" class="btn btn-primary" title="Full Screen Preview" style="padding:2px 8px;font-size:11px;font-weight:600">⛶ Fullscreen</button>
-                  <button id="pc-preview-popout-btn" class="btn" title="Open in New Browser Tab" style="padding:2px 8px;font-size:11px">↗ Pop Out</button>
-                  <button id="pc-refresh-preview-btn" class="btn" style="padding:2px 8px;font-size:10px" title="Re-render">↻</button>
-                </div>
-              </div>
-              <div class="preview-viewport-wrap">
-                <div id="pc-preview-frame-holder" class="preview-frame-holder">
-                  <iframe id="pc-preview-frame" class="preview-frame" sandbox="allow-scripts allow-modals allow-same-origin allow-forms allow-popups allow-pointer-lock allow-downloads allow-top-navigation-by-user-activation" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                </div>
-              </div>
-            </div>
-
-            <!-- AI ASSISTANT TAB (PC) -->
-            <div id="pc-view-ai" class="ai-assistant-container is-hidden" style="display:none">
-              <div id="pc-ai-chat" class="ai-chat-messages">
-                <div class="ai-msg assistant">
-                  💻 <b>Hashtag PC Cloud Co-Pilot</b> ready! I have direct local access to read, modify, and build files across your local PC machine.
-                </div>
-              </div>
-              <div class="ai-composer">
-                <textarea id="pc-ai-prompt" placeholder="Ask Hashtag to inspect or build something on your PC (e.g. 'Fix server port error in executor/server.py')..."></textarea>
-                <button id="pc-ai-send-btn" class="btn btn-primary" style="align-self:flex-end">
-                  <span>Ask PC Hashtag</span> <span>➜</span>
-                </button>
-              </div>
-            </div>
-          </aside>
-
-          <!-- DOCKED BUTTONS IN PC STUDIO -->
-          <div id="pc-aux-dock-buttons" class="aux-dock-buttons">
-            <button id="pc-dock-btn-ai" class="aux-dock-btn dock-ai" title="Open PC AI Co-Pilot">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="10" rx="3"/>
-                <circle cx="12" cy="5" r="2"/>
-                <path d="M12 7v4"/>
-                <line x1="8" y1="16" x2="8.01" y2="16" stroke-width="3"/>
-                <line x1="16" y1="16" x2="16.01" y2="16" stroke-width="3"/>
-                <path d="M9 19h6"/>
-              </svg>
-            </button>
-            <button id="pc-dock-btn-preview" class="aux-dock-btn dock-preview" title="Open Live Web Preview">
-              <div class="cyber-eye dock-size" id="pc-eye-dock">
-                <div class="eye-socket">
-                  <div class="eye-lid top-lid"></div>
-                  <div class="eye-ball">
-                    <div class="eye-iris">
-                      <div class="eye-pupil">
-                        <div class="eye-glint"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="eye-lid bottom-lid"></div>
-                </div>
-              </div>
-            </button>
-            <!-- RETURN BUTTON IN EXACT SAME DOCKED LOCATION TO GO BACK TO GITHUB STUDIO -->
-            <button id="dock-btn-to-gh" class="aux-dock-btn dock-gh" title="Switch back to GitHub Cloud Studio">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-              </svg>
-            </button>
-          </div>
-        </main>
-
-        <!-- STATUSBAR (PC) -->
-        <footer class="studio-statusbar">
-          <div class="status-item">
-            <span id="pc-sync-dot" class="status-indicator"></span>
-            <span id="pc-sync-status">Local PC Storage Ready</span>
-          </div>
-          <div class="status-item">
-            <span id="pc-editor-meta">Lines: 1 · Chars: 0</span>
-            <span>|</span>
-            <span id="pc-active-branch">Disk: Local Host</span>
-            <span>|</span>
-            <span style="color:#38bdf8">Hashtag PC Cloud Runtime</span>
-          </div>
-        </footer>
-      </div>
-    </div>
-
-  </div>
 </div>
 
 <!-- COMMIT MODAL -->
@@ -2395,23 +2292,19 @@ STUDIO_HTML = r"""<!doctype html>
   };
   $("refresh-repo-btn").onclick = function() { loadRepositories(0); };
 
-  // 12. Aux Tabs: Preview vs AI Assistant (Strict Single-Tab Visibility)
+  // 12. Aux Tabs: Preview vs AI Assistant
   $("tab-btn-preview").onclick = function() {
     $("tab-btn-preview").classList.add("active");
     $("tab-btn-ai").classList.remove("active");
     $("view-preview").style.display = "flex";
-    $("view-preview").classList.remove("is-hidden");
     $("view-ai").style.display = "none";
-    $("view-ai").classList.add("is-hidden");
     updatePreview();
   };
   $("tab-btn-ai").onclick = function() {
     $("tab-btn-ai").classList.add("active");
     $("tab-btn-preview").classList.remove("active");
     $("view-preview").style.display = "none";
-    $("view-preview").classList.add("is-hidden");
     $("view-ai").style.display = "flex";
-    $("view-ai").classList.remove("is-hidden");
   };
 
   // Aux panel collapse & dock triggers (Fixed: cleanly clear wide/maximized classes upon minimize)
@@ -2708,9 +2601,7 @@ STUDIO_HTML = r"""<!doctype html>
     $("tab-btn-preview").classList.add("active");
     $("tab-btn-ai").classList.remove("active");
     $("view-preview").style.display = "flex";
-    $("view-preview").classList.remove("is-hidden");
     $("view-ai").style.display = "none";
-    $("view-ai").classList.add("is-hidden");
     updatePreview();
     
 
@@ -3063,6 +2954,7 @@ STUDIO_HTML = r"""<!doctype html>
     document.body.classList.add("mode-pc");
     localStorage.setItem("hashtag_studio_mode", "pc");
     if (typeof updatePcPreview === "function") updatePcPreview();
+    if (typeof checkPcConnectorStatus === "function") checkPcConnectorStatus();
   }
 
   function switchToGitHubStudio() {
@@ -3088,6 +2980,218 @@ STUDIO_HTML = r"""<!doctype html>
   // Restore last mode
   if (localStorage.getItem("hashtag_studio_mode") === "pc") {
     document.body.classList.add("mode-pc");
+  }
+
+  // ========================================================
+  // --- PC CONNECTOR & TERMINAL COMMAND ENGINE ---
+  // ========================================================
+  var currentPcCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
+  var pcCmdTab = "ps";
+  var isPcConnected = false;
+  var pcCurrentPath = ".";
+  window.pcFilesLoaded = false;
+
+  window.switchPcCmdTab = function(tab) {
+    pcCmdTab = tab;
+    var btnPs = $("tab-btn-ps");
+    var btnCmd = $("tab-btn-cmd");
+    var snippet = $("pc-cmd-snippet");
+    if (tab === "ps") {
+      if (btnPs) btnPs.classList.add("active");
+      if (btnCmd) btnCmd.classList.remove("active");
+      currentPcCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
+    } else {
+      if (btnPs) btnPs.classList.remove("active");
+      if (btnCmd) btnCmd.classList.add("active");
+      currentPcCmd = "curl -sL https://executor.hashtagai.online/connect.bat -o %TEMP%\\connect.bat && %TEMP%\\connect.bat";
+    }
+    if (snippet) snippet.textContent = currentPcCmd;
+  };
+
+  var pcCopyBtn = $("pc-copy-cmd-btn");
+  if (pcCopyBtn) {
+    pcCopyBtn.onclick = function() {
+      var copySuccess = function() {
+        var t = $("pc-copy-btn-text");
+        if (t) t.textContent = "✓ Copied!";
+        setTimeout(function() { if (t) t.textContent = "Copy"; }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(currentPcCmd).then(copySuccess).catch(function() {
+          copyFallback();
+        });
+      } else {
+        copyFallback();
+      }
+      function copyFallback() {
+        var ta = document.createElement("textarea");
+        ta.value = currentPcCmd;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); copySuccess(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    };
+  }
+
+  window.togglePcConnectCard = function() {
+    var card = $("pc-connect-card");
+    if (card) {
+      card.style.display = (card.style.display === "none") ? "block" : "none";
+    }
+  };
+
+  function checkPcConnectorStatus() {
+    api("/v1/connector/status", { method: "GET" }).then(function(res) {
+      if (!res) return;
+      var connected = !!(res.connected || (res.connections && res.connections.length > 0));
+      var badge = $("pc-status-badge");
+      var badgeText = $("pc-status-badge-text");
+      var radarStatus = $("pc-radar-status");
+      var radarText = $("pc-radar-status-text");
+      var connectCard = $("pc-connect-card");
+
+      if (connected) {
+        isPcConnected = true;
+        var info = res.info || (res.connections && res.connections[0] && res.connections[0].system_info) || {};
+        var hostname = info.hostname || "Local PC";
+        var osName = info.system || "Windows";
+
+        if (badge) {
+          badge.className = "pc-status-pill connected";
+          if (badgeText) badgeText.textContent = "● " + hostname + " (" + osName + ")";
+        }
+        if (radarStatus) {
+          radarStatus.className = "pc-radar-status connected";
+          if (radarText) radarText.textContent = "✓ Connected to " + hostname;
+        }
+        if (connectCard && window.pcFilesLoaded) {
+          connectCard.style.display = "none";
+        }
+
+        // Populate drives in pc-root-select if not yet populated
+        var sel = $("pc-root-select");
+        if (sel && !sel.dataset.populated && info.drives && info.drives.length > 0) {
+          sel.innerHTML = "";
+          var cwdOpt = document.createElement("option");
+          cwdOpt.value = info.cwd || ".";
+          cwdOpt.textContent = "Project: " + (info.cwd ? info.cwd.split(/[\\/]/).pop() : "Local Folder");
+          sel.appendChild(cwdOpt);
+
+          info.drives.forEach(function(d) {
+            var opt = document.createElement("option");
+            opt.value = d;
+            opt.textContent = "Drive " + d;
+            sel.appendChild(opt);
+          });
+          sel.dataset.populated = "true";
+          pcCurrentPath = sel.value;
+          loadPcFiles(pcCurrentPath);
+        } else if (!window.pcFilesLoaded) {
+          loadPcFiles(pcCurrentPath);
+        }
+      } else {
+        isPcConnected = false;
+        window.pcFilesLoaded = false;
+        if (badge) {
+          badge.className = "pc-status-pill disconnected";
+          if (badgeText) badgeText.textContent = "PC Offline";
+        }
+        if (radarStatus) {
+          radarStatus.className = "pc-radar-status";
+          if (radarText) radarText.textContent = "Waiting for terminal command...";
+        }
+        if (connectCard) connectCard.style.display = "block";
+      }
+    }).catch(function(err) {
+      console.warn("PC Connector heartbeat error:", err);
+    });
+  }
+
+  // Load PC Files via REST
+  function loadPcFiles(dirPath) {
+    if (!isPcConnected) return;
+    window.pcFilesLoaded = true;
+    var card = $("pc-connect-card");
+    if (card) card.style.display = "none";
+
+    var listContainer = $("pc-file-list-container");
+    if (!listContainer) {
+      var treeEl = $("pc-file-tree");
+      listContainer = document.createElement("div");
+      listContainer.id = "pc-file-list-container";
+      if (treeEl) treeEl.appendChild(listContainer);
+    }
+    listContainer.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px"><span class="spinner"></span> Loading local files from PC...</div>';
+
+    api("/v1/connector/files?path=" + encodeURIComponent(dirPath), { method: "GET" }).then(function(res) {
+      if (!res.ok) {
+        listContainer.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Failed loading files: ' + esc(res.error || "") + '</div>';
+        return;
+      }
+      var entries = res.entries || [];
+      if (entries.length === 0) {
+        listContainer.innerHTML = '<div style="padding:15px;color:var(--muted);font-size:11px">Directory is empty.</div>';
+        return;
+      }
+      entries.sort(function(a, b) {
+        if (a.is_dir && !b.is_dir) return -1;
+        if (!a.is_dir && b.is_dir) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      var html = '<div class="file-list-items" style="padding:4px 0">';
+      entries.forEach(function(item) {
+        var icon = item.is_dir ? "📁" : "📄";
+        var isDir = item.is_dir ? "true" : "false";
+        var sep = (dirPath.endsWith("/") || dirPath.endsWith("\\")) ? "" : "/";
+        var fullPath = dirPath + sep + item.name;
+        html += '<div class="file-item ' + (item.is_dir ? 'dir-item' : '') + '" data-path="' + esc(fullPath) + '" data-is-dir="' + isDir + '" style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;border-radius:4px">';
+        html += '<span>' + icon + '</span>';
+        html += '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(item.name) + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+      listContainer.innerHTML = html;
+
+      listContainer.querySelectorAll(".file-item").forEach(function(el) {
+        el.onclick = function() {
+          var p = this.getAttribute("data-path");
+          var isD = this.getAttribute("data-is-dir") === "true";
+          if (isD) {
+            pcCurrentPath = p;
+            loadPcFiles(p);
+          } else {
+            openPcFile(p);
+          }
+        };
+      });
+    }).catch(function(err) {
+      listContainer.innerHTML = '<div style="padding:15px;color:var(--danger);font-size:11px">Error: ' + esc(err.message) + '</div>';
+    });
+  }
+
+  function openPcFile(filePath) {
+    pcState.activePath = filePath;
+    var titleEl = $("pc-active-file-title");
+    if (titleEl) titleEl.innerHTML = '<span>📄 ' + esc(filePath) + '</span>';
+
+    api("/v1/connector/file?path=" + encodeURIComponent(filePath), { method: "GET" }).then(function(res) {
+      if (!res.ok) {
+        alert("Failed reading file: " + (res.error || ""));
+        return;
+      }
+      var ed = $("pc-code-editor");
+      if (ed) {
+        ed.value = res.content || "";
+        updatePcLineNumbers();
+        updatePcPreview();
+      }
+      var status = $("pc-sync-status");
+      if (status) status.textContent = "Opened " + filePath.split(/[\\/]/).pop();
+    }).catch(function(err) {
+      alert("Error opening file: " + err.message);
+    });
   }
 
   // --- PC STUDIO CONTROLLERS ---
@@ -3241,18 +3345,54 @@ STUDIO_HTML = r"""<!doctype html>
     };
   }
 
-  // PC Save to Disk button
+  // Save to PC Disk handler
   var pcCommitBtn = $("pc-commit-btn");
   if (pcCommitBtn) {
     pcCommitBtn.onclick = function() {
+      if (!isPcConnected) {
+        alert("No PC connected! Run the connector command in PowerShell or CMD on your PC first.");
+        return;
+      }
       var ed = $("pc-code-editor");
+      var content = ed ? ed.value : "";
       var dot = $("pc-sync-dot");
       var status = $("pc-sync-status");
-      if (status) status.textContent = "Saved to PC Disk!";
-      if (dot) {
-        dot.style.background = "#52e396";
-        setTimeout(function() { dot.style.background = ""; }, 1800);
-      }
+      if (status) status.textContent = "Saving to PC disk...";
+
+      api("/v1/connector/file", {
+        method: "POST",
+        body: { path: pcState.activePath, content: content }
+      }).then(function(res) {
+        if (!res.ok) {
+          if (status) status.textContent = "Error saving: " + (res.error || "");
+          return;
+        }
+        if (status) status.textContent = "Saved to PC Disk!";
+        if (dot) {
+          dot.style.background = "#52e396";
+          setTimeout(function() { dot.style.background = ""; }, 1800);
+        }
+      }).catch(function(err) {
+        if (status) status.textContent = "Save error: " + err.message;
+      });
+    };
+  }
+
+  // Refresh button
+  var pcRefreshBtn = $("pc-refresh-btn");
+  if (pcRefreshBtn) {
+    pcRefreshBtn.onclick = function() {
+      checkPcConnectorStatus();
+      if (isPcConnected) loadPcFiles(pcCurrentPath);
+    };
+  }
+
+  // Root select change
+  var pcRootSelect = $("pc-root-select");
+  if (pcRootSelect) {
+    pcRootSelect.onchange = function() {
+      pcCurrentPath = this.value;
+      if (isPcConnected) loadPcFiles(pcCurrentPath);
     };
   }
 
@@ -3316,6 +3456,10 @@ STUDIO_HTML = r"""<!doctype html>
       }
     };
   }
+
+  // Heartbeat trigger
+  checkPcConnectorStatus();
+  setInterval(checkPcConnectorStatus, 2500);
 
 
   // ========================================================
