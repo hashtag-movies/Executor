@@ -232,78 +232,141 @@ STUDIO_HTML = r"""<!doctype html>
       margin: 4px 0;
     }
 
-    /* CSS-Only Preview Fullscreen Overlay */
+    /* Native Elements & Select Theme Perfection (Image 4 Dark Mode) */
+    html, body {
+      color-scheme: dark !important;
+    }
+    select, option, optgroup {
+      color-scheme: dark !important;
+      background-color: #0b1120 !important;
+      color: #e2e8f0 !important;
+    }
+    .repo-select-wrap select {
+      color-scheme: dark !important;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      max-width: 220px;
+    }
+    .repo-select-wrap select option {
+      background-color: #090e1a !important;
+      color: #e2e8f0 !important;
+      padding: 8px 10px;
+    }
+
+    /* True Fullscreen Overlay (Image 5: Hide statusbar & surround controls) */
+    body.has-preview-fullscreen .studio-statusbar,
+    body.has-preview-fullscreen .studio-header,
+    body.has-preview-fullscreen .studio-dock,
+    body.has-preview-fullscreen .studio-sidebar,
+    body.has-preview-fullscreen .code-editor-main {
+      display: none !important;
+    }
+
     .preview-container.is-fullscreen {
       position: fixed !important;
       inset: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      z-index: 9999999 !important;
+      z-index: 99999999 !important;
       background: #070b14 !important;
       box-sizing: border-box !important;
+      display: flex !important;
+      flex-direction: column !important;
     }
     .preview-container.is-fullscreen .preview-toolbar {
       position: fixed !important;
       top: 14px !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
-      z-index: 10000000 !important;
-      background: rgba(13, 20, 36, 0.92) !important;
+      z-index: 100000000 !important;
+      background: rgba(13, 20, 36, 0.95) !important;
       backdrop-filter: blur(12px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
       border-radius: 9999px !important;
-      padding: 6px 14px !important;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
+      padding: 6px 16px !important;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.8) !important;
       width: auto !important;
       gap: 12px !important;
     }
     .preview-container.is-fullscreen .preview-viewport-wrap {
-      flex: 1;
-      width: 100vw;
-      height: 100vh;
+      flex: 1 1 0% !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: #070b14 !important;
+      padding: 70px 20px 20px 20px !important;
+      box-sizing: border-box !important;
+      overflow: auto !important;
+    }
+
+    /* Fluid Responsive Device Frames (Image 5: No bottom cutoff in fullscreen or sidebar) */
+    .preview-frame-holder {
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #070b14;
-      padding-top: 60px;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .preview-frame-holder.device-tablet {
+      width: 768px !important;
+      aspect-ratio: 768 / 1024 !important;
+      max-width: calc(100% - 16px) !important;
+      max-height: calc(100% - 16px) !important;
+      height: auto !important;
+      border-radius: 20px !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b, 0 0 0 11px rgba(255,255,255,0.15) !important;
+      overflow: hidden !important;
+      margin: auto !important;
       box-sizing: border-box !important;
     }
-    .preview-container.is-fullscreen .preview-frame-holder {
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      box-sizing: border-box;
+    .preview-frame-holder.landscape.device-tablet {
+      width: 1024px !important;
+      aspect-ratio: 1024 / 768 !important;
+      max-width: calc(100% - 16px) !important;
+      max-height: calc(100% - 16px) !important;
+      height: auto !important;
+    }
+    .preview-frame-holder.device-mobile {
+      width: 375px !important;
+      aspect-ratio: 375 / 812 !important;
+      max-width: calc(100% - 16px) !important;
+      max-height: calc(100% - 16px) !important;
+      height: auto !important;
+      border-radius: 28px !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b, 0 0 0 11px rgba(255,255,255,0.15) !important;
+      overflow: hidden !important;
+      margin: auto !important;
+      box-sizing: border-box !important;
+    }
+    .preview-frame-holder.landscape.device-mobile {
+      width: 812px !important;
+      aspect-ratio: 812 / 375 !important;
+      max-width: calc(100% - 16px) !important;
+      max-height: calc(100% - 16px) !important;
+      height: auto !important;
     }
     .preview-container.is-fullscreen .preview-frame-holder:not(.device-tablet):not(.device-mobile) {
       width: 100% !important;
       height: 100% !important;
       max-width: 100% !important;
       max-height: 100% !important;
-    }
-    .preview-container.is-fullscreen .preview-frame-holder.device-tablet {
-      width: 768px !important;
-      height: 1024px !important;
-      max-width: 96vw !important;
-      max-height: calc(100vh - 84px) !important;
-    }
-    .preview-container.is-fullscreen .preview-frame-holder.landscape.device-tablet {
-      width: 1024px !important;
-      height: 768px !important;
-      max-width: 96vw !important;
-      max-height: calc(100vh - 84px) !important;
-    }
-    .preview-container.is-fullscreen .preview-frame-holder.device-mobile {
-      width: 375px !important;
-      height: 812px !important;
-      max-width: 92vw !important;
-      max-height: calc(100vh - 84px) !important;
-    }
-    .preview-container.is-fullscreen .preview-frame-holder.landscape.device-mobile {
-      width: 812px !important;
-      height: 375px !important;
-      max-width: 96vw !important;
-      max-height: calc(100vh - 84px) !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
     }
 
-    /* Aux Panel and AI Co-Pilot Scrollbar Perfection */
+    /* Aux Panel & Visible Divider Collapse Button (Images 1 & 3) */
     .aux-panel {
       background: var(--panel);
       border-left: 1px solid var(--border);
@@ -313,9 +376,46 @@ STUDIO_HTML = r"""<!doctype html>
       max-height: 100% !important;
       min-height: 0 !important;
       min-width: 0;
-      overflow: hidden !important;
-      position: relative;
+      overflow: visible !important;
+      position: relative !important;
       box-sizing: border-box;
+    }
+    .aux-collapse-btn {
+      position: absolute !important;
+      left: -18px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      width: 18px !important;
+      height: 64px !important;
+      background: #111827 !important;
+      border: 1.5px solid #38bdf8 !important;
+      border-right: none !important;
+      border-radius: 10px 0 0 10px !important;
+      color: #38bdf8 !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 9999 !important;
+      padding: 0 !important;
+      box-shadow: -4px 0 16px rgba(56, 189, 248, 0.45) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      font-size: 17px !important;
+      font-weight: 800 !important;
+      line-height: 1 !important;
+      user-select: none !important;
+    }
+    .aux-collapse-btn:hover {
+      background: #1f293d !important;
+      color: #7dd3fc !important;
+      border-color: #7dd3fc !important;
+      width: 22px !important;
+      left: -22px !important;
+      box-shadow: -6px 0 20px rgba(56, 189, 248, 0.7) !important;
+    }
+    /* Hide redundant header buttons as divider button handles collapse */
+    #btn-close-aux-header, #pc-btn-close-aux-header {
+      display: none !important;
     }
     .ai-assistant-container {
       flex: 1 1 0%;
@@ -1688,8 +1788,7 @@ STUDIO_HTML = r"""<!doctype html>
                 <span id="pc-file-count" style="font-weight:600;color:var(--accent)">0 files</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px">
-                <button id="pc-new-file-btn" class="btn btn-primary" style="padding:2px 8px;font-size:11px;font-weight:600" title="Create New File on PC" onclick="openPcNewFileModal()">➕ New File</button>
-                <button id="sidebar-pc-btn" class="btn" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.3)" title="PC Machine Status" onclick="openPcAuthModal()">
+                <button id="sidebar-pc-btn" class="btn btn-primary" style="padding:3px 10px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.4)" title="PC Machine Status" onclick="openPcAuthModal()">
                   <span id="sidebar-pc-label">💻 Connect PC</span>
                 </button>
               </div>
@@ -1761,13 +1860,9 @@ STUDIO_HTML = r"""<!doctype html>
                 <span>Live Web Preview</span>
               </div>
               <div id="pc-tab-btn-ai" class="aux-tab">🤖 Hashtag AI Co-Pilot</div>
-              <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Toggle Wide Panel">
+              <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Toggle Wide Panel">
                 <span id="pc-expand-aux-icon">⛶</span>
                 <span id="pc-expand-aux-label">Widen</span>
-              </button>
-              <button id="pc-btn-close-aux-header" class="btn" style="padding:2px 8px;margin-right:8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Minimize / Hide Side Panel">
-                <span>›</span>
-                <span>Close</span>
               </button>
             </div>
 
@@ -2076,7 +2171,7 @@ STUDIO_HTML = r"""<!doctype html>
 <!-- PC CONNECT MODAL (NATIVE BROWSER FS & TERMINAL BRIDGE) -->
 <!-- ======================================================== -->
 <div id="pc-connect-modal" class="modal-backdrop">
-  <div class="modal" style="max-width:540px">
+  <div class="modal" style="max-width:580px;width:94%">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:22px">💻</span>
@@ -2098,12 +2193,12 @@ STUDIO_HTML = r"""<!doctype html>
       <button type="button" id="modal-pc-disconnect-btn" class="btn" style="border-color:#f87171;color:#f87171;padding:4px 10px;font-size:11px" onclick="disconnectPc()">Disconnect</button>
     </div>
 
-    <!-- Connection Mode Selector Tabs -->
-    <div style="display:flex;gap:8px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px">
-      <button type="button" id="tab-btn-mode-native" class="btn" style="padding:6px 14px;font-size:12px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15);display:flex;align-items:center;gap:6px" onclick="switchPcConnectMode('native')">
+    <!-- Connection Mode Selector Tabs (Responsive Flex-Wrap prevents overflow) -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px">
+      <button type="button" id="tab-btn-mode-native" class="btn" style="flex:1 1 220px;padding:7px 12px;font-size:12px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15);display:flex;align-items:center;justify-content:center;gap:6px" onclick="switchPcConnectMode('native')">
         <span>📁</span> <span>Instant Folder Access (Recommended)</span>
       </button>
-      <button type="button" id="tab-btn-mode-terminal" class="btn" style="padding:6px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px" onclick="switchPcConnectMode('terminal')">
+      <button type="button" id="tab-btn-mode-terminal" class="btn" style="flex:1 1 200px;padding:7px 12px;font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px" onclick="switchPcConnectMode('terminal')">
         <span>⚡</span> <span>Advanced Terminal Bridge</span>
       </button>
     </div>
@@ -3730,12 +3825,17 @@ STUDIO_HTML = r"""<!doctype html>
 
     pcState.files = entries;
     pcCurrentPath = ".";
+    
+    // Hide disconnected state card immediately
+    var disc = $("pc-disconnected-state");
+    if (disc) disc.style.display = "none";
+
     renderPcFileTree(entries);
     var searchEl = $("pc-file-search");
     if (searchEl) searchEl.value = "";
 
     var countEl = $("pc-file-count");
-    if (countEl) countEl.textContent = entries.length + " items";
+    if (countEl) countEl.textContent = entries.filter(function(e) { return !e.is_dir; }).length + " files";
 
     var bc = $("pc-breadcrumbs");
     if (bc) {
@@ -3750,6 +3850,93 @@ STUDIO_HTML = r"""<!doctype html>
       openPcFile(defaultFile.path);
     }
   }
+
+  // --- RENDER PC FILE TREE (Native & General Tree Renderer) ---
+  window.renderPcFileTree = function(entries) {
+    entries = entries || pcState.files || [];
+    var treeEl = $("pc-file-tree");
+    if (!treeEl) return;
+
+    var searchEl = $("pc-file-search");
+    var filter = (searchEl && searchEl.value || "").toLowerCase().trim();
+    var clearBtn = $("pc-clear-search-btn");
+    if (clearBtn) clearBtn.style.display = filter ? "block" : "none";
+
+    if (!entries || !entries.length) {
+      treeEl.innerHTML = '<div style="padding:28px 14px;text-align:center;color:var(--muted);font-size:12px">'
+        + '<div style="font-size:28px;margin-bottom:8px">📂</div>'
+        + '<div style="color:var(--text);font-weight:600;margin-bottom:4px">No files found in this folder</div>'
+        + '<div style="font-size:11px;color:rgba(255,255,255,0.4)">Click "+ New File" in the top bar to create a file.</div>'
+        + '</div>';
+      var countEl = $("pc-file-count");
+      if (countEl) countEl.textContent = "0 files";
+      return;
+    }
+
+    var disc = $("pc-disconnected-state");
+    if (disc) disc.style.display = "none";
+
+    var matching = 0;
+    var totalFiles = 0;
+    var html = '<div class="file-list-items" style="padding:4px 0">';
+
+    entries.forEach(function(item) {
+      if (item.is_dir) return; // Flat list of file paths (e.g. index.html, src/main.js)
+      totalFiles++;
+      var p = item.path || item.name || "";
+      if (filter && !p.toLowerCase().includes(filter)) return;
+      matching++;
+
+      var isAct = (p === pcState.activePath) ? "active" : "";
+      var icon = typeof getFileIcon === "function" ? getFileIcon(p) : "📄";
+      var sizeText = "";
+      if (item.size != null && !isNaN(item.size)) {
+        if (item.size < 1024) sizeText = item.size + " B";
+        else if (item.size < 1024 * 1024) sizeText = (item.size / 1024).toFixed(1) + " KB";
+        else sizeText = (item.size / (1024 * 1024)).toFixed(1) + " MB";
+      }
+
+      html += '<div class="file-item file-leaf ' + isAct + '" data-path="' + esc(p) + '" data-is-dir="false" data-name="' + esc(item.name || p.split("/").pop()) + '" style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;border-radius:4px;font-size:12px;user-select:none">'
+            + '<span class="icon" style="font-size:13px">' + icon + '</span>'
+            + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(p) + '">' + esc(p) + '</span>'
+            + (sizeText ? ('<span class="file-size" style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:auto">' + sizeText + '</span>') : '')
+            + '</div>';
+    });
+
+    html += '</div>';
+
+    var countEl = $("pc-file-count");
+    if (countEl) {
+      countEl.textContent = filter ? (matching + " / " + totalFiles) : (totalFiles + " files");
+    }
+
+    if (totalFiles > 0 && matching === 0 && filter) {
+      treeEl.innerHTML = '<div style="padding:28px 16px;text-align:center;color:var(--muted);font-size:12px">'
+        + '<div style="font-size:20px;margin-bottom:8px">🔍</div>'
+        + 'No files matching "<b style="color:var(--text)">' + esc(filter) + '</b>"'
+        + '<div style="margin-top:10px"><button id="btn-pc-tree-clear-search" class="btn" style="padding:2px 8px;font-size:11px">Clear Search</button></div>'
+        + '</div>';
+      var tClear = $("btn-pc-tree-clear-search");
+      if (tClear) {
+        tClear.onclick = function() {
+          if (searchEl) searchEl.value = "";
+          renderPcFileTree(pcState.files);
+          if (searchEl) searchEl.focus();
+        };
+      }
+      return;
+    }
+
+    treeEl.innerHTML = html;
+
+    // Attach click events
+    treeEl.querySelectorAll(".file-item.file-leaf").forEach(function(el) {
+      el.onclick = function() {
+        var p = el.getAttribute("data-path");
+        if (p) openPcFile(p);
+      };
+    });
+  };
 
   // Switching Connect PC Modal Tabs (Native vs Terminal)
   window.switchPcConnectMode = function(mode) {
