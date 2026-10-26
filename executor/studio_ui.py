@@ -1638,15 +1638,18 @@ STUDIO_HTML = r"""<!doctype html>
       </button>
     </div>
 
-    <div class="nav-center">
-      <div id="active-file-title" style="font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">
-        <span>📄 Select a file from the explorer</span>
-      </div>
-    </div>
+    <!-- Hidden file title container to prevent null errors in JS -->
+    <div id="active-file-title" style="display:none !important"></div>
 
     <div class="nav-right">
-      <!-- User Account & Subscription Badge -->
-      <div id="gh-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px">
+      <button id="new-file-btn" class="btn" title="Create New File directly in GitHub">➕ New File</button>
+      <button id="commit-btn" class="btn btn-commit" title="Commit and Push changes directly to GitHub (Ctrl+S)">
+        <span>💾 Commit to GitHub</span>
+      </button>
+      <button id="delete-btn" class="btn btn-danger" style="display:none" title="Delete file from GitHub">🗑️ Delete</button>
+
+      <!-- User Account & Upgrade (In place of Chat & Console) -->
+      <div id="gh-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px;margin-left:4px">
         <button type="button" id="btn-auth-user" class="btn" style="padding:3px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAuthModal()">
           <span id="auth-nav-icon">👤</span>
           <span id="auth-nav-label">Sign In</span>
@@ -1656,13 +1659,6 @@ STUDIO_HTML = r"""<!doctype html>
           <span>⚡</span> <span>Upgrade</span>
         </button>
       </div>
-      <button id="new-file-btn" class="btn" title="Create New File directly in GitHub">➕ New File</button>
-      <button id="commit-btn" class="btn btn-commit" title="Commit and Push changes directly to GitHub (Ctrl+S)">
-        <span>💾 Commit to GitHub</span>
-      </button>
-      <button id="delete-btn" class="btn btn-danger" style="display:none" title="Delete file from GitHub">🗑️ Delete</button>
-      <a href="/ai" class="btn" target="_blank" style="border-color:rgba(88,166,255,0.4);color:#58a6ff;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
-      <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
     </div>
   </header>
 
@@ -1869,15 +1865,19 @@ STUDIO_HTML = r"""<!doctype html>
             </button>
           </div>
 
-          <div class="nav-center">
-            <div id="pc-active-file-title" style="font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">
-              <span>📄 Connect your PC or select a file</span>
-            </div>
-          </div>
+          <!-- Hidden PC file title container to prevent null errors in JS -->
+          <div id="pc-active-file-title" style="display:none !important"></div>
 
           <div class="nav-right">
-            <!-- User Account & Subscription Badge -->
-            <div id="pc-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px">
+            <button id="pc-top-new-file-btn" class="btn" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600" title="Create New File on PC (Ctrl+N)" onclick="openPcNewFileModal()">
+              <span>➕ New File</span>
+            </button>
+            <button id="pc-commit-btn" class="btn btn-commit pc-save-btn" title="Save changes directly to PC disk (Ctrl+S)">
+              <span>💾 Save to PC</span>
+            </button>
+
+            <!-- User Account & Upgrade (In place of Chat & Console) -->
+            <div id="pc-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px;margin-left:4px">
               <button type="button" id="pc-btn-auth-user" class="btn" style="padding:3px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAuthModal()">
                 <span id="pc-auth-nav-icon">👤</span>
                 <span id="pc-auth-nav-label">Sign In</span>
@@ -1887,14 +1887,6 @@ STUDIO_HTML = r"""<!doctype html>
                 <span>⚡</span> <span>Upgrade</span>
               </button>
             </div>
-            <button id="pc-top-new-file-btn" class="btn" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600" title="Create New File on PC (Ctrl+N)" onclick="openPcNewFileModal()">
-              <span>➕ New File</span>
-            </button>
-            <button id="pc-commit-btn" class="btn btn-commit pc-save-btn" title="Save changes directly to PC disk (Ctrl+S)">
-              <span>💾 Save to PC</span>
-            </button>
-            <a href="/ai" class="btn" target="_blank" style="border-color:rgba(56,189,248,0.4);color:#38bdf8;" title="Open Hashtag AI Chat">💬 Chat ↗</a>
-            <a href="/console" class="btn" target="_blank" title="Open Hashtag Console">💬 Console ↗</a>
           </div>
         </header>
 
