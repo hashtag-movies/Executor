@@ -1049,6 +1049,121 @@ def console_permission_decide(payload:dict):
 def console_ui_view():
     return CONSOLE_HTML
 
+try:
+    from . import auth
+except ImportError:
+    try:
+        import auth
+    except ImportError:
+        auth = None
+
+@app.get("/v1/auth/me")
+def auth_me(request: Request):
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header[7:].strip() if auth_header.startswith("Bearer ") else request.query_params.get("token", "")
+    user_data = auth.verify_token(token) if (auth and token) else None
+    user = auth.get_user_by_id(user_data["sub"]) if (auth and user_data) else None
+    return {"ok": True, "authenticated": user is not None, "user": user}
+
+@app.post("/v1/auth/email/register")
+async def auth_register(request: Request):
+    data = await request.json()
+    email = data.get("email", "")
+    password = data.get("password", "")
+    name = data.get("name", "")
+    res = auth.register_with_email(email, password, name) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
+@app.post("/v1/auth/email/login")
+async def auth_login(request: Request):
+    data = await request.json()
+    email = data.get("email", "")
+    password = data.get("password", "")
+    res = auth.login_with_email(email, password) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
+@app.post("/v1/auth/test-activate")
+async def auth_test_activate(request: Request):
+    data = await request.json()
+    tier = data.get("tier", "pro_lifetime")
+    user_id = data.get("user_id")
+    if not user_id:
+        auth_header = request.headers.get("Authorization", "")
+        token = auth_header[7:].strip() if auth_header.startswith("Bearer ") else request.query_params.get("token", "")
+        u_data = auth.verify_token(token) if (auth and token) else None
+        user_id = u_data.get("sub") if u_data else None
+
+    if not user_id and auth:
+        demo_user = auth.register_with_email("demo@hashtagai.online", "demo123456", "Demo Creator")
+        if not demo_user.get("ok"):
+            demo_user = auth.login_with_email("demo@hashtagai.online", "demo123456")
+        user_id = demo_user.get("user", {}).get("id")
+
+    if auth and user_id:
+        status = "lifetime" if tier == "pro_lifetime" else "active"
+        auth.update_user_tier(user_id, tier, status)
+        u = auth.get_user_by_id(user_id)
+        new_token = auth.create_token({"sub": user_id, "tier": tier, "email": u["email"]})
+        return {"ok": True, "token": new_token, "user": u}
+    return {"ok": False, "error": "Could not activate test tier"}
+
+@app.get("/v1/billing/plans")
+def billing_plans():
+    return {
+        "ok": True,
+        "plans": [
+            {
+                "id": "free",
+                "name": "Free Starter",
+                "price": "$0",
+                "period": "forever",
+                "description": "Essential cloud IDE for beginner coders and students.",
+                "features": ["GitHub Cloud Studio & PC Studio", "Connect 1 Local PC Folder", "Desktop Device Simulator", "5 Cross-Bridge Moves/day", "10 AI Prompts/day"]
+            },
+            {
+                "id": "pro_monthly",
+                "name": "Pro Monthly",
+                "price": "$5",
+                "period": "per month",
+                "description": "Full power for everyday developers and creators.",
+                "features": ["Everything in Free", "Tablet & Mobile Device Simulators + Rotate", "True Browser Fullscreen", "Unlimited Cross-Bridge Transfers", "Unlimited AI Co-Pilot Assistance", "Unlimited Repositories"]
+            },
+            {
+                "id": "pro_lifetime",
+                "name": "Lifetime VIP",
+                "price": "$27",
+                "period": "one-time payment",
+                "badge": "BEST VALUE - LIMITED DEAL",
+                "description": "Pay once, keep Pro features forever. Zero recurring fees.",
+                "features": ["All Pro Monthly Features FOREVER", "Zero Monthly Fees", "Unlimited Device Simulators & Fullscreen", "Unlimited Transfers & AI Co-Pilot", "VIP Access to Future Features"]
+            }
+        ]
+    }
+
+@app.post("/v1/billing/checkout")
+async def billing_checkout(request: Request):
+    data = await request.json()
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header[7:].strip() if auth_header.startswith("Bearer ") else request.query_params.get("token", "")
+    u_data = auth.verify_token(token) if (auth and token) else None
+    user_id = u_data.get("sub") if u_data else None
+    if not user_id:
+        return {"ok": False, "error": "Please sign in first"}
+    tier = data.get("tier", "pro_monthly")
+    res = auth.get_checkout_url(user_id, tier) if auth else {"ok": False, "error": "Billing service unavailable"}
+    return res
+
+@app.post("/v1/billing/webhook")
+async def billing_webhook(request: Request):
+    data = await request.json()
+    raw_body = await request.body()
+    sig = request.headers.get("X-Signature", "")
+    if auth and auth.LEMONSQUEEZY_WEBHOOK_SECRET:
+        if not auth.verify_lemonsqueezy_webhook(raw_body, sig):
+            raise HTTPException(status_code=400, detail="Invalid signature")
+    res = auth.process_lemonsqueezy_webhook(data) if auth else {"ok": False}
+    return res
+
 @app.get("/studio", response_class=HTMLResponse)
 @app.get("/github-studio", response_class=HTMLResponse)
 def studio_ui_view():

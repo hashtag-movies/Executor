@@ -259,6 +259,52 @@ STUDIO_HTML = r"""<!doctype html>
       padding: 8px 10px;
     }
 
+        /* User Auth & Plan Badges */
+    .plan-badge {
+      font-size: 10px !important;
+      font-weight: 800 !important;
+      padding: 2px 7px !important;
+      border-radius: 999px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.04em !important;
+      line-height: 1 !important;
+    }
+    .plan-badge.free {
+      background: rgba(148, 163, 184, 0.15) !important;
+      color: #94a3b8 !important;
+      border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+    .plan-badge.pro {
+      background: rgba(56, 189, 248, 0.15) !important;
+      color: #38bdf8 !important;
+      border: 1px solid rgba(56, 189, 248, 0.4) !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
+    }
+    .plan-badge.lifetime {
+      background: linear-gradient(135deg, #f59e0b, #eab308) !important;
+      color: #000 !important;
+      font-weight: 900 !important;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4) !important;
+    }
+    .btn-upgrade-pill {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #000 !important;
+      font-weight: 800 !important;
+      border: none !important;
+      padding: 3px 10px !important;
+      border-radius: 999px !important;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+      cursor: pointer !important;
+      font-size: 11px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+    }
+    .btn-upgrade-pill:hover {
+      filter: brightness(1.1) !important;
+      transform: translateY(-1px) !important;
+    }
+
     /* Navbar Active File Title Scrollable (Image 1: Prevent Displacing Buttons) */
     .nav-center {
       display: flex !important;
@@ -1599,6 +1645,17 @@ STUDIO_HTML = r"""<!doctype html>
     </div>
 
     <div class="nav-right">
+      <!-- User Account & Subscription Badge -->
+      <div id="gh-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px">
+        <button type="button" id="btn-auth-user" class="btn" style="padding:3px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAuthModal()">
+          <span id="auth-nav-icon">👤</span>
+          <span id="auth-nav-label">Sign In</span>
+          <span id="auth-nav-badge" class="plan-badge free" style="display:none">FREE</span>
+        </button>
+        <button type="button" id="btn-nav-upgrade" class="btn-upgrade-pill" onclick="openPricingModal()">
+          <span>⚡</span> <span>Upgrade</span>
+        </button>
+      </div>
       <button id="new-file-btn" class="btn" title="Create New File directly in GitHub">➕ New File</button>
       <button id="commit-btn" class="btn btn-commit" title="Commit and Push changes directly to GitHub (Ctrl+S)">
         <span>💾 Commit to GitHub</span>
@@ -1819,6 +1876,17 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
 
           <div class="nav-right">
+            <!-- User Account & Subscription Badge -->
+            <div id="pc-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px">
+              <button type="button" id="pc-btn-auth-user" class="btn" style="padding:3px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAuthModal()">
+                <span id="pc-auth-nav-icon">👤</span>
+                <span id="pc-auth-nav-label">Sign In</span>
+                <span id="pc-auth-nav-badge" class="plan-badge free" style="display:none">FREE</span>
+              </button>
+              <button type="button" id="pc-btn-nav-upgrade" class="btn-upgrade-pill" onclick="openPricingModal()">
+                <span>⚡</span> <span>Upgrade</span>
+              </button>
+            </div>
             <button id="pc-top-new-file-btn" class="btn" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600" title="Create New File on PC (Ctrl+N)" onclick="openPcNewFileModal()">
               <span>➕ New File</span>
             </button>
@@ -2317,6 +2385,206 @@ STUDIO_HTML = r"""<!doctype html>
     </div>
   </div>
 </div>
+
+<!-- ======================================================== -->
+<!-- MODAL: HYBRID AUTHENTICATION (GITHUB + GOOGLE + EMAIL) -->
+<!-- ======================================================== -->
+<div id="modal-auth" class="modal-backdrop">
+  <div class="modal" style="max-width:440px;background:#0d1527;border:1px solid rgba(56,189,248,0.4);box-shadow:0 25px 60px rgba(0,0,0,0.85);padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:24px">⚡</span>
+        <div>
+          <h3 style="margin:0;font-size:16px;font-weight:800;color:#fff" id="auth-modal-title">Sign In to Hashtag Studio</h3>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6)">Access cloud repos, PC bridge, and AI Co-Pilot</div>
+        </div>
+      </div>
+      <button type="button" class="btn" style="padding:2px 8px;font-size:12px" onclick="closeAuthModal()">✕</button>
+    </div>
+
+    <!-- Logged In Profile View (If already authenticated) -->
+    <div id="auth-logged-in-view" style="display:none;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <img id="auth-profile-avatar" src="" style="width:42px;height:42px;border-radius:50%;border:2px solid #38bdf8;background:#070b14">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="auth-profile-name" style="font-size:14px;font-weight:800;color:#fff">Developer</span>
+            <span id="auth-profile-badge" class="plan-badge free">FREE</span>
+          </div>
+          <div id="auth-profile-email" style="font-size:11.5px;color:rgba(255,255,255,0.6)">alex@example.com</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn btn-primary" style="flex:1;padding:7px;font-size:11.5px;justify-content:center" onclick="closeAuthModal();openPricingModal()">
+          <span>👑 View Upgrade Plans</span>
+        </button>
+        <button type="button" class="btn" style="padding:7px 12px;font-size:11.5px;border-color:#f87171;color:#f87171" onclick="signOutUser()">
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Anonymous / Log In View -->
+    <div id="auth-logged-out-view">
+      <!-- 1-Click Social / OAuth Providers -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+        <button type="button" class="btn" style="width:100%;padding:10px 14px;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;background:#24292e;color:#fff;border:1px solid rgba(255,255,255,0.2)" onclick="signInWithProvider('github')">
+          <span style="font-size:16px">🐙</span>
+          <span>Continue with GitHub</span>
+        </button>
+
+        <button type="button" class="btn" style="width:100%;padding:10px 14px;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;background:#ffffff;color:#1f2937;border:1px solid #e5e7eb" onclick="signInWithProvider('google')">
+          <span style="font-size:16px">🌐</span>
+          <span>Continue with Google</span>
+        </button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.12)"></div>
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:rgba(255,255,255,0.4)">OR USE EMAIL</span>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.12)"></div>
+      </div>
+
+      <!-- Email Sign In / Sign Up Tabs -->
+      <div style="display:flex;gap:6px;background:rgba(0,0,0,0.3);padding:3px;border-radius:6px;margin-bottom:14px">
+        <button type="button" id="tab-auth-login" class="btn active" style="flex:1;font-size:11px;padding:5px;justify-content:center" onclick="switchAuthTab('login')">Sign In</button>
+        <button type="button" id="tab-auth-register" class="btn" style="flex:1;font-size:11px;padding:5px;justify-content:center" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <!-- Email Form -->
+      <form id="auth-email-form" onsubmit="handleEmailAuthSubmit(event)">
+        <div id="auth-name-field" style="display:none;margin-bottom:12px">
+          <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:rgba(255,255,255,0.8)">Your Name</label>
+          <input type="text" id="auth-input-name" placeholder="Alex Dev" style="width:100%;box-sizing:border-box">
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:rgba(255,255,255,0.8)">Email Address</label>
+          <input type="email" id="auth-input-email" required placeholder="alex@example.com" style="width:100%;box-sizing:border-box">
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:rgba(255,255,255,0.8)">Password</label>
+          <input type="password" id="auth-input-password" required placeholder="••••••••" style="width:100%;box-sizing:border-box">
+        </div>
+
+        <div id="auth-form-error" style="display:none;color:#f87171;font-size:11.5px;margin-bottom:12px;padding:6px 10px;background:rgba(248,113,113,0.1);border-radius:4px;border:1px solid rgba(248,113,113,0.25)"></div>
+
+        <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="width:100%;padding:10px;font-size:12.5px;font-weight:700;justify-content:center">
+          <span>Sign In</span>
+        </button>
+      </form>
+
+      <!-- Instant Test Sandbox Bar -->
+      <div style="margin-top:16px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:10px;color:rgba(255,255,255,0.4)">⚡ Quick Sandbox:</span>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn" style="padding:2px 6px;font-size:10px" onclick="quickTestSignIn('free')">Test Free</button>
+          <button type="button" class="btn" style="padding:2px 6px;font-size:10px;border-color:#10b981;color:#10b981" onclick="quickTestSignIn('pro_monthly')">Test Pro</button>
+          <button type="button" class="btn" style="padding:2px 6px;font-size:10px;border-color:#f59e0b;color:#f59e0b" onclick="quickTestSignIn('pro_lifetime')">Test Lifetime</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: PRICING & SUBSCRIPTION PLANS (LEMONSQUEEZY) -->
+<!-- ======================================================== -->
+<div id="modal-pricing" class="modal-backdrop">
+  <div class="modal" style="max-width:860px;width:95%;background:#090e1a;border:1px solid rgba(56,189,248,0.4);box-shadow:0 30px 80px rgba(0,0,0,0.9);padding:26px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:24px">👑</span>
+          <h2 style="margin:0;font-size:18px;font-weight:800;color:#fff">Hashtag Cloud Studio Plans</h2>
+          <span class="badge" style="background:rgba(56,189,248,0.15);color:#38bdf8;font-size:11px">Simple & Transparent</span>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px">Pick the plan that accelerates your development workflow. Cancel anytime.</div>
+      </div>
+      <button type="button" class="btn" style="padding:3px 10px;font-size:13px" onclick="closePricingModal()">✕</button>
+    </div>
+
+    <!-- 3 Plan Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;margin-bottom:16px">
+      <!-- 1. Free Starter -->
+      <div style="background:#0d1527;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;display:flex;flex-direction:column;position:relative">
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.05em">Starter</div>
+        <div style="font-size:28px;font-weight:850;color:#fff;margin:10px 0 4px 0">$0 <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5)">/ forever</span></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:16px">Essential cloud IDE for beginner coders and students.</div>
+        
+        <button type="button" id="btn-plan-card-free" class="btn" style="width:100%;padding:9px;font-size:12px;font-weight:700;justify-content:center;margin-bottom:16px" disabled>
+          Current Plan
+        </button>
+
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-size:11.5px;color:rgba(255,255,255,0.8)">
+          <li>✅ GitHub Cloud Studio & PC Studio</li>
+          <li>✅ Connect 1 Local PC Project Folder</li>
+          <li>✅ Desktop Live Responsive View</li>
+          <li>✅ 5 Cross-Bridge File Moves / Day</li>
+          <li>✅ 10 AI Co-Pilot Prompts / Day</li>
+          <li style="color:rgba(255,255,255,0.4)">❌ Tablet & Mobile Device Frames</li>
+          <li style="color:rgba(255,255,255,0.4)">❌ Unlimited File Moves & AI</li>
+        </ul>
+      </div>
+
+      <!-- 2. Pro Monthly ($5) -->
+      <div style="background:linear-gradient(180deg, rgba(56,189,248,0.12), rgba(13,21,39,0.95));border:1.5px solid #38bdf8;border-radius:12px;padding:20px;display:flex;flex-direction:column;position:relative;box-shadow:0 10px 30px rgba(56,189,248,0.2)">
+        <div style="position:absolute;top:-10px;right:16px;background:#38bdf8;color:#000;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;text-transform:uppercase">Popular</div>
+        <div style="font-size:13px;font-weight:700;color:#38bdf8;text-transform:uppercase;letter-spacing:0.05em">Pro Monthly</div>
+        <div style="font-size:28px;font-weight:850;color:#fff;margin:10px 0 4px 0">$5 <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5)">/ month</span></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:16px">Full power for active developers and engineers.</div>
+        
+        <button type="button" id="btn-plan-card-monthly" class="btn btn-primary" style="width:100%;padding:9px;font-size:12px;font-weight:700;justify-content:center;margin-bottom:16px;background:#38bdf8;color:#000" onclick="triggerLemonCheckout('pro_monthly')">
+          Subscribe Monthly ($5/mo)
+        </button>
+
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-size:11.5px;color:rgba(255,255,255,0.85)">
+          <li>✅ <b>Everything in Free Starter</b></li>
+          <li>✅ <b>Tablet & Mobile Device Simulators</b></li>
+          <li>✅ <b>Landscape & Portrait Orientation</b></li>
+          <li>✅ <b>True Native Fullscreen Mode</b></li>
+          <li>✅ <b>Unlimited 1-Click File Transfers</b></li>
+          <li>✅ <b>Unlimited AI Co-Pilot Assistance</b></li>
+          <li>✅ <b>Unlimited GitHub Repositories</b></li>
+        </ul>
+      </div>
+
+      <!-- 3. Lifetime VIP ($27) -->
+      <div style="background:linear-gradient(180deg, rgba(245,158,11,0.14), rgba(13,21,39,0.95));border:1.5px solid #f59e0b;border-radius:12px;padding:20px;display:flex;flex-direction:column;position:relative;box-shadow:0 10px 30px rgba(245,158,11,0.2)">
+        <div style="position:absolute;top:-10px;right:16px;background:linear-gradient(135deg, #f59e0b, #eab308);color:#000;font-size:10px;font-weight:850;padding:2px 8px;border-radius:999px;text-transform:uppercase">Best Value · 90% Off</div>
+        <div style="font-size:13px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.05em">Lifetime VIP</div>
+        <div style="font-size:28px;font-weight:850;color:#fff;margin:10px 0 4px 0">$27 <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5)">one-time</span></div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:16px">Pay once. Keep Pro features forever. Zero subscriptions.</div>
+        
+        <button type="button" id="btn-plan-card-lifetime" class="btn" style="width:100%;padding:9px;font-size:12px;font-weight:800;justify-content:center;margin-bottom:16px;background:linear-gradient(135deg, #f59e0b, #d97706);color:#000;border:none" onclick="triggerLemonCheckout('pro_lifetime')">
+          ⚡ Get Lifetime Access ($27)
+        </button>
+
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-size:11.5px;color:rgba(255,255,255,0.9)">
+          <li>⚡ <b>All Pro Monthly Features FOREVER</b></li>
+          <li>⚡ <b>Zero Recurring Monthly Fees</b></li>
+          <li>⚡ <b>Unlimited Device Mockups & Rotate</b></li>
+          <li>⚡ <b>Unlimited Cross-Bridge File Moves</b></li>
+          <li>⚡ <b>Unlimited AI Co-Pilot + BYOK Key</b></li>
+          <li>⚡ <b>Early Access to All Future Studio Features</b></li>
+          <li>⚡ <b>Early Supporter VIP Gold Badge</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Security & Guarantee Badge -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.6)">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span>🔒</span>
+        <span>Secure LemonSqueezy Checkout · 256-bit SSL · Instant Tier Activation</span>
+      </div>
+      <div>Questions? Reach us at founder@hashtagai.online</div>
+    </div>
+  </div>
+</div>
+
 
 <!-- GITHUB AUTH MODAL -->
 <div id="github-auth-modal" class="modal-backdrop">
@@ -3195,6 +3463,12 @@ STUDIO_HTML = r"""<!doctype html>
   var isLandscape = false;
 
   function setPreviewDevice(device) {
+    if (device === "tablet" || device === "mobile") {
+      if (typeof requireProFeature === "function" && !requireProFeature("device_simulator", "Tablet and Mobile live testing is a Pro feature! Upgrade for just $5/mo or $27 lifetime to simulate all screens.")) {
+        if ($("dev-desktop")) $("dev-desktop").classList.add("active");
+        return;
+      }
+    }
     currentDevice = device;
     var holder = $("preview-frame-holder");
     holder.className = "preview-frame-holder";
@@ -3269,6 +3543,7 @@ STUDIO_HTML = r"""<!doctype html>
   }
 
   function sendAiPrompt() {
+    if (typeof canSendAiPrompt === "function" && !canSendAiPrompt()) return;
     var promptEl = $("ai-prompt");
     var txt = promptEl.value.trim();
     if (!txt) return;
@@ -3752,6 +4027,300 @@ STUDIO_HTML = r"""<!doctype html>
   // ========================================================
   // --- STUDIO SLIDER & DUAL-MODE VIEWPORT CONTROLLER ---
   // ========================================================
+  
+  // ========================================================
+  // --- AUTHENTICATION & SUBSCRIPTION CONTROLLER ---
+  // ========================================================
+  window.currentUser = null;
+  window.currentAuthTab = "login";
+
+  window.checkUserAuth = function() {
+    var token = localStorage.getItem("hashtag_auth_token");
+    var headers = token ? { "Authorization": "Bearer " + token } : {};
+
+    fetch("/v1/auth/me", { headers: headers }).then(function(r) {
+      return r.json();
+    }).then(function(res) {
+      if (res.ok && res.authenticated && res.user) {
+        window.currentUser = res.user;
+      } else {
+        window.currentUser = null;
+      }
+      updateAuthUI();
+    }).catch(function() {
+      window.currentUser = null;
+      updateAuthUI();
+    });
+  };
+
+  function updateAuthUI() {
+    var u = window.currentUser;
+    var ghBtn = $("btn-auth-user");
+    var pcBtn = $("pc-btn-auth-user");
+    var ghUp = $("btn-nav-upgrade");
+    var pcUp = $("pc-btn-nav-upgrade");
+
+    var isPro = u && (u.is_pro || u.tier === "pro_monthly" || u.tier === "pro_lifetime");
+    var isLifetime = u && (u.is_lifetime || u.tier === "pro_lifetime");
+
+    if (u) {
+      var badgeText = isLifetime ? "LIFETIME" : (isPro ? "PRO" : "FREE");
+      var badgeClass = isLifetime ? "plan-badge lifetime" : (isPro ? "plan-badge pro" : "plan-badge free");
+
+      [ghBtn, pcBtn].forEach(function(btn) {
+        if (!btn) return;
+        btn.innerHTML = '<img src="' + esc(u.avatar_url || '') + '" style="width:16px;height:16px;border-radius:50%;object-fit:cover">'
+          + '<span>' + esc(u.name.split(' ')[0]) + '</span>'
+          + '<span class="' + badgeClass + '">' + badgeText + '</span>';
+      });
+
+      if (ghUp) ghUp.style.display = isPro ? "none" : "inline-flex";
+      if (pcUp) pcUp.style.display = isPro ? "none" : "inline-flex";
+
+      // Update Modal Profile View
+      var loggedInView = $("auth-logged-in-view");
+      var loggedOutView = $("auth-logged-out-view");
+      if (loggedInView) loggedInView.style.display = "block";
+      if (loggedOutView) loggedOutView.style.display = "none";
+
+      if ($("auth-profile-name")) $("auth-profile-name").textContent = u.name;
+      if ($("auth-profile-email")) $("auth-profile-email").textContent = u.email;
+      if ($("auth-profile-avatar")) $("auth-profile-avatar").src = u.avatar_url;
+      if ($("auth-profile-badge")) {
+        $("auth-profile-badge").className = badgeClass;
+        $("auth-profile-badge").textContent = badgeText;
+      }
+    } else {
+      [ghBtn, pcBtn].forEach(function(btn) {
+        if (!btn) return;
+        btn.innerHTML = '<span>👤</span> <span>Sign In</span>';
+      });
+      if (ghUp) ghUp.style.display = "inline-flex";
+      if (pcUp) pcUp.style.display = "inline-flex";
+
+      var loggedInView = $("auth-logged-in-view");
+      var loggedOutView = $("auth-logged-out-view");
+      if (loggedInView) loggedInView.style.display = "none";
+      if (loggedOutView) loggedOutView.style.display = "block";
+    }
+
+    // Update Pricing Modal Cards
+    var cardFreeBtn = $("btn-plan-card-free");
+    var cardMonthBtn = $("btn-plan-card-monthly");
+    var cardLifeBtn = $("btn-plan-card-lifetime");
+
+    if (cardFreeBtn) {
+      cardFreeBtn.textContent = (!u || !isPro) ? "Current Plan" : "Downgrade";
+      cardFreeBtn.disabled = (!u || !isPro);
+    }
+    if (cardMonthBtn) {
+      cardMonthBtn.textContent = (u && u.tier === "pro_monthly") ? "Active Monthly Subscription" : "Subscribe Monthly ($5/mo)";
+      cardMonthBtn.disabled = (u && u.tier === "pro_monthly");
+    }
+    if (cardLifeBtn) {
+      cardLifeBtn.textContent = isLifetime ? "Active Lifetime VIP" : "⚡ Get Lifetime Access ($27)";
+      cardLifeBtn.disabled = isLifetime;
+    }
+  }
+
+  window.openAuthModal = function() {
+    var m = $("modal-auth");
+    if (m) m.classList.add("open");
+  };
+
+  window.closeAuthModal = function() {
+    var m = $("modal-auth");
+    if (m) m.classList.remove("open");
+  };
+
+  window.openPricingModal = function() {
+    var m = $("modal-pricing");
+    if (m) m.classList.add("open");
+  };
+
+  window.closePricingModal = function() {
+    var m = $("modal-pricing");
+    if (m) m.classList.remove("open");
+  };
+
+  window.switchAuthTab = function(tab) {
+    window.currentAuthTab = tab;
+    var tLog = $("tab-auth-login");
+    var tReg = $("tab-auth-register");
+    var nameField = $("auth-name-field");
+    var submitBtn = $("auth-submit-btn");
+
+    if (tab === "register") {
+      if (tLog) tLog.classList.remove("active");
+      if (tReg) tReg.classList.add("active");
+      if (nameField) nameField.style.display = "block";
+      if (submitBtn) submitBtn.innerHTML = "<span>Create Account</span>";
+    } else {
+      if (tLog) tLog.classList.add("active");
+      if (tReg) tReg.classList.remove("active");
+      if (nameField) nameField.style.display = "none";
+      if (submitBtn) submitBtn.innerHTML = "<span>Sign In</span>";
+    }
+    var err = $("auth-form-error");
+    if (err) err.style.display = "none";
+  };
+
+  window.signInWithProvider = function(provider) {
+    if (provider === "github") {
+      window.location.href = "/v1/auth/github";
+    } else if (provider === "google") {
+      window.location.href = "/v1/auth/google";
+    }
+  };
+
+  window.handleEmailAuthSubmit = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var email = ($("auth-input-email") ? $("auth-input-email").value : "").trim();
+    var password = ($("auth-input-password") ? $("auth-input-password").value : "").trim();
+    var name = ($("auth-input-name") ? $("auth-input-name").value : "").trim();
+    var errEl = $("auth-form-error");
+
+    if (!email || !password) {
+      if (errEl) { errEl.textContent = "Please fill in all fields."; errEl.style.display = "block"; }
+      return;
+    }
+
+    var endpoint = (window.currentAuthTab === "register") ? "/v1/auth/email/register" : "/v1/auth/email/login";
+    var payload = { email: email, password: password, name: name };
+
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (!res.ok) {
+        if (errEl) { errEl.textContent = res.error || "Authentication failed."; errEl.style.display = "block"; }
+        return;
+      }
+      localStorage.setItem("hashtag_auth_token", res.token);
+      window.currentUser = res.user;
+      closeAuthModal();
+      updateAuthUI();
+      alert("✓ Welcome back, " + res.user.name + "!");
+    }).catch(function(err) {
+      if (errEl) { errEl.textContent = "Network error: " + err.message; errEl.style.display = "block"; }
+    });
+  };
+
+  window.quickTestSignIn = function(tier) {
+    fetch("/v1/auth/test-activate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tier: tier })
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (res.ok) {
+        localStorage.setItem("hashtag_auth_token", res.token);
+        window.currentUser = res.user;
+        closeAuthModal();
+        closePricingModal();
+        updateAuthUI();
+        alert("✓ Activated test session as " + tier.toUpperCase() + "!");
+      }
+    });
+  };
+
+  window.signOutUser = function() {
+    localStorage.removeItem("hashtag_auth_token");
+    window.currentUser = null;
+    updateAuthUI();
+    closeAuthModal();
+    alert("Signed out successfully.");
+  };
+
+  window.triggerLemonCheckout = function(tier) {
+    if (!window.currentUser) {
+      closePricingModal();
+      openAuthModal();
+      alert("Please sign in or create an account first before subscribing.");
+      return;
+    }
+
+    var token = localStorage.getItem("hashtag_auth_token");
+    fetch("/v1/billing/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ tier: tier })
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (res.ok && res.url) {
+        if (res.is_test_mode) {
+          quickTestSignIn(tier);
+        } else {
+          window.location.href = res.url;
+        }
+      } else {
+        alert("Checkout error: " + (res.error || "Could not generate checkout session"));
+      }
+    }).catch(function(err) {
+      alert("Checkout connection error: " + err.message);
+    });
+  };
+
+  // --- FEATURE GATEKEEPERS ---
+  window.requireProFeature = function(featureName, message) {
+    var u = window.currentUser;
+    var isPro = u && (u.is_pro || u.tier === "pro_monthly" || u.tier === "pro_lifetime");
+    if (!isPro) {
+      openPricingModal();
+      alert("👑 Pro Feature: " + message);
+      return false;
+    }
+    return true;
+  };
+
+  window.canPerformTransfer = function() {
+    var u = window.currentUser;
+    var isPro = u && (u.is_pro || u.tier === "pro_monthly" || u.tier === "pro_lifetime");
+    if (isPro) return true;
+    var todayKey = "hashtag_transfers_" + new Date().toISOString().slice(0, 10);
+    var count = parseInt(localStorage.getItem(todayKey) || "0", 10);
+    if (count >= 5) {
+      openPricingModal();
+      alert("⚡ Free Daily Limit Reached: You have used your 5 free cross-bridge file transfers today. Upgrade to Pro ($5/mo) or Lifetime ($27) for unlimited transfers!");
+      return false;
+    }
+    localStorage.setItem(todayKey, (count + 1).toString());
+    return true;
+  };
+
+  window.canSendAiPrompt = function() {
+    var u = window.currentUser;
+    var isPro = u && (u.is_pro || u.tier === "pro_monthly" || u.tier === "pro_lifetime");
+    if (isPro) return true;
+    var todayKey = "hashtag_ai_prompts_" + new Date().toISOString().slice(0, 10);
+    var count = parseInt(localStorage.getItem(todayKey) || "0", 10);
+    if (count >= 10) {
+      openPricingModal();
+      alert("⚡ Free Daily Limit Reached: You have reached your 10 free AI Co-Pilot requests for today. Upgrade to Pro ($5/mo) or Lifetime ($27) for unlimited AI assistance!");
+      return false;
+    }
+    localStorage.setItem(todayKey, (count + 1).toString());
+    return true;
+  };
+
+  // Check URL params for auth callbacks or success
+  (function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var authToken = urlParams.get("auth_token");
+    if (authToken) {
+      localStorage.setItem("hashtag_auth_token", authToken);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    var activateTier = urlParams.get("activate_test_tier");
+    if (activateTier) {
+      window.quickTestSignIn(activateTier);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    checkUserAuth();
+  })();
+
   window.switchToPcStudio = function(e) {
     if (e && e.preventDefault) e.preventDefault();
     document.body.classList.add("mode-pc");
@@ -4683,6 +5252,12 @@ STUDIO_HTML = r"""<!doctype html>
   var pcIsLandscape = false;
 
   function setPcPreviewDevice(device) {
+    if (device === "tablet" || device === "mobile") {
+      if (typeof requireProFeature === "function" && !requireProFeature("device_simulator", "Tablet and Mobile live testing is a Pro feature! Upgrade for just $5/mo or $27 lifetime to simulate all screens.")) {
+        if ($("pc-dev-desktop")) $("pc-dev-desktop").classList.add("active");
+        return;
+      }
+    }
     pcCurrentDevice = device;
     var holder = $("pc-preview-frame-holder");
     if (!holder) return;
@@ -5017,6 +5592,7 @@ STUDIO_HTML = r"""<!doctype html>
 
   // PC AI Co-Pilot chat send - routes to console/request with full active context
   function sendPcAiPrompt() {
+    if (typeof canSendAiPrompt === "function" && !canSendAiPrompt()) return;
     var promptEl = $("pc-ai-prompt");
     var chat = $("pc-ai-chat");
     if (!promptEl || !chat) return;
@@ -5272,6 +5848,7 @@ STUDIO_HTML = r"""<!doctype html>
   };
 
   window.executeTransferToGitHub = function() {
+    if (typeof canPerformTransfer === "function" && !canPerformTransfer()) return;
     var pcFilePath = $("trans-gh-source-path").textContent;
     var repo = $("trans-gh-target-repo").value;
     var branch = $("trans-gh-branch").value.trim() || "main";
@@ -5385,6 +5962,7 @@ STUDIO_HTML = r"""<!doctype html>
   };
 
   window.executeTransferToPc = function() {
+    if (typeof canPerformTransfer === "function" && !canPerformTransfer()) return;
     if (!isPcConnected) {
       alert("No local PC connected. Please connect your PC first.");
       return;
