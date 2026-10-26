@@ -259,11 +259,62 @@ STUDIO_HTML = r"""<!doctype html>
       padding: 8px 10px;
     }
 
-    /* True Fullscreen Overlay (Image 5: Hide statusbar & surround controls) */
+    /* Navbar Active File Title Scrollable (Image 1: Prevent Displacing Buttons) */
+    .nav-center {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 10px !important;
+      flex: 0 1 auto !important;
+      max-width: 380px !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+    }
+    #active-file-title,
+    #pc-active-file-title {
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      color: var(--text) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      max-width: 360px !important;
+      min-width: 0 !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      white-space: nowrap !important;
+      flex-shrink: 1 !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(56, 189, 248, 0.4) transparent !important;
+      padding-bottom: 2px !important;
+    }
+    #active-file-title span,
+    #pc-active-file-title span {
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+    }
+    #active-file-title::-webkit-scrollbar,
+    #pc-active-file-title::-webkit-scrollbar {
+      height: 3px !important;
+    }
+    #active-file-title::-webkit-scrollbar-track,
+    #pc-active-file-title::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+    #active-file-title::-webkit-scrollbar-thumb,
+    #pc-active-file-title::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.4) !important;
+      border-radius: 3px !important;
+    }
+
+    /* True Fullscreen Overlay (Image 2: Hide Entire Workspace & Surrounding Controls) */
     body.has-preview-fullscreen .studio-statusbar,
     body.has-preview-fullscreen .studio-header,
     body.has-preview-fullscreen .studio-dock,
     body.has-preview-fullscreen .studio-sidebar,
+    body.has-preview-fullscreen .studio-workspace,
+    body.has-preview-fullscreen .editor-panel,
+    body.has-preview-fullscreen .sidebar-panel,
     body.has-preview-fullscreen .code-editor-main {
       display: none !important;
     }
@@ -278,6 +329,7 @@ STUDIO_HTML = r"""<!doctype html>
       box-sizing: border-box !important;
       display: flex !important;
       flex-direction: column !important;
+      overflow: hidden !important;
     }
     .preview-container.is-fullscreen .preview-toolbar {
       position: fixed !important;
@@ -303,12 +355,12 @@ STUDIO_HTML = r"""<!doctype html>
       align-items: center !important;
       justify-content: center !important;
       background: #070b14 !important;
-      padding: 70px 20px 20px 20px !important;
+      padding: 68px 16px 24px 16px !important;
       box-sizing: border-box !important;
       overflow: auto !important;
     }
 
-    /* Fluid Responsive Device Frames (Image 5: No bottom cutoff in fullscreen or sidebar) */
+    /* Fluid Responsive Device Frames (Image 2: Device height constrained to viewport - no bottom cutoff) */
     .preview-frame-holder {
       width: 100%;
       height: 100%;
@@ -319,11 +371,11 @@ STUDIO_HTML = r"""<!doctype html>
       box-sizing: border-box;
     }
     .preview-frame-holder.device-tablet {
-      width: 768px !important;
+      height: min(1024px, calc(100vh - 110px)) !important;
+      max-height: calc(100% - 10px) !important;
       aspect-ratio: 768 / 1024 !important;
-      max-width: calc(100% - 16px) !important;
-      max-height: calc(100% - 16px) !important;
-      height: auto !important;
+      width: auto !important;
+      max-width: min(768px, calc(100% - 24px)) !important;
       border-radius: 20px !important;
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b, 0 0 0 11px rgba(255,255,255,0.15) !important;
       overflow: hidden !important;
@@ -331,18 +383,18 @@ STUDIO_HTML = r"""<!doctype html>
       box-sizing: border-box !important;
     }
     .preview-frame-holder.landscape.device-tablet {
-      width: 1024px !important;
+      height: min(768px, calc(100vh - 110px)) !important;
+      max-height: calc(100% - 10px) !important;
       aspect-ratio: 1024 / 768 !important;
-      max-width: calc(100% - 16px) !important;
-      max-height: calc(100% - 16px) !important;
-      height: auto !important;
+      width: auto !important;
+      max-width: min(1024px, calc(100% - 24px)) !important;
     }
     .preview-frame-holder.device-mobile {
-      width: 375px !important;
+      height: min(812px, calc(100vh - 110px)) !important;
+      max-height: calc(100% - 10px) !important;
       aspect-ratio: 375 / 812 !important;
-      max-width: calc(100% - 16px) !important;
-      max-height: calc(100% - 16px) !important;
-      height: auto !important;
+      width: auto !important;
+      max-width: min(375px, calc(100% - 24px)) !important;
       border-radius: 28px !important;
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b, 0 0 0 11px rgba(255,255,255,0.15) !important;
       overflow: hidden !important;
@@ -350,11 +402,11 @@ STUDIO_HTML = r"""<!doctype html>
       box-sizing: border-box !important;
     }
     .preview-frame-holder.landscape.device-mobile {
-      width: 812px !important;
+      height: min(375px, calc(100vh - 110px)) !important;
+      max-height: calc(100% - 10px) !important;
       aspect-ratio: 812 / 375 !important;
-      max-width: calc(100% - 16px) !important;
-      max-height: calc(100% - 16px) !important;
-      height: auto !important;
+      width: auto !important;
+      max-width: min(812px, calc(100% - 24px)) !important;
     }
     .preview-container.is-fullscreen .preview-frame-holder:not(.device-tablet):not(.device-mobile) {
       width: 100% !important;
@@ -3364,6 +3416,14 @@ STUDIO_HTML = r"""<!doctype html>
     prev.classList.add("is-fullscreen");
     fullscreenState.isFullscreen = true;
     updateFullscreenButtons(true);
+
+    try {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+      }
+    } catch(e) {}
   }
 
   function exitFullscreen() {
@@ -3374,12 +3434,31 @@ STUDIO_HTML = r"""<!doctype html>
     fullscreenState.isFullscreen = false;
     updateFullscreenButtons(false);
 
+    try {
+      if (document.fullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      }
+    } catch(e) {}
+
     if (ghPreviewPlaceholder && ghPreviewPlaceholder.parentNode) {
       ghPreviewPlaceholder.parentNode.insertBefore(prev, ghPreviewPlaceholder);
       ghPreviewPlaceholder.parentNode.removeChild(ghPreviewPlaceholder);
       ghPreviewPlaceholder = null;
     }
   }
+
+  document.addEventListener("fullscreenchange", function() {
+    if (!document.fullscreenElement) {
+      if (typeof fullscreenState !== "undefined" && fullscreenState.isFullscreen) exitFullscreen();
+      if (typeof pcFullscreenState !== "undefined" && pcFullscreenState.isFullscreen) exitPcFullscreen();
+    }
+  });
+  document.addEventListener("webkitfullscreenchange", function() {
+    if (!document.webkitFullscreenElement) {
+      if (typeof fullscreenState !== "undefined" && fullscreenState.isFullscreen) exitFullscreen();
+      if (typeof pcFullscreenState !== "undefined" && pcFullscreenState.isFullscreen) exitPcFullscreen();
+    }
+  });
 
   document.addEventListener("fullscreenchange", function() {
     if (!document.fullscreenElement && fullscreenState.isFullscreen) {
@@ -4691,6 +4770,14 @@ STUDIO_HTML = r"""<!doctype html>
       fBtn.textContent = "✕ Exit Fullscreen";
       fBtn.style.color = "var(--danger)";
     }
+
+    try {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+      }
+    } catch(e) {}
   }
 
   function exitPcFullscreen() {
@@ -4705,6 +4792,12 @@ STUDIO_HTML = r"""<!doctype html>
       fBtn.textContent = "⛶ Fullscreen";
       fBtn.style.color = "";
     }
+
+    try {
+      if (document.fullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      }
+    } catch(e) {}
 
     if (pcPreviewPlaceholder && pcPreviewPlaceholder.parentNode) {
       pcPreviewPlaceholder.parentNode.insertBefore(prev, pcPreviewPlaceholder);
