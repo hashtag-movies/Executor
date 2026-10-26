@@ -318,19 +318,39 @@ STUDIO_HTML = r"""<!doctype html>
       box-sizing: border-box;
     }
     .ai-assistant-container {
-      flex: 1 1 0% !important;
-      display: flex !important;
-      flex-direction: column !important;
-      height: calc(100% - 38px) !important;
-      max-height: calc(100% - 38px) !important;
-      min-height: 0 !important;
-      padding: 10px 12px 10px 12px !important;
-      box-sizing: border-box !important;
-      overflow: hidden !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
+      flex: 1 1 0%;
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 38px);
+      max-height: calc(100% - 38px);
+      min-height: 0;
+      padding: 10px 12px 10px 12px;
+      box-sizing: border-box;
+      overflow: hidden;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
       position: relative;
+    }
+    .preview-container {
+      flex: 1 1 0%;
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 38px);
+      max-height: calc(100% - 38px);
+      min-height: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+    .ai-assistant-container[style*="display:none"],
+    .ai-assistant-container[style*="display: none"] {
+      display: none !important;
+    }
+    .preview-container[style*="display:none"],
+    .preview-container[style*="display: none"] {
+      display: none !important;
     }
     .ai-chat-messages {
       flex: 1 1 0% !important;
@@ -1415,6 +1435,9 @@ STUDIO_HTML = r"""<!doctype html>
         <button id="refresh-repo-btn" class="btn" style="padding:2px 6px;font-size:11px" title="Refresh files">↻</button>
       </div>
       <button id="new-repo-btn" class="btn" title="Create New Repository in GitHub">+ New Repo</button>
+      <button id="btn-switch-to-pc-nav" class="btn btn-switch-mode pc-mode-btn" title="Switch to PC Cloud Studio" onclick="switchToPcStudio()">
+        <span>💻 PC Studio ➡</span>
+      </button>
     </div>
 
     <div class="nav-center">
@@ -1644,6 +1667,9 @@ STUDIO_HTML = r"""<!doctype html>
           </div>
 
           <div class="nav-right">
+            <button id="pc-top-new-file-btn" class="btn" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600" title="Create New File on PC (Ctrl+N)" onclick="openPcNewFileModal()">
+              <span>➕ New File</span>
+            </button>
             <button id="pc-commit-btn" class="btn btn-commit pc-save-btn" title="Save changes directly to PC disk (Ctrl+S)">
               <span>💾 Save to PC</span>
             </button>
@@ -1675,18 +1701,19 @@ STUDIO_HTML = r"""<!doctype html>
             </div>
 
             <div class="search-filter" style="position:relative">
-              <input type="text" id="pc-file-search" placeholder="Search local PC files..." autocomplete="off" spellcheck="false" style="padding-right:24px">
+              <input type="text" id="pc-file-search" placeholder="Search local PC files..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="pc_search_file_unique" style="padding-right:24px">
               <button id="pc-clear-search-btn" type="button" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px">✕</button>
             </div>
             <div id="pc-file-tree" class="file-tree">
               <!-- Initial Connection Card -->
-              <div style="padding:18px 14px;text-align:center;color:var(--muted);font-size:12px">
-                <div style="font-size:28px;margin-bottom:8px">💻</div>
-                <div style="font-weight:700;color:var(--text);margin-bottom:6px">PC Disconnected</div>
-                <div style="margin-bottom:12px;line-height:1.4">Connect your PC using the 1-click terminal command to explore & edit files directly on your machine.</div>
-                <button type="button" class="btn btn-primary" style="padding:4px 14px;font-size:11px" onclick="openPcAuthModal()">
-                  <span>⚡ Connect Local PC</span>
-                </button>
+              <div id="pc-disconnected-state" style="padding:22px 14px;text-align:center;color:var(--muted);font-size:12px">
+                <div style="font-size:34px;margin-bottom:10px">📂</div>
+                <div style="font-weight:700;color:var(--text);font-size:13px;margin-bottom:6px">Connect Your Local PC Folder</div>
+                <div style="margin-bottom:14px;line-height:1.5;color:#94a3b8;font-size:11px">Select a local project folder directly from your browser with zero terminal commands, zero installation, and complete sandbox security.</div>
+                <button type="button" class="btn btn-primary" style="padding:7px 18px;font-size:12px;font-weight:700;background:linear-gradient(135deg, #0284c7, #38bdf8);border:none;box-shadow:0 2px 10px rgba(56,189,248,0.4)" onclick="connectNativePcFolder()"><span>📂 Open Local Folder</span></button>
+                <div style="margin-top:12px">
+                  <a href="javascript:void(0)" onclick="openPcTerminalBridgeModal()" style="color:#7dd3fc;font-size:10px;text-decoration:none;border-bottom:1px dashed #7dd3fc">Or use Advanced Terminal Command ↗</a>
+                </div>
               </div>
             </div>
           </aside>
@@ -1733,7 +1760,7 @@ STUDIO_HTML = r"""<!doctype html>
                 </div>
                 <span>Live Web Preview</span>
               </div>
-              <div id="pc-tab-btn-ai" class="aux-tab">🤖 AI Co-Pilot</div>
+              <div id="pc-tab-btn-ai" class="aux-tab">🤖 Hashtag AI Co-Pilot</div>
               <button id="pc-btn-expand-aux" class="btn" style="padding:2px 8px;font-size:11px;border-color:rgba(56,189,248,0.4);color:#38bdf8;display:flex;align-items:center;gap:4px" title="Toggle Wide Panel">
                 <span id="pc-expand-aux-icon">⛶</span>
                 <span id="pc-expand-aux-label">Widen</span>
@@ -2046,61 +2073,100 @@ STUDIO_HTML = r"""<!doctype html>
 </div>
 
 <!-- ======================================================== -->
-<!-- PC CONNECT MODAL -->
+<!-- PC CONNECT MODAL (NATIVE BROWSER FS & TERMINAL BRIDGE) -->
 <!-- ======================================================== -->
 <div id="pc-connect-modal" class="modal-backdrop">
-  <div class="modal" style="max-width:520px">
+  <div class="modal" style="max-width:540px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:20px">💻</span>
+        <span style="font-size:22px">💻</span>
         <h3 style="margin:0;font-size:16px;font-weight:700">Connect Local PC</h3>
       </div>
-      <span id="pc-modal-status-badge" class="badge" style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">Disconnected</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="pc-modal-status-badge" class="badge" style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)">Disconnected</span>
+        <button type="button" class="btn" style="padding:2px 8px;font-size:12px" onclick="closePcAuthModal()">✕</button>
+      </div>
     </div>
 
-    <!-- Active Connected PC Card -->
-    <div id="pc-profile-card" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:12px;margin-bottom:14px;align-items:center;gap:12px">
-      <div style="font-size:28px">💻</div>
+    <!-- Active Connected PC Profile Card -->
+    <div id="pc-profile-card" style="display:none;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:12px 14px;margin-bottom:14px;align-items:center;gap:12px">
+      <div style="font-size:26px" id="pc-profile-icon">📂</div>
       <div style="flex:1">
-        <div id="pc-modal-machine-name" style="font-size:13px;font-weight:700;color:#fff">Local Workstation</div>
-        <div id="pc-modal-os-name" style="font-size:11px;color:var(--muted)">Windows · Live Bridge Active</div>
+        <div id="pc-modal-machine-name" style="font-size:13px;font-weight:700;color:#fff">Local Project Folder</div>
+        <div id="pc-modal-os-name" style="font-size:11px;color:#7dd3fc">Native Browser File System Access · Zero Setup</div>
       </div>
-      <span class="badge" style="background:rgba(56,189,248,0.2);color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">Connected</span>
+      <button type="button" id="modal-pc-disconnect-btn" class="btn" style="border-color:#f87171;color:#f87171;padding:4px 10px;font-size:11px" onclick="disconnectPc()">Disconnect</button>
     </div>
 
-    <!-- Info Box -->
-    <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.5;color:var(--text)">
-      <div style="font-weight:700;color:#38bdf8;display:flex;align-items:center;gap:6px;margin-bottom:4px">
-        <span>🌐</span> 1-Click Terminal Command Connection
-      </div>
-      <div>Run this command in PowerShell or Command Prompt (CMD) on your PC to securely link your local files to Cloud Studio with zero firewall or router configuration.</div>
-    </div>
-
-    <!-- Command Tabs -->
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <button type="button" id="modal-tab-ps" class="btn" style="padding:4px 12px;font-size:11px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15)" onclick="switchPcModalTab('ps')">⚡ PowerShell (Windows)</button>
-      <button type="button" id="modal-tab-cmd" class="btn" style="padding:4px 12px;font-size:11px;color:var(--muted)" onclick="switchPcModalTab('cmd')">💻 Command Prompt (CMD)</button>
-    </div>
-
-    <!-- Command Snippet Box -->
-    <div style="background:#030712;border:1px solid rgba(56,189,248,0.3);border-radius:6px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
-      <code id="modal-pc-cmd" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7dd3fc;word-break:break-all">irm https://executor.hashtagai.online/connect.ps1 | iex</code>
-      <button type="button" id="modal-pc-copy-btn" class="btn btn-primary" style="padding:4px 10px;font-size:11px;white-space:nowrap" onclick="copyPcModalCmd()">
-        <span id="modal-pc-copy-text">Copy</span>
+    <!-- Connection Mode Selector Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px">
+      <button type="button" id="tab-btn-mode-native" class="btn" style="padding:6px 14px;font-size:12px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15);display:flex;align-items:center;gap:6px" onclick="switchPcConnectMode('native')">
+        <span>📁</span> <span>Instant Folder Access (Recommended)</span>
+      </button>
+      <button type="button" id="tab-btn-mode-terminal" class="btn" style="padding:6px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px" onclick="switchPcConnectMode('terminal')">
+        <span>⚡</span> <span>Advanced Terminal Bridge</span>
       </button>
     </div>
 
-    <!-- Status footer -->
-    <div id="modal-pc-status-line" style="font-size:11px;color:#facc15;display:flex;align-items:center;gap:6px;margin-bottom:14px">
-      <span class="spinner" style="width:12px;height:12px"></span>
-      <span id="modal-pc-status-msg">Waiting for PC connection...</span>
+    <!-- SECTION 1: NATIVE BROWSER FILE SYSTEM ACCESS (Zero Terminal) -->
+    <div id="pc-mode-native-section">
+      <div style="background:linear-gradient(135deg, rgba(56,189,248,0.08), rgba(2,132,199,0.04));border:1px solid rgba(56,189,248,0.5);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:20px">✨</span>
+          <div style="font-weight:700;color:#fff;font-size:13px">1-Click Native Project Connection</div>
+        </div>
+        <p style="font-size:11px;color:#94a3b8;line-height:1.5;margin:0 0 12px 0">
+          No terminal commands, no PowerShell execution policy errors, and no installation. Select your local project folder to immediately read, edit, save to disk, and transfer files between PC and GitHub.
+        </p>
+        <button type="button" id="btn-native-pick-folder" class="btn" onclick="connectNativePcFolder()" style="width:100%;padding:12px 16px;font-size:13px;font-weight:700;background:linear-gradient(135deg, #0284c7, #38bdf8);color:#fff;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(56,189,248,0.3)">
+          <span style="font-size:16px">📂</span>
+          <span>Select Project Folder on Your PC</span>
+        </button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:#64748b;padding:0 4px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:#10b981">✓</span> <span>100% Secure & Sandboxed: Only accesses the specific project folder you select</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:#10b981">✓</span> <span>Works natively in Chrome, Edge, Brave, Opera & Chromium browsers</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:#10b981">✓</span> <span>Real-time local file saves, new file creation, and live web preview</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Modal Actions -->
-    <div style="display:flex;justify-content:flex-end;gap:8px">
-      <button type="button" id="modal-pc-disconnect-btn" class="btn" style="display:none;color:var(--danger);border-color:rgba(248,113,113,0.3)" onclick="disconnectPc()">Disconnect</button>
-      <button type="button" id="cancel-pc-auth-btn" class="btn" onclick="closePcAuthModal()">Close</button>
-      <button type="button" class="btn btn-primary" onclick="closePcAuthModal()">Done</button>
+    <!-- SECTION 2: ADVANCED TERMINAL BRIDGE (PowerShell / CMD) -->
+    <div id="pc-mode-terminal-section" style="display:none">
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:#94a3b8;line-height:1.5">
+        <div style="font-weight:700;color:#38bdf8;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+          <span>⚡</span> Full Machine Terminal Access
+        </div>
+        <div>For running build commands (`npm install`, `python`, etc.) or accessing entire drive letters. Runs a lightweight local bridge script connected only to your browser session.</div>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button type="button" id="modal-tab-ps" class="btn" style="padding:3px 10px;font-size:11px;font-weight:700;border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.15)" onclick="switchPcModalTab('ps')">PowerShell (Windows)</button>
+        <button type="button" id="modal-tab-cmd" class="btn" style="padding:3px 10px;font-size:11px;color:var(--muted)" onclick="switchPcModalTab('cmd')">CMD (Command Prompt)</button>
+      </div>
+
+      <div style="background:#030712;border:1px solid rgba(56,189,248,0.3);border-radius:6px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+        <code id="modal-pc-cmd" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7dd3fc;word-break:break-all">irm https://executor.hashtagai.online/connect.ps1 | iex</code>
+        <button type="button" id="modal-pc-copy-btn" class="btn btn-primary" style="padding:3px 10px;font-size:11px;white-space:nowrap" onclick="copyPcModalCmd()">
+          <span id="modal-pc-copy-text">Copy</span>
+        </button>
+      </div>
+
+      <div id="modal-pc-status-line" style="font-size:11px;color:#facc15;display:flex;align-items:center;gap:6px;margin-bottom:10px">
+        <span class="spinner" style="width:12px;height:12px"></span>
+        <span id="modal-pc-status-msg">Waiting for terminal bridge connection...</span>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px">
+      <button type="button" class="btn" style="padding:4px 14px;font-size:11px" onclick="closePcAuthModal()">Close</button>
     </div>
   </div>
 </div>
@@ -3491,6 +3557,10 @@ STUDIO_HTML = r"""<!doctype html>
   };
   var currentPcModalCmd = "irm https://executor.hashtagai.online/connect.ps1 | iex";
   var isPcConnected = false;
+  var pcConnectionMode = "disconnected"; // "native_fs" or "bridge"
+  var activePcDirHandle = null;
+  var pcHandleMap = {}; // relative_path -> FileSystemHandle
+  var pcParentMap = {}; // relative_path -> parent FileSystemDirectoryHandle
   var pcCurrentPath = ".";
   var pcPreviewTimer = null;
   var pcInfo = {};
@@ -3557,9 +3627,179 @@ STUDIO_HTML = r"""<!doctype html>
   // ========================================================
   // --- PC CONNECT MODAL & HEARTBEAT CONTROLLER ---
   // ========================================================
-  window.openPcAuthModal = function() {
-    var m = $("pc-connect-modal");
-    if (m) m.classList.add("open");
+  // Native Browser File System Access API
+  window.connectNativePcFolder = async function() {
+    if (!window.showDirectoryPicker) {
+      alert("Your current browser does not support the File System Access API. Please use Google Chrome, Microsoft Edge, Brave, or Opera, or use the Advanced Terminal Command.");
+      switchPcConnectMode("terminal");
+      return;
+    }
+    try {
+      var dirHandle = await window.showDirectoryPicker({
+        mode: "readwrite"
+      });
+      if (!dirHandle) return;
+
+      activePcDirHandle = dirHandle;
+      pcConnectionMode = "native_fs";
+      isPcConnected = true;
+      window.pcFilesLoaded = true;
+
+      closePcAuthModal();
+      await loadNativePcFolder(dirHandle);
+
+      var status = $("pc-sync-status");
+      if (status) status.textContent = "Local folder: " + dirHandle.name;
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("Native FS connect error:", err);
+        alert("Could not open folder: " + err.message);
+      }
+    }
+  };
+
+  async function loadNativePcFolder(dirHandle) {
+    activePcDirHandle = dirHandle;
+    pcConnectionMode = "native_fs";
+    isPcConnected = true;
+    pcHandleMap = {};
+    pcParentMap = {};
+
+    var statusDot = $("pc-status-dot");
+    if (statusDot) {
+      statusDot.className = "status-dot connected";
+      statusDot.title = "Connected to local folder: " + dirHandle.name;
+    }
+    var sideLabel = $("sidebar-pc-label");
+    if (sideLabel) {
+      sideLabel.innerHTML = '🟢 ' + esc(dirHandle.name);
+    }
+    var modalBadge = $("pc-modal-status-badge");
+    if (modalBadge) {
+      modalBadge.textContent = "Connected";
+      modalBadge.style.background = "rgba(16,185,129,0.15)";
+      modalBadge.style.color = "#10b981";
+      modalBadge.style.borderColor = "rgba(16,185,129,0.3)";
+    }
+    var profileCard = $("pc-profile-card");
+    if (profileCard) {
+      profileCard.style.display = "flex";
+      $("pc-modal-machine-name").textContent = dirHandle.name;
+      $("pc-modal-os-name").textContent = "Native Browser Project · " + location.hostname;
+    }
+
+    var sel = $("pc-root-select");
+    if (sel) {
+      sel.innerHTML = '<option value="native_root" selected>📁 ' + esc(dirHandle.name) + ' (Local Project)</option>';
+    }
+
+    // Build recursive items
+    var entries = [];
+    async function scan(handle, currentPath) {
+      for await (const [name, entry] of handle.entries()) {
+        if (name.startsWith(".") || name === "node_modules" || name === "__pycache__" || name === ".venv") continue;
+        var relPath = currentPath ? (currentPath + "/" + name) : name;
+        pcHandleMap[relPath] = entry;
+        pcParentMap[relPath] = handle;
+        if (entry.kind === "directory") {
+          await scan(entry, relPath);
+          entries.push({
+            name: name,
+            path: relPath,
+            is_dir: true,
+            handle: entry
+          });
+        } else {
+          var fObj = await entry.getFile();
+          entries.push({
+            name: name,
+            path: relPath,
+            is_dir: false,
+            size: fObj.size,
+            handle: entry
+          });
+        }
+      }
+    }
+
+    await scan(dirHandle, "");
+    entries.sort(function(a, b) {
+      if (a.is_dir !== b.is_dir) return b.is_dir ? 1 : -1;
+      return a.name.localeCompare(b.name);
+    });
+
+    pcState.files = entries;
+    pcCurrentPath = ".";
+    renderPcFileTree(entries);
+    var searchEl = $("pc-file-search");
+    if (searchEl) searchEl.value = "";
+
+    var countEl = $("pc-file-count");
+    if (countEl) countEl.textContent = entries.length + " items";
+
+    var bc = $("pc-breadcrumbs");
+    if (bc) {
+      bc.innerHTML = '<span class="pc-crumb-item" data-crumb-path=".">📁 ' + esc(dirHandle.name) + '</span>';
+    }
+
+    var defaultFile = entries.find(function(e) {
+      return !e.is_dir && (e.name.toLowerCase() === "index.html" || e.name.toLowerCase() === "readme.md");
+    }) || entries.find(function(e) { return !e.is_dir; });
+
+    if (defaultFile) {
+      openPcFile(defaultFile.path);
+    }
+  }
+
+  // Switching Connect PC Modal Tabs (Native vs Terminal)
+  window.switchPcConnectMode = function(mode) {
+    var nativeTab = $("tab-btn-mode-native");
+    var termTab = $("tab-btn-mode-terminal");
+    var nativeSec = $("pc-mode-native-section");
+    var termSec = $("pc-mode-terminal-section");
+
+    if (mode === "terminal") {
+      if (nativeTab) {
+        nativeTab.style.borderColor = "var(--border)";
+        nativeTab.style.color = "var(--muted)";
+        nativeTab.style.background = "transparent";
+      }
+      if (termTab) {
+        termTab.style.borderColor = "#38bdf8";
+        termTab.style.color = "#38bdf8";
+        termTab.style.background = "rgba(56,189,248,0.15)";
+      }
+      if (nativeSec) nativeSec.style.display = "none";
+      if (termSec) termSec.style.display = "block";
+    } else {
+      if (nativeTab) {
+        nativeTab.style.borderColor = "#38bdf8";
+        nativeTab.style.color = "#38bdf8";
+        nativeTab.style.background = "rgba(56,189,248,0.15)";
+      }
+      if (termTab) {
+        termTab.style.borderColor = "var(--border)";
+        termTab.style.color = "var(--muted)";
+        termTab.style.background = "transparent";
+      }
+      if (nativeSec) nativeSec.style.display = "block";
+      if (termSec) termSec.style.display = "none";
+    }
+  };
+
+  window.openPcTerminalBridgeModal = function() {
+    openPcAuthModal("terminal");
+  };
+
+  window.openPcAuthModal = function(initialTab) {
+    var modal = $("pc-connect-modal");
+    if (modal) modal.classList.add("open");
+    if (initialTab === "terminal") {
+      switchPcConnectMode("terminal");
+    } else {
+      switchPcConnectMode("native");
+    }
+    if (typeof checkPcConnectorStatus === "function") checkPcConnectorStatus();
   };
 
   window.closePcAuthModal = function() {
@@ -3634,51 +3874,47 @@ STUDIO_HTML = r"""<!doctype html>
 
   // Immediate disconnect handler
   window.disconnectPc = function() {
-    var dBtn = $("modal-pc-disconnect-btn");
-    if (dBtn) dBtn.textContent = "Disconnecting...";
     isPcConnected = false;
-    window.pcFilesLoaded = false;
+    pcConnectionMode = "disconnected";
+    activePcDirHandle = null;
+    pcHandleMap = {};
+    pcParentMap = {};
+    pcInfo = {};
+    pcState.files = [];
 
-    // Reset UI components immediately
+    var dot = $("pc-status-dot");
+    if (dot) {
+      dot.className = "status-dot";
+      dot.title = "Local PC Disconnected";
+    }
     var sideLabel = $("sidebar-pc-label");
-    var modalBadge = $("pc-modal-status-badge");
-    var modalMsg = $("modal-pc-status-msg");
-    var profileCard = $("pc-profile-card");
     if (sideLabel) sideLabel.textContent = "💻 Connect PC";
+    var tree = $("pc-file-tree");
+    if (tree) {
+      tree.innerHTML = '<div id="pc-disconnected-state" style="padding:22px 14px;text-align:center;color:var(--muted);font-size:12px">'
+        + '<div style="font-size:34px;margin-bottom:10px">📂</div>'
+        + '<div style="font-weight:700;color:var(--text);font-size:13px;margin-bottom:6px">Connect Your Local PC Folder</div>'
+        + '<div style="margin-bottom:14px;line-height:1.5;color:#94a3b8;font-size:11px">Select a local project folder directly from your browser with zero terminal commands, zero installation, and complete sandbox security.</div>'
+        + '<button type="button" class="btn btn-primary" style="padding:7px 18px;font-size:12px;font-weight:700;background:linear-gradient(135deg, #0284c7, #38bdf8);border:none;box-shadow:0 2px 10px rgba(56,189,248,0.4)" onclick="connectNativePcFolder()"><span>📂 Open Local Folder</span></button>'
+        + '<div style="margin-top:12px"><a href="javascript:void(0)" onclick="openPcTerminalBridgeModal()" style="color:#7dd3fc;font-size:10px;text-decoration:none;border-bottom:1px dashed #7dd3fc">Or use Advanced Terminal Command ↗</a></div>'
+        + '</div>';
+    }
+    var modalBadge = $("pc-modal-status-badge");
     if (modalBadge) {
       modalBadge.textContent = "Disconnected";
       modalBadge.style.background = "rgba(248,113,113,0.15)";
       modalBadge.style.color = "#f87171";
       modalBadge.style.borderColor = "rgba(248,113,113,0.3)";
     }
-    if (modalMsg) modalMsg.textContent = "Disconnected. Waiting for terminal command execution on your PC...";
+    var pCard = $("pc-profile-card");
     if (profileCard) profileCard.style.display = "none";
-    if (dBtn) {
-      dBtn.style.display = "none";
-      dBtn.textContent = "Disconnect";
-    }
+    var mBtn = $("modal-pc-disconnect-btn");
+    if (mBtn) mBtn.style.display = "none";
+    var statusLine = $("modal-pc-status-line");
+    if (statusLine) statusLine.style.display = "flex";
 
-    var treeEl = $("pc-file-tree");
-    if (treeEl) {
-      treeEl.innerHTML = '<div style="padding:18px 14px;text-align:center;color:var(--muted);font-size:12px">' +
-        '<div style="font-size:28px;margin-bottom:8px">💻</div>' +
-        '<div style="font-weight:700;color:var(--text);margin-bottom:6px">PC Disconnected</div>' +
-        '<div style="margin-bottom:12px;line-height:1.4">Connect your PC using the 1-click terminal command to explore & edit files directly on your machine.</div>' +
-        '<button type="button" class="btn btn-primary" style="padding:4px 14px;font-size:11px" onclick="openPcAuthModal()">' +
-        '<span>⚡ Connect Local PC</span>' +
-        '</button>' +
-        '</div>';
-    }
-    var countEl = $("pc-file-count");
-    if (countEl) countEl.textContent = "0 files";
-    var breadcrumbsEl = $("pc-breadcrumbs");
-    if (breadcrumbsEl) breadcrumbsEl.innerHTML = '<span class="pc-crumb-item" data-crumb-path=".">💻 Local PC</span>';
-
-    api("/v1/connector/disconnect", { method: "POST" }).then(function(res) {
-      console.log("Disconnected successfully:", res);
-    }).catch(function(err) {
-      console.warn("Disconnect processed:", err);
-    });
+    // Attempt backend disconnect if bridge was used
+    api("/v1/connector/disconnect", { method: "POST" }).catch(function(){});
   };
 
   // Heartbeat Poller for PC Status
@@ -3998,7 +4234,33 @@ STUDIO_HTML = r"""<!doctype html>
     if (m) m.classList.remove("open");
   };
 
-  window.confirmPcCreateFile = function() {
+  window.confirmPcCreateFile = async function() {
+    var inp = $("pc-new-file-name-input");
+    var name = inp ? inp.value.trim() : "";
+    if (!name) {
+      alert("Please enter a file name.");
+      return;
+    }
+    var statusEl = $("pc-new-file-status");
+    var btn = $("pc-new-file-confirm-btn");
+
+    if (pcConnectionMode === "native_fs" && activePcDirHandle) {
+      if (btn) btn.disabled = true;
+      if (statusEl) statusEl.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Creating file...';
+      try {
+        var fileHandle = await activePcDirHandle.getFileHandle(name, { create: true });
+        if (btn) btn.disabled = false;
+        closePcNewFileModal();
+        await loadNativePcFolder(activePcDirHandle);
+        openPcFile(name);
+      } catch (err) {
+        if (btn) btn.disabled = false;
+        if (statusEl) statusEl.innerHTML = '<span style="color:var(--danger)">Error: ' + esc(err.message) + '</span>';
+      }
+      return;
+    }
+
+    
     var inp = $("pc-new-file-name-input");
     var name = inp ? inp.value.trim() : "";
     if (!name) {
@@ -4029,11 +4291,42 @@ STUDIO_HTML = r"""<!doctype html>
 
   function openPcFile(filePath) {
     pcState.activePath = filePath;
-    var fileName = filePath.split(/[\\/]/).pop();
+    var fileName = filePath.split(/[\/]/).pop();
     var titleEl = $("pc-active-file-title");
     if (titleEl) titleEl.innerHTML = '<span>📄 ' + esc(filePath) + '</span>';
     var tabName = $("pc-tab-name");
     if (tabName) tabName.textContent = fileName;
+
+    // Highlight active in tree
+    document.querySelectorAll("#pc-file-tree .file-item").forEach(function(el) {
+      if (el.getAttribute("data-path") === filePath) el.classList.add("active");
+      else el.classList.remove("active");
+    });
+
+    if (pcConnectionMode === "native_fs") {
+      var handle = pcHandleMap[filePath];
+      if (!handle) {
+        console.warn("Handle not found for:", filePath);
+        return;
+      }
+      handle.getFile().then(function(file) {
+        return file.text();
+      }).then(function(text) {
+        var ed = $("pc-code-editor");
+        if (ed) {
+          ed.value = text;
+          updatePcLineNumbers();
+          updatePcPreview();
+        }
+        var status = $("pc-sync-status");
+        if (status) status.textContent = "Opened " + fileName;
+        var dirty = $("pc-tab-dirty");
+        if (dirty) dirty.style.display = "none";
+      }).catch(function(err) {
+        alert("Could not read local file: " + err.message);
+      });
+      return;
+    }
 
     api("/v1/connector/file?path=" + encodeURIComponent(filePath), { method: "GET" }).then(function(res) {
       if (!res.ok) {
@@ -4274,9 +4567,9 @@ STUDIO_HTML = r"""<!doctype html>
   // Save to PC Disk Button (passes clean object, no double stringify)
   var pcSaveBtn = $("pc-commit-btn");
   if (pcSaveBtn) {
-    pcSaveBtn.onclick = function() {
+    pcSaveBtn.onclick = async function() {
       if (!isPcConnected) {
-        alert("Cannot save: No PC connected.");
+        alert("Cannot save: No local PC or project folder connected.");
         return;
       }
       var path = pcState.activePath;
@@ -4285,6 +4578,33 @@ STUDIO_HTML = r"""<!doctype html>
         return;
       }
       var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
+
+      if (pcConnectionMode === "native_fs") {
+        try {
+          var handle = pcHandleMap[path];
+          if (!handle) throw new Error("File handle not found in folder map");
+          var writable = await handle.createWritable();
+          await writable.write(content);
+          await writable.close();
+
+          var dirty = $("pc-tab-dirty");
+          if (dirty) dirty.style.display = "none";
+          var status = $("pc-sync-status");
+          if (status) status.textContent = "Saved to PC (" + new Date().toLocaleTimeString() + ")";
+
+          var btn = $("pc-commit-btn");
+          if (btn) {
+            var orig = btn.innerHTML;
+            btn.innerHTML = '<span>✅ Saved to PC!</span>';
+            setTimeout(function() { btn.innerHTML = orig; }, 1400);
+          }
+          updatePcPreview();
+        } catch (err) {
+          alert("Error saving file: " + err.message);
+        }
+        return;
+      }
+
       var status = $("pc-sync-status");
       if (status) status.textContent = "Saving to PC disk...";
 
@@ -4692,11 +5012,18 @@ STUDIO_HTML = r"""<!doctype html>
     if (submitBtn) submitBtn.disabled = true;
     if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Reading file from PC...';
 
-    api("/v1/connector/file?path=" + encodeURIComponent(pcFilePath), { method: "GET" }).then(function(fileRes) {
-      if (!fileRes.ok) {
-        throw new Error("Failed to read file from PC: " + (fileRes.error || ""));
-      }
-      var content = fileRes.content || "";
+    var readPromise;
+    if (pcConnectionMode === "native_fs") {
+      var handle = pcHandleMap[pcFilePath];
+      readPromise = handle ? handle.getFile().then(function(f){ return f.text(); }) : Promise.reject(new Error("File not found in local folder"));
+    } else {
+      readPromise = api("/v1/connector/file?path=" + encodeURIComponent(pcFilePath), { method: "GET" }).then(function(fileRes) {
+        if (!fileRes.ok) throw new Error("Failed to read file from PC: " + (fileRes.error || ""));
+        return fileRes.content || "";
+      });
+    }
+
+    readPromise.then(function(content) {
       if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Committing to ' + esc(repo) + ' (' + esc(branch) + ')...';
 
       return api("/v1/github/project/file", {
@@ -4796,11 +5123,30 @@ STUDIO_HTML = r"""<!doctype html>
     if (submitBtn) submitBtn.disabled = true;
     if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Reading file from GitHub...';
 
-    api("/v1/github/project/file?repo=" + encodeURIComponent(repo) + "&path=" + encodeURIComponent(ghPath)).then(function(ghRes) {
+    api("/v1/github/project/file?repo=" + encodeURIComponent(repo) + "&path=" + encodeURIComponent(ghPath)).then(async function(ghRes) {
       if (!ghRes.ok) {
         throw new Error("Failed to read file from GitHub: " + (ghRes.error || ""));
       }
       var content = ghRes.content || "";
+
+      if (pcConnectionMode === "native_fs" && activePcDirHandle) {
+        if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Writing file to local project folder...';
+        var fileName = ghPath.split(/[\/]/).pop();
+        var handle = await activePcDirHandle.getFileHandle(fileName, { create: true });
+        var writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+
+        if (statusLine) statusLine.innerHTML = '<span style="color:#10b981;font-weight:700">✅ File transferred to PC folder successfully!</span>';
+        if (submitBtn) submitBtn.disabled = false;
+        setTimeout(function() {
+          closePcTransferModal();
+          loadNativePcFolder(activePcDirHandle);
+          openPcFile(fileName);
+        }, 1200);
+        return;
+      }
+
       if (statusLine) statusLine.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Writing file to PC disk...';
 
       return api("/v1/connector/file", {
