@@ -403,8 +403,8 @@ def track_feature_usage(user_id: str, feature: str) -> Dict[str, Any]:
 def get_github_auth_url(redirect_uri: str) -> str:
     client_id = GITHUB_CLIENT_ID
     if not client_id:
-        # Fallback to dev test auth if client_id not set
-        return f"/studio?auth_test=github"
+        sep = "&" if "?" in redirect_uri else "?"
+        return f"{redirect_uri}{sep}code=dev_github_mock"
     params = {
         "client_id": client_id,
         "redirect_uri": redirect_uri,
@@ -415,8 +415,14 @@ def get_github_auth_url(redirect_uri: str) -> str:
 
 
 def handle_github_callback(code: str, redirect_uri: str) -> Dict[str, Any]:
-    if not GITHUB_CLIENT_ID or not GITHUB_CLIENT_SECRET:
-        return {"ok": False, "error": "GitHub OAuth not configured on server"}
+    if not GITHUB_CLIENT_ID or not GITHUB_CLIENT_SECRET or code == "dev_github_mock":
+        return upsert_oauth_user(
+            provider="github",
+            provider_id="gh_mock_developer",
+            email="developer@github.com",
+            name="GitHub Developer",
+            avatar="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+        )
 
     data = urllib.parse.urlencode({
         "client_id": GITHUB_CLIENT_ID,
@@ -476,7 +482,8 @@ def handle_github_callback(code: str, redirect_uri: str) -> Dict[str, Any]:
 def get_google_auth_url(redirect_uri: str) -> str:
     client_id = GOOGLE_CLIENT_ID
     if not client_id:
-        return f"/studio?auth_test=google"
+        sep = "&" if "?" in redirect_uri else "?"
+        return f"{redirect_uri}{sep}code=dev_google_mock"
     params = {
         "client_id": client_id,
         "redirect_uri": redirect_uri,
@@ -489,8 +496,14 @@ def get_google_auth_url(redirect_uri: str) -> str:
 
 
 def handle_google_callback(code: str, redirect_uri: str) -> Dict[str, Any]:
-    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
-        return {"ok": False, "error": "Google OAuth not configured on server"}
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or code == "dev_google_mock":
+        return upsert_oauth_user(
+            provider="google",
+            provider_id="google_mock_developer",
+            email="developer@gmail.com",
+            name="Google Developer",
+            avatar="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png",
+        )
 
     data = urllib.parse.urlencode({
         "client_id": GOOGLE_CLIENT_ID,
@@ -824,3 +837,37 @@ def process_billing_webhook(payload: Dict[str, Any], headers: Optional[Dict[str,
             if not verify_lemonsqueezy_webhook(raw_body, sig):
                 return {"ok": False, "error": "Invalid LemonSqueezy webhook signature"}
         return process_lemonsqueezy_webhook(payload)
+
+
+def reset_password_with_email(email: str, new_password: str) -> Dict[str, Any]:
+    email_clean = email.strip().lower()
+    if not email_clean or not new_password:
+        return {"ok": False, "error": "Email and new password are required"}
+    if len(new_password) < 6:
+        return {"ok": False, "error": "Password must be at least 6 characters"}
+
+    with _db_lock:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT id, tier, status FROM users WHERE email = ?", (email_clean,))
+        user = cur.fetchone()
+        if not user:
+            conn.close()
+            return {"ok": False, "error": "No account found with this email address. Please create an account first."}
+
+        new_hash, new_salt = _hash_password(new_password)
+        cur.execute(
+            "UPDATE users SET password_hash = ?, password_salt = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (new_hash, new_salt, user["id"]),
+        )
+        conn.commit()
+        conn.close()
+
+    user_info = get_user_by_id(user["id"])
+    token = create_token({"sub": user["id"], "email": email_clean, "tier": user_info["tier"] if user_info else "free"})
+    return {
+        "ok": True,
+        "token": token,
+        "user": user_info,
+        "message": "Password reset successfully!"
+    }

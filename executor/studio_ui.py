@@ -1650,6 +1650,9 @@ STUDIO_HTML = r"""<!doctype html>
 
       <!-- User Account & Upgrade (In place of Chat & Console) -->
       <div id="gh-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px;margin-left:4px">
+        <button type="button" id="btn-auth-demo" class="btn" style="padding:3px 8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;border-color:rgba(56,189,248,0.5);color:#38bdf8" onclick="activateDemoMode()" title="Explore features without signing in">
+          <span>⚡</span><span>Demo</span>
+        </button>
         <button type="button" id="btn-auth-user" class="btn" style="padding:3px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAuthModal()">
           <span id="auth-nav-icon">👤</span>
           <span id="auth-nav-label">Sign In</span>
@@ -1878,6 +1881,9 @@ STUDIO_HTML = r"""<!doctype html>
 
             <!-- User Account & Upgrade (In place of Chat & Console) -->
             <div id="pc-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px;margin-left:4px">
+              <button type="button" id="pc-btn-auth-demo" class="btn" style="padding:3px 8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;border-color:rgba(56,189,248,0.5);color:#38bdf8" onclick="activateDemoMode()" title="Explore features without signing in">
+                <span>⚡</span><span>Demo</span>
+              </button>
               <button type="button" id="pc-btn-auth-user" class="btn" style="padding:3px 10px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAuthModal()">
                 <span id="pc-auth-nav-icon">👤</span>
                 <span id="pc-auth-nav-label">Sign In</span>
@@ -2456,20 +2462,37 @@ STUDIO_HTML = r"""<!doctype html>
           <input type="email" id="auth-input-email" required placeholder="alex@example.com" style="width:100%;box-sizing:border-box">
         </div>
 
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:rgba(255,255,255,0.8)">Password</label>
+        <div id="auth-password-field-group" style="margin-bottom:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <label id="auth-password-label" style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8)">Password</label>
+            <a href="#" id="auth-forgot-link" style="font-size:11px;color:#38bdf8;text-decoration:none;cursor:pointer" onclick="switchAuthTab('forgot');return false;">Forgot password?</a>
+          </div>
           <input type="password" id="auth-input-password" required placeholder="••••••••" style="width:100%;box-sizing:border-box">
         </div>
 
+        <div id="auth-back-to-login" style="display:none;text-align:right;margin-bottom:10px">
+          <a href="#" style="font-size:11px;color:#38bdf8;text-decoration:none;cursor:pointer" onclick="switchAuthTab('login');return false;">← Back to Sign In</a>
+        </div>
+
         <div id="auth-form-error" style="display:none;color:#f87171;font-size:11.5px;margin-bottom:12px;padding:6px 10px;background:rgba(248,113,113,0.1);border-radius:4px;border:1px solid rgba(248,113,113,0.25)"></div>
+        <div id="auth-form-success" style="display:none;color:#34d399;font-size:11.5px;margin-bottom:12px;padding:6px 10px;background:rgba(52,211,153,0.1);border-radius:4px;border:1px solid rgba(52,211,153,0.25)"></div>
 
         <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="width:100%;padding:10px;font-size:12.5px;font-weight:700;justify-content:center">
           <span>Sign In</span>
         </button>
       </form>
 
+      <!-- Guest Demo Banner (Visible ONLY when Signed Out) -->
+      <div id="auth-demo-banner" style="margin-top:14px;padding:12px;background:rgba(56,189,248,0.08);border:1px dashed rgba(56,189,248,0.35);border-radius:8px;text-align:center">
+        <div style="font-size:12px;font-weight:700;color:#38bdf8;margin-bottom:4px">⚡ Want to test without creating an account?</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:10px">Explore the full cloud IDE, dual-mode slider & AI Co-Pilot immediately in guest demo mode.</div>
+        <button type="button" class="btn" style="width:100%;padding:8px;font-size:11.5px;font-weight:700;border-color:#38bdf8;color:#38bdf8;justify-content:center" onclick="activateDemoMode()">
+          <span>🚀 Launch Instant Demo Mode</span>
+        </button>
+      </div>
+
       <!-- Instant Test Sandbox Bar -->
-      <div style="margin-top:16px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between">
+      <div style="margin-top:14px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:10px;color:rgba(255,255,255,0.4)">⚡ Quick Sandbox:</span>
         <div style="display:flex;gap:6px">
           <button type="button" class="btn" style="padding:2px 6px;font-size:10px" onclick="quickTestSignIn('free')">Test Free</button>
@@ -2496,6 +2519,20 @@ STUDIO_HTML = r"""<!doctype html>
         <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px">Pick the plan that accelerates your development workflow. Cancel anytime.</div>
       </div>
       <button type="button" class="btn" style="padding:3px 10px;font-size:13px" onclick="closePricingModal()">✕</button>
+    </div>
+
+    <!-- Conditional Demo Banner (Visible ONLY when Signed Out) -->
+    <div id="pricing-demo-card" style="background:rgba(56,189,248,0.06);border:1px dashed rgba(56,189,248,0.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">⚡</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#fff">Not ready to subscribe or create an account yet?</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6)">Try the interactive demo mode to test the workspace, slider viewports, and code editor.</div>
+        </div>
+      </div>
+      <button type="button" class="btn" style="padding:6px 14px;font-size:11.5px;font-weight:700;border-color:#38bdf8;color:#38bdf8;white-space:nowrap" onclick="activateDemoMode()">
+        <span>🚀 Launch Demo Mode</span>
+      </button>
     </div>
 
     <!-- 3 Plan Grid -->
@@ -4028,13 +4065,29 @@ STUDIO_HTML = r"""<!doctype html>
 
   window.checkUserAuth = function() {
     var token = localStorage.getItem("hashtag_auth_token");
-    var headers = token ? { "Authorization": "Bearer " + token } : {};
+    var isDemoStored = localStorage.getItem("hashtag_is_demo") === "true";
 
+    if (!token && isDemoStored) {
+      window.currentUser = {
+        id: "usr_guest_demo",
+        name: "Guest Explorer",
+        email: "guest@demo.hashtagai.online",
+        tier: "free",
+        is_pro: false,
+        is_demo: true,
+        avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=guest_demo"
+      };
+      updateAuthUI();
+      return;
+    }
+
+    var headers = token ? { "Authorization": "Bearer " + token } : {};
     fetch("/v1/auth/me", { headers: headers }).then(function(r) {
       return r.json();
     }).then(function(res) {
       if (res.ok && res.authenticated && res.user) {
         window.currentUser = res.user;
+        localStorage.removeItem("hashtag_is_demo");
       } else {
         window.currentUser = null;
       }
@@ -4051,38 +4104,71 @@ STUDIO_HTML = r"""<!doctype html>
     var pcBtn = $("pc-btn-auth-user");
     var ghUp = $("btn-nav-upgrade");
     var pcUp = $("pc-btn-nav-upgrade");
+    var ghDemoBtn = $("btn-auth-demo");
+    var pcDemoBtn = $("pc-btn-auth-demo");
+    var authDemoBanner = $("auth-demo-banner");
+    var pricingDemoCard = $("pricing-demo-card");
 
     var isPro = u && (u.is_pro || u.tier === "pro_monthly" || u.tier === "pro_lifetime");
     var isLifetime = u && (u.is_lifetime || u.tier === "pro_lifetime");
+    var isDemo = u && u.is_demo;
 
     if (u) {
-      var badgeText = isLifetime ? "LIFETIME" : (isPro ? "PRO" : "FREE");
-      var badgeClass = isLifetime ? "plan-badge lifetime" : (isPro ? "plan-badge pro" : "plan-badge free");
+      if (isDemo) {
+        // Guest Demo Session: show demo badge, but hide duplicate demo launch buttons
+        [ghBtn, pcBtn].forEach(function(btn) {
+          if (!btn) return;
+          btn.innerHTML = '<span>⚡</span> <span>Demo Mode</span> <span class="plan-badge free">DEMO</span>';
+        });
+        if (ghUp) ghUp.style.display = "inline-flex";
+        if (pcUp) pcUp.style.display = "inline-flex";
 
-      [ghBtn, pcBtn].forEach(function(btn) {
-        if (!btn) return;
-        btn.innerHTML = '<img src="' + esc(u.avatar_url || '') + '" style="width:16px;height:16px;border-radius:50%;object-fit:cover">'
-          + '<span>' + esc(u.name.split(' ')[0]) + '</span>'
-          + '<span class="' + badgeClass + '">' + badgeText + '</span>';
-      });
+        var loggedInView = $("auth-logged-in-view");
+        var loggedOutView = $("auth-logged-out-view");
+        if (loggedInView) loggedInView.style.display = "none";
+        if (loggedOutView) loggedOutView.style.display = "block";
 
-      if (ghUp) ghUp.style.display = isPro ? "none" : "inline-flex";
-      if (pcUp) pcUp.style.display = isPro ? "none" : "inline-flex";
+        if (ghDemoBtn) ghDemoBtn.style.display = "none";
+        if (pcDemoBtn) pcDemoBtn.style.display = "none";
+        if (authDemoBanner) authDemoBanner.style.display = "none";
+        if (pricingDemoCard) pricingDemoCard.style.display = "none";
+      } else {
+        // Authenticated Real User: STRICTLY NO DEMO OPTION VISIBLE
+        var badgeText = isLifetime ? "LIFETIME" : (isPro ? "PRO" : "FREE");
+        var badgeClass = isLifetime ? "plan-badge lifetime" : (isPro ? "plan-badge pro" : "plan-badge free");
 
-      // Update Modal Profile View
-      var loggedInView = $("auth-logged-in-view");
-      var loggedOutView = $("auth-logged-out-view");
-      if (loggedInView) loggedInView.style.display = "block";
-      if (loggedOutView) loggedOutView.style.display = "none";
+        [ghBtn, pcBtn].forEach(function(btn) {
+          if (!btn) return;
+          btn.innerHTML = '<img src="' + esc(u.avatar_url || '') + '" style="width:16px;height:16px;border-radius:50%;object-fit:cover">'
+            + '<span>' + esc(u.name.split(' ')[0]) + '</span>'
+            + '<span class="' + badgeClass + '">' + badgeText + '</span>';
+        });
 
-      if ($("auth-profile-name")) $("auth-profile-name").textContent = u.name;
-      if ($("auth-profile-email")) $("auth-profile-email").textContent = u.email;
-      if ($("auth-profile-avatar")) $("auth-profile-avatar").src = u.avatar_url;
-      if ($("auth-profile-badge")) {
-        $("auth-profile-badge").className = badgeClass;
-        $("auth-profile-badge").textContent = badgeText;
+        if (ghUp) ghUp.style.display = isPro ? "none" : "inline-flex";
+        if (pcUp) pcUp.style.display = isPro ? "none" : "inline-flex";
+
+        // Update Modal Profile View
+        var loggedInView = $("auth-logged-in-view");
+        var loggedOutView = $("auth-logged-out-view");
+        if (loggedInView) loggedInView.style.display = "block";
+        if (loggedOutView) loggedOutView.style.display = "none";
+
+        if ($("auth-profile-name")) $("auth-profile-name").textContent = u.name;
+        if ($("auth-profile-email")) $("auth-profile-email").textContent = u.email;
+        if ($("auth-profile-avatar")) $("auth-profile-avatar").src = u.avatar_url;
+        if ($("auth-profile-badge")) {
+          $("auth-profile-badge").className = badgeClass;
+          $("auth-profile-badge").textContent = badgeText;
+        }
+
+        // HIDE ALL DEMO OPTIONS WHEN USER IS SIGNED IN
+        if (ghDemoBtn) ghDemoBtn.style.display = "none";
+        if (pcDemoBtn) pcDemoBtn.style.display = "none";
+        if (authDemoBanner) authDemoBanner.style.display = "none";
+        if (pricingDemoCard) pricingDemoCard.style.display = "none";
       }
     } else {
+      // User is SIGNED OUT: DEMO OPTION IS AVAILABLE AND SHOWN
       [ghBtn, pcBtn].forEach(function(btn) {
         if (!btn) return;
         btn.innerHTML = '<span>👤</span> <span>Sign In</span>';
@@ -4094,6 +4180,12 @@ STUDIO_HTML = r"""<!doctype html>
       var loggedOutView = $("auth-logged-out-view");
       if (loggedInView) loggedInView.style.display = "none";
       if (loggedOutView) loggedOutView.style.display = "block";
+
+      // SHOW DEMO OPTIONS ONLY WHEN SIGNED OUT
+      if (ghDemoBtn) ghDemoBtn.style.display = "inline-flex";
+      if (pcDemoBtn) pcDemoBtn.style.display = "inline-flex";
+      if (authDemoBanner) authDemoBanner.style.display = "block";
+      if (pricingDemoCard) pricingDemoCard.style.display = "flex";
     }
 
     // Update Pricing Modal Cards
@@ -4141,20 +4233,48 @@ STUDIO_HTML = r"""<!doctype html>
     var tReg = $("tab-auth-register");
     var nameField = $("auth-name-field");
     var submitBtn = $("auth-submit-btn");
+    var forgotLink = $("auth-forgot-link");
+    var backLink = $("auth-back-to-login");
+    var pwdLabel = $("auth-password-label");
+    var pwdInput = $("auth-input-password");
+    var titleEl = $("auth-modal-title");
 
-    if (tab === "register") {
+    if (tab === "forgot") {
+      if (tLog) tLog.classList.remove("active");
+      if (tReg) tReg.classList.remove("active");
+      if (nameField) nameField.style.display = "none";
+      if (forgotLink) forgotLink.style.display = "none";
+      if (backLink) backLink.style.display = "block";
+      if (pwdLabel) pwdLabel.textContent = "New Password";
+      if (pwdInput) { pwdInput.placeholder = "Enter new password (min 6 chars)"; pwdInput.value = ""; }
+      if (submitBtn) submitBtn.innerHTML = "<span>Reset Password & Sign In</span>";
+      if (titleEl) titleEl.textContent = "Reset Your Password";
+    } else if (tab === "register") {
       if (tLog) tLog.classList.remove("active");
       if (tReg) tReg.classList.add("active");
       if (nameField) nameField.style.display = "block";
+      if (forgotLink) forgotLink.style.display = "none";
+      if (backLink) backLink.style.display = "none";
+      if (pwdLabel) pwdLabel.textContent = "Password";
+      if (pwdInput) pwdInput.placeholder = "Create password (min 6 chars)";
       if (submitBtn) submitBtn.innerHTML = "<span>Create Account</span>";
+      if (titleEl) titleEl.textContent = "Create Hashtag Account";
     } else {
+      // login
       if (tLog) tLog.classList.add("active");
       if (tReg) tReg.classList.remove("active");
       if (nameField) nameField.style.display = "none";
+      if (forgotLink) forgotLink.style.display = "inline";
+      if (backLink) backLink.style.display = "none";
+      if (pwdLabel) pwdLabel.textContent = "Password";
+      if (pwdInput) pwdInput.placeholder = "••••••••";
       if (submitBtn) submitBtn.innerHTML = "<span>Sign In</span>";
+      if (titleEl) titleEl.textContent = "Sign In to Hashtag Studio";
     }
     var err = $("auth-form-error");
     if (err) err.style.display = "none";
+    var succ = $("auth-form-success");
+    if (succ) succ.style.display = "none";
   };
 
   window.signInWithProvider = function(provider) {
@@ -4171,14 +4291,24 @@ STUDIO_HTML = r"""<!doctype html>
     var password = ($("auth-input-password") ? $("auth-input-password").value : "").trim();
     var name = ($("auth-input-name") ? $("auth-input-name").value : "").trim();
     var errEl = $("auth-form-error");
+    var succEl = $("auth-form-success");
+
+    if (errEl) errEl.style.display = "none";
+    if (succEl) succEl.style.display = "none";
 
     if (!email || !password) {
       if (errEl) { errEl.textContent = "Please fill in all fields."; errEl.style.display = "block"; }
       return;
     }
 
-    var endpoint = (window.currentAuthTab === "register") ? "/v1/auth/email/register" : "/v1/auth/email/login";
-    var payload = { email: email, password: password, name: name };
+    var endpoint = "/v1/auth/email/login";
+    var payload = { email: email, password: password };
+    if (window.currentAuthTab === "register") {
+      endpoint = "/v1/auth/email/register";
+      payload.name = name;
+    } else if (window.currentAuthTab === "forgot") {
+      endpoint = "/v1/auth/email/reset-password";
+    }
 
     fetch(endpoint, {
       method: "POST",
@@ -4186,17 +4316,59 @@ STUDIO_HTML = r"""<!doctype html>
       body: JSON.stringify(payload)
     }).then(function(r) { return r.json(); }).then(function(res) {
       if (!res.ok) {
-        if (errEl) { errEl.textContent = res.error || "Authentication failed."; errEl.style.display = "block"; }
+        if (errEl) { errEl.textContent = res.error || "Operation failed."; errEl.style.display = "block"; }
         return;
       }
       localStorage.setItem("hashtag_auth_token", res.token);
+      localStorage.removeItem("hashtag_is_demo");
       window.currentUser = res.user;
       closeAuthModal();
       updateAuthUI();
-      alert("✓ Welcome back, " + res.user.name + "!");
+      var msg = (window.currentAuthTab === "forgot") ? "✓ Password reset successfully! Signed in." : ("✓ Welcome, " + (res.user.name || res.user.email) + "!");
+      alert(msg);
     }).catch(function(err) {
       if (errEl) { errEl.textContent = "Network error: " + err.message; errEl.style.display = "block"; }
     });
+  };
+
+  // --- DEMO MODE CONTROLLER ---
+  window.activateDemoMode = function() {
+    var demoUser = {
+      id: "usr_guest_demo",
+      name: "Guest Explorer",
+      email: "guest@demo.hashtagai.online",
+      tier: "free",
+      is_pro: false,
+      is_demo: true,
+      avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=guest_demo"
+    };
+    localStorage.setItem("hashtag_is_demo", "true");
+    window.currentUser = demoUser;
+    closeAuthModal();
+    closePricingModal();
+    updateAuthUI();
+
+    // Pre-populate interactive demo code in editor if blank
+    try {
+      var ghEd = $("code-editor");
+      var pcEd = $("pc-code-editor");
+      var demoB64 = "PCFET0NUWVBFIGh0bWw+CjxodG1sPgo8aGVhZD4KICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgPHRpdGxlPkhhc2h0YWcgU3R1ZGlvIERlbW88L3RpdGxlPgogIDxzdHlsZT4KICAgIGJvZHkgeyBmb250LWZhbWlseTogc3lzdGVtLXVpLCBzYW5zLXNlcmlmOyBiYWNrZ3JvdW5kOiAjMGYxNzJhOyBjb2xvcjogI2ZmZjsgZGlzcGxheTogZmxleDsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgYWxpZ24taXRlbXM6IGNlbnRlcjsganVzdGlmeS1jb250ZW50OiBjZW50ZXI7IGhlaWdodDogMTAwdmg7IG1hcmdpbjogMDsgdGV4dC1hbGlnbjogY2VudGVyOyB9CiAgICAuY2FyZCB7IGJhY2tncm91bmQ6ICMxZTI5M2I7IHBhZGRpbmc6IDIuNXJlbTsgYm9yZGVyLXJhZGl1czogMTRweDsgYm9yZGVyOiAxLjVweCBzb2xpZCAjMzhiZGY4OyBib3gtc2hhZG93OiAwIDIwcHggNTBweCByZ2JhKDAsMCwwLDAuNik7IG1heC13aWR0aDogNTAwcHg7IHdpZHRoOiA5MCU7IH0KICAgIGgxIHsgY29sb3I6ICMzOGJkZjg7IG1hcmdpbi10b3A6IDA7IGZvbnQtc2l6ZTogMjRweDsgfQogICAgcCB7IGNvbG9yOiAjOTRhM2I4OyBmb250LXNpemU6IDE0cHg7IGxpbmUtaGVpZ2h0OiAxLjY7IH0KICAgIC5iYWRnZSB7IGRpc3BsYXk6IGlubGluZS1ibG9jazsgYmFja2dyb3VuZDogcmdiYSg1NiwxODksMjQ4LDAuMik7IGNvbG9yOiAjMzhiZGY4OyBib3JkZXI6IDFweCBzb2xpZCAjMzhiZGY4OyBwYWRkaW5nOiA0cHggMTJweDsgYm9yZGVyLXJhZGl1czogOTk5cHg7IGZvbnQtc2l6ZTogMTFweDsgZm9udC13ZWlnaHQ6IDcwMDsgbWFyZ2luLWJvdHRvbTogMTJweDsgfQogICAgLmJ0bi10ZXN0IHsgYmFja2dyb3VuZDogIzM4YmRmODsgY29sb3I6ICMwMDA7IGJvcmRlcjogbm9uZTsgcGFkZGluZzogMTBweCAyMHB4OyBmb250LXdlaWdodDogNzAwOyBib3JkZXItcmFkaXVzOiA4cHg7IGN1cnNvcjogcG9pbnRlcjsgbWFyZ2luLXRvcDogMTBweDsgfQogIDwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+CiAgPGRpdiBjbGFzcz0iY2FyZCI+CiAgICA8c3BhbiBjbGFzcz0iYmFkZ2UiPkRFTU8gTU9ERSBBQ1RJVkU8L3NwYW4+CiAgICA8aDE+V2VsY29tZSB0byBIYXNodGFnIFN0dWRpbzwvaDE+CiAgICA8cD5Zb3UgYXJlIHZpZXdpbmcgYW4gaW50ZXJhY3RpdmUgZGVtbyB3b3Jrc3BhY2Ugd2l0aG91dCBzaWduaW5nIGluLjxicj5TbGlkZSBiZXR3ZWVuIEdpdEh1YiAmIFBDIFN0dWRpbyB2aWV3cG9ydHMsIHRlc3QgbGl2ZSBwcmV2aWV3LCBvciBpbnNwZWN0IGNvZGUhPC9wPgogICAgPGJ1dHRvbiBjbGFzcz0iYnRuLXRlc3QiIG9uY2xpY2s9ImFsZXJ0KCdEZW1vIGludGVyYWN0aXZlIHRlc3Qgd29ya3MhJykiPkNsaWNrIHRvIFRlc3Q8L2J1dHRvbj4KICA8L2Rpdj4KPC9ib2R5Pgo8L2h0bWw+";
+      var demoCode = atob(demoB64);
+      if (ghEd && (!ghEd.value || ghEd.value.length < 20)) {
+        ghEd.value = demoCode;
+        if (typeof updateLineNumbers === "function") updateLineNumbers();
+        if (typeof updatePreview === "function") updatePreview();
+      }
+      if (pcEd && (!pcEd.value || pcEd.value.length < 20)) {
+        pcEd.value = demoCode;
+        if (typeof updatePcLineNumbers === "function") updatePcLineNumbers();
+        if (typeof updatePcPreview === "function") updatePcPreview();
+      }
+    } catch (e) {
+      console.warn("Demo code init:", e);
+    }
+
+    alert("⚡ Demo Mode Activated! You are exploring Hashtag Studio without signing in. To save persistent projects or upgrade, create an account anytime.");
   };
 
   window.quickTestSignIn = function(tier) {
@@ -4218,10 +4390,11 @@ STUDIO_HTML = r"""<!doctype html>
 
   window.signOutUser = function() {
     localStorage.removeItem("hashtag_auth_token");
+    localStorage.removeItem("hashtag_is_demo");
     window.currentUser = null;
     updateAuthUI();
     closeAuthModal();
-    alert("Signed out successfully.");
+    alert("Signed out successfully. Demo mode is now available.");
   };
 
   window.triggerLemonCheckout = function(tier) {
@@ -4297,13 +4470,24 @@ STUDIO_HTML = r"""<!doctype html>
     return true;
   };
 
-  // Check URL params for auth callbacks or success
+  // Check URL params for auth callbacks, OAuth returns, or success
   (function() {
     var urlParams = new URLSearchParams(window.location.search);
     var authToken = urlParams.get("auth_token");
     if (authToken) {
       localStorage.setItem("hashtag_auth_token", authToken);
+      localStorage.removeItem("hashtag_is_demo");
       window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    var authError = urlParams.get("auth_error");
+    if (authError) {
+      alert("Sign in error: " + decodeURIComponent(authError));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    var authTest = urlParams.get("auth_test");
+    if (authTest === "github" || authTest === "google") {
+      window.location.href = "/v1/auth/" + authTest;
+      return;
     }
     var activateTier = urlParams.get("activate_test_tier");
     if (activateTier) {

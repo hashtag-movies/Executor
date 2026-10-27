@@ -1082,6 +1082,48 @@ async def auth_login(request: Request):
     res = auth.login_with_email(email, password) if auth else {"ok": False, "error": "Auth unavailable"}
     return res
 
+@app.post("/v1/auth/email/reset-password")
+async def auth_reset_password(request: Request):
+    data = await request.json()
+    email = data.get("email", "")
+    password = data.get("password", "") or data.get("new_password", "")
+    res = auth.reset_password_with_email(email, password) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
+@app.get("/v1/auth/github")
+def auth_github_login(request: Request):
+    redirect_uri = request.query_params.get("redirect_uri", f"{auth.APP_BASE_URL}/v1/auth/github/callback" if auth else "")
+    auth_url = auth.get_github_auth_url(redirect_uri) if auth else "/studio"
+    return RedirectResponse(url=auth_url, status_code=302)
+
+@app.get("/v1/auth/github/callback")
+def auth_github_cb(request: Request):
+    code = request.query_params.get("code", "")
+    redirect_uri = f"{auth.APP_BASE_URL}/v1/auth/github/callback" if auth else ""
+    res = auth.handle_github_callback(code, redirect_uri) if auth else {"ok": False}
+    if res.get("ok"):
+        return RedirectResponse(url=f"/studio?auth_token={res['token']}&auth_status=success", status_code=302)
+    else:
+        err = urllib.parse.quote(res.get("error", "OAuth failed"))
+        return RedirectResponse(url=f"/studio?auth_error={err}", status_code=302)
+
+@app.get("/v1/auth/google")
+def auth_google_login(request: Request):
+    redirect_uri = request.query_params.get("redirect_uri", f"{auth.APP_BASE_URL}/v1/auth/google/callback" if auth else "")
+    auth_url = auth.get_google_auth_url(redirect_uri) if auth else "/studio"
+    return RedirectResponse(url=auth_url, status_code=302)
+
+@app.get("/v1/auth/google/callback")
+def auth_google_cb(request: Request):
+    code = request.query_params.get("code", "")
+    redirect_uri = f"{auth.APP_BASE_URL}/v1/auth/google/callback" if auth else ""
+    res = auth.handle_google_callback(code, redirect_uri) if auth else {"ok": False}
+    if res.get("ok"):
+        return RedirectResponse(url=f"/studio?auth_token={res['token']}&auth_status=success", status_code=302)
+    else:
+        err = urllib.parse.quote(res.get("error", "OAuth failed"))
+        return RedirectResponse(url=f"/studio?auth_error={err}", status_code=302)
+
 @app.post("/v1/auth/test-activate")
 async def auth_test_activate(request: Request):
     data = await request.json()
