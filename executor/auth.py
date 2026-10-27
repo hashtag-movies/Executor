@@ -40,6 +40,11 @@ LEMONSQUEEZY_LIFETIME_VARIANT_ID = os.getenv("LEMONSQUEEZY_LIFETIME_VARIANT_ID",
 LEMONSQUEEZY_MONTHLY_CHECKOUT_URL = os.getenv("LEMONSQUEEZY_MONTHLY_CHECKOUT_URL", "").strip()
 LEMONSQUEEZY_LIFETIME_CHECKOUT_URL = os.getenv("LEMONSQUEEZY_LIFETIME_CHECKOUT_URL", "").strip()
 
+# Dodo Payments Live Configuration (Primary Merchant of Record)
+DODO_MONTHLY_CHECKOUT_URL = os.getenv("DODO_MONTHLY_CHECKOUT_URL", "https://checkout.dodopayments.com/buy/pdt_0NqdCbFSAYPRdgRxybYsV?quantity=1").strip()
+DODO_LIFETIME_CHECKOUT_URL = os.getenv("DODO_LIFETIME_CHECKOUT_URL", "https://checkout.dodopayments.com/buy/pdt_0NqdCnqrjw0YHulC6ROrI?quantity=1").strip()
+DODO_WEBHOOK_SECRET = os.getenv("DODO_WEBHOOK_SECRET", "whsec_ixD6KQyeprNhyi6RjFD+MjAfycD5fzgV").strip()
+
 # Base URL for OAuth callbacks
 APP_BASE_URL = os.getenv("APP_BASE_URL", "https://core.hashtagai.online").rstrip("/")
 
@@ -531,6 +536,32 @@ def get_checkout_url(user_id: str, tier: str, return_url: str = "") -> Dict[str,
     if not user:
         return {"ok": False, "error": "User not found"}
 
+    # 1. Primary: Dodo Payments (Direct MoR Checkout)
+    dodo_base = DODO_LIFETIME_CHECKOUT_URL if tier == "pro_lifetime" else DODO_MONTHLY_CHECKOUT_URL
+    if dodo_base:
+        sep = "&" if "?" in dodo_base else "?"
+        email = user.get("email", "")
+        name = user.get("name", "")
+        params = []
+        if email:
+            params.append(f"email={urllib.parse.quote(email)}")
+        if name:
+            params.append(f"name={urllib.parse.quote(name)}")
+        if user_id:
+            params.append(f"metadata_user_id={urllib.parse.quote(user_id)}")
+            params.append(f"client_reference_id={urllib.parse.quote(user_id)}")
+
+        redir = return_url or f"{APP_BASE_URL}/studio?billing=success&tier={tier}"
+        params.append(f"redirect_url={urllib.parse.quote(redir)}")
+
+        full_url = f"{dodo_base}{sep}{'&'.join(params)}" if params else dodo_base
+        return {
+            "ok": True,
+            "url": full_url,
+            "provider": "dodopayments",
+            "is_test_mode": False
+        }
+
     # Use direct checkout URLs if configured
     if tier == "pro_lifetime" and LEMONSQUEEZY_LIFETIME_CHECKOUT_URL:
         sep = "&" if "?" in LEMONSQUEEZY_LIFETIME_CHECKOUT_URL else "?"
@@ -676,3 +707,120 @@ def process_lemonsqueezy_webhook(payload: Dict[str, Any]) -> Dict[str, Any]:
         return {"ok": True, "action": f"Downgraded user {user_id} to free"}
 
     return {"ok": True, "action": f"Acknowledged event {event_name}"}
+
+def verify_dodo_webhook(raw_payload: bytes, headers: Dict[str, str]) -> bool:
+    if not DODO_WEBHOOK_SECRET:
+        return True
+    msg_id = headers.get("webhook-id", "")
+    timestamp = headers.get("webhook-timestamp", "")
+    sig_header = headers.get("webhook-signature", "")
+    if not msg_id or not timestamp or not sig_header:
+        return False
+    try:
+        secret_part = DODO_WEBHOOK_SECRET[6:] if DODO_WEBHOOK_SECRET.startswith("whsec_") else DODO_WEBHOOK_SECRET
+        key = base64.b64decode(secret_part)
+        payload_str = raw_payload.decode("utf-8") if isinstance(raw_payload, bytes) else str(raw_payload)
+        to_sign = f"{msg_id}.{timestamp}.{payload_str}".encode("utf-8")
+        computed = base64.b64encode(hmac.new(key, to_sign, hashlib.sha256).digest()).decode("utf-8")
+
+        for s in sig_header.split(" "):
+            s = s.strip()
+            if s.startswith("v1,"):
+                s = s[3:]
+            if hmac.compare_digest(s, computed):
+                return True
+        return False
+    except Exception as e:
+        print("Dodo webhook signature error:", e)
+        return False
+
+
+def process_dodo_webhook(payload: Dict[str, Any]) -> Dict[str, Any]:
+    event_type = payload.get("type", "")
+    data = payload.get("data", {})
+
+    customer = data.get("customer", {})
+    metadata = data.get("metadata", {})
+
+    user_id = metadata.get("user_id") or metadata.get("metadata_user_id") or data.get("client_reference_id")
+    customer_email = customer.get("email") or data.get("customer_email") or ""
+    customer_name = customer.get("name") or "Subscriber"
+    customer_id = customer.get("customer_id") or data.get("customer_id") or ""
+    payment_id = data.get("payment_id") or data.get("id") or ""
+    subscription_id = data.get("subscription_id") or ""
+
+    # Locate user in DB
+    if not user_id and customer_email:
+        with _db_lock:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM users WHERE email = ?", (customer_email.strip().lower(),))
+            row = cur.fetchone()
+            conn.close()
+            if row:
+                user_id = row["id"]
+
+    # If user doesn't exist yet, auto-register them so their purchase is never lost!
+    if not user_id and customer_email:
+        res_reg = register_with_email(customer_email.strip().lower(), secrets.token_hex(16), customer_name)
+        if res_reg.get("ok"):
+            user_id = res_reg["user"]["id"]
+
+    if not user_id:
+        return {"ok": False, "error": "No associated user found for Dodo webhook event"}
+
+    # Determine Tier from product_id or cart or metadata
+    tier = metadata.get("tier")
+    if not tier:
+        product_id = data.get("product_id") or ""
+        cart = data.get("product_cart", [])
+        if not product_id and cart and isinstance(cart, list):
+            product_id = cart[0].get("product_id", "")
+
+        # Lifetime: pdt_0NqdCnqrjw0YHulC6ROrI
+        # Monthly: pdt_0NqdCbFSAYPRdgRxybYsV
+        if "0NqdCnqr" in str(product_id) or "lifetime" in str(product_id).lower():
+            tier = "pro_lifetime"
+        elif "0NqdCbFS" in str(product_id) or "monthly" in str(product_id).lower() or subscription_id:
+            tier = "pro_monthly"
+        else:
+            tier = "pro_monthly"
+
+    # Log billing event
+    with _db_lock:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO billing_events (id, event_name, user_id, payload_json) VALUES (?, ?, ?, ?)",
+            (f"evt_{secrets.token_hex(8)}", event_type, user_id, json.dumps(payload)),
+        )
+        conn.commit()
+        conn.close()
+
+    if event_type in ("payment.succeeded", "subscription.active", "subscription.created", "subscription.renewed"):
+        status = "lifetime" if tier == "pro_lifetime" else "active"
+        update_user_tier(user_id, tier, status, customer_id, subscription_id or payment_id)
+        return {"ok": True, "action": f"Upgraded user {user_id} to {tier}"}
+
+    elif event_type in ("subscription.cancelled", "subscription.expired", "payment.failed"):
+        update_user_tier(user_id, "free", "cancelled", customer_id, subscription_id)
+        return {"ok": True, "action": f"Downgraded user {user_id} to free"}
+
+    return {"ok": True, "action": f"Acknowledged Dodo event {event_type}"}
+
+
+def process_billing_webhook(payload: Dict[str, Any], headers: Optional[Dict[str, str]] = None, raw_body: bytes = b"") -> Dict[str, Any]:
+    headers = headers or {}
+    is_dodo = bool(headers.get("webhook-id") or headers.get("webhook-signature") or "payment." in payload.get("type", "") or "subscription." in payload.get("type", ""))
+
+    if is_dodo:
+        if raw_body and DODO_WEBHOOK_SECRET:
+            if not verify_dodo_webhook(raw_body, headers):
+                return {"ok": False, "error": "Invalid Dodo webhook signature"}
+        return process_dodo_webhook(payload)
+    else:
+        sig = headers.get("x-signature", "")
+        if raw_body and LEMONSQUEEZY_WEBHOOK_SECRET and sig:
+            if not verify_lemonsqueezy_webhook(raw_body, sig):
+                return {"ok": False, "error": "Invalid LemonSqueezy webhook signature"}
+        return process_lemonsqueezy_webhook(payload)

@@ -2570,7 +2570,7 @@ STUDIO_HTML = r"""<!doctype html>
     <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.6)">
       <div style="display:flex;align-items:center;gap:6px">
         <span>🔒</span>
-        <span>Secure LemonSqueezy Checkout · 256-bit SSL · Instant Tier Activation</span>
+        <span>Secure 256-bit SSL Checkout · Instant Tier Activation</span>
       </div>
       <div>Questions? Reach us at founder@hashtagai.online</div>
     </div>

@@ -1157,11 +1157,8 @@ async def billing_checkout(request: Request):
 async def billing_webhook(request: Request):
     data = await request.json()
     raw_body = await request.body()
-    sig = request.headers.get("X-Signature", "")
-    if auth and auth.LEMONSQUEEZY_WEBHOOK_SECRET:
-        if not auth.verify_lemonsqueezy_webhook(raw_body, sig):
-            raise HTTPException(status_code=400, detail="Invalid signature")
-    res = auth.process_lemonsqueezy_webhook(data) if auth else {"ok": False}
+    headers_dict = {k.lower(): v for k, v in request.headers.items()}
+    res = auth.process_billing_webhook(data, headers=headers_dict, raw_body=raw_body) if auth else {"ok": False}
     return res
 
 @app.get("/studio", response_class=HTMLResponse)
