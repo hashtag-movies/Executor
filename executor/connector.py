@@ -739,8 +739,8 @@ def handle_action(action, params):
         if platform.system() == "Windows":
             import string
             for letter in string.ascii_uppercase:
-                drive = f"{letter}:\\"
-                if os.path.exists(drive):
+            for letter in string.ascii_uppercase:
+                drive = letter + ":\\"
                     drives.append(drive)
         else:
             drives = ["/"]

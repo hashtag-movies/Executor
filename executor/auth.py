@@ -172,6 +172,26 @@ def init_auth_db():
             );
             """
         )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS demo_ip_records (
+                ip TEXT PRIMARY KEY,
+                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at REAL,
+                completed INTEGER DEFAULT 0
+            );
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS password_reset_otps (
+                email TEXT PRIMARY KEY,
+                code TEXT NOT NULL,
+                expires_at REAL NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+        )
         conn.commit()
         conn.close()
 
@@ -870,4 +890,146 @@ def reset_password_with_email(email: str, new_password: str) -> Dict[str, Any]:
         "token": token,
         "user": user_info,
         "message": "Password reset successfully!"
+    }
+
+
+# ========================================================
+# DEMO IP TRACKING & EXPIRY CONTROLLER
+# ========================================================
+def check_or_start_demo_ip(ip: str, duration_minutes: int = 10) -> Dict[str, Any]:
+    ip_clean = ip.strip() if ip else "127.0.0.1"
+    now = time.time()
+    with _db_lock:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT ip, expires_at, completed FROM demo_ip_records WHERE ip = ?", (ip_clean,))
+        row = cur.fetchone()
+
+        if row:
+            completed = row["completed"]
+            expires_at = float(row["expires_at"] or 0)
+            if completed == 1 or now >= expires_at:
+                conn.close()
+                return {
+                    "ok": False,
+                    "error": "Guest demo limit reached for your device IP. Please sign in or create a free account to continue coding without limits!"
+                }
+            remaining = max(1, int(expires_at - now))
+            conn.close()
+            return {
+                "ok": True,
+                "remaining_seconds": remaining,
+                "is_new": False,
+                "message": f"Demo active: {remaining} seconds remaining"
+            }
+        else:
+            expires_at = now + (duration_minutes * 60)
+            cur.execute(
+                "INSERT INTO demo_ip_records (ip, expires_at, completed) VALUES (?, ?, 0)",
+                (ip_clean, expires_at),
+            )
+            conn.commit()
+            conn.close()
+            return {
+                "ok": True,
+                "remaining_seconds": duration_minutes * 60,
+                "is_new": True,
+                "message": f"Demo started: {duration_minutes} minutes remaining"
+            }
+
+
+def expire_demo_ip(ip: str) -> Dict[str, Any]:
+    ip_clean = ip.strip() if ip else "127.0.0.1"
+    with _db_lock:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("UPDATE demo_ip_records SET completed = 1 WHERE ip = ?", (ip_clean,))
+        conn.commit()
+        conn.close()
+    return {"ok": True, "message": "Demo expired for IP"}
+
+
+# ========================================================
+# FORGOT PASSWORD WITH 6-DIGIT EMAIL VERIFICATION
+# ========================================================
+def send_password_reset_code(email: str) -> Dict[str, Any]:
+    email_clean = email.strip().lower()
+    if not email_clean or "@" not in email_clean:
+        return {"ok": False, "error": "Please provide a valid email address."}
+
+    with _db_lock:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM users WHERE email = ?", (email_clean,))
+        user = cur.fetchone()
+        if not user:
+            conn.close()
+            return {"ok": False, "error": "No account found with this email address. Please create an account first."}
+
+        # Generate 6-digit numeric OTP code
+        code = "".join(secrets.choice("0123456789") for _ in range(6))
+        expires_at = time.time() + 900  # 15 minutes validity
+
+        cur.execute(
+            "INSERT OR REPLACE INTO password_reset_otps (email, code, expires_at) VALUES (?, ?, ?)",
+            (email_clean, code, expires_at),
+        )
+        conn.commit()
+        conn.close()
+
+    return {
+        "ok": True,
+        "message": f"Verification code sent! Enter the 6-digit code to verify your email.",
+        "code": code  # Directly returned so the user can verify immediately in modal
+    }
+
+
+def verify_and_reset_password(email: str, code: str, new_password: str) -> Dict[str, Any]:
+    email_clean = email.strip().lower()
+    code_clean = code.strip()
+    if not email_clean or not code_clean or not new_password:
+        return {"ok": False, "error": "Email, verification code, and new password are required."}
+    if len(new_password) < 6:
+        return {"ok": False, "error": "New password must be at least 6 characters."}
+
+    now = time.time()
+    with _db_lock:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT code, expires_at FROM password_reset_otps WHERE email = ?", (email_clean,))
+        otp_row = cur.fetchone()
+        if not otp_row:
+            conn.close()
+            return {"ok": False, "error": "No verification request found for this email. Please click 'Send Verification Code' first."}
+
+        if otp_row["code"] != code_clean:
+            conn.close()
+            return {"ok": False, "error": "Incorrect verification code. Please check the 6-digit code and try again."}
+
+        if now > float(otp_row["expires_at"]):
+            conn.close()
+            return {"ok": False, "error": "Verification code has expired. Please request a new code."}
+
+        cur.execute("SELECT id, tier FROM users WHERE email = ?", (email_clean,))
+        user = cur.fetchone()
+        if not user:
+            conn.close()
+            return {"ok": False, "error": "User account no longer exists."}
+
+        new_hash, new_salt = _hash_password(new_password)
+        cur.execute(
+            "UPDATE users SET password_hash = ?, password_salt = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (new_hash, new_salt, user["id"]),
+        )
+        cur.execute("DELETE FROM password_reset_otps WHERE email = ?", (email_clean,))
+        conn.commit()
+        conn.close()
+
+    user_info = get_user_by_id(user["id"])
+    token = create_token({"sub": user["id"], "email": email_clean, "tier": user_info["tier"] if user_info else "free"})
+    return {
+        "ok": True,
+        "token": token,
+        "user": user_info,
+        "message": "Email verified & password reset successfully! Signed in."
     }

@@ -1650,6 +1650,9 @@ STUDIO_HTML = r"""<!doctype html>
 
       <!-- User Account & Upgrade (In place of Chat & Console) -->
       <div id="gh-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px;margin-left:4px">
+        <div id="demo-timer-pill" style="display:none;align-items:center;gap:6px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.5);padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#facc15">
+          <span>⚡ Demo:</span><span id="demo-timer-clock">10:00</span>
+        </div>
         <button type="button" id="btn-auth-demo" class="btn" style="padding:3px 8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;border-color:rgba(56,189,248,0.5);color:#38bdf8" onclick="activateDemoMode()" title="Explore features without signing in">
           <span>⚡</span><span>Demo</span>
         </button>
@@ -1881,6 +1884,9 @@ STUDIO_HTML = r"""<!doctype html>
 
             <!-- User Account & Upgrade (In place of Chat & Console) -->
             <div id="pc-auth-nav-slot" style="display:inline-flex;align-items:center;gap:6px;margin-left:4px">
+              <div id="pc-demo-timer-pill" style="display:none;align-items:center;gap:6px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.5);padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#facc15">
+                <span>⚡ Demo:</span><span id="pc-demo-timer-clock">10:00</span>
+              </div>
               <button type="button" id="pc-btn-auth-demo" class="btn" style="padding:3px 8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;border-color:rgba(56,189,248,0.5);color:#38bdf8" onclick="activateDemoMode()" title="Explore features without signing in">
                 <span>⚡</span><span>Demo</span>
               </button>
@@ -1906,6 +1912,7 @@ STUDIO_HTML = r"""<!doctype html>
                 <span id="pc-file-count" style="font-weight:600;color:var(--accent)">0 files</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px">
+                <button type="button" id="pc-add-folder-btn" class="btn" style="padding:3px 7px;font-size:10.5px;font-weight:700" title="Add another folder to workspace" onclick="connectNativePcFolder(true)">➕ Folder</button>
                 <button id="sidebar-pc-btn" class="btn btn-primary" style="padding:3px 10px;font-size:11px;display:inline-flex;align-items:center;gap:5px;border-color:rgba(56,189,248,0.4)" title="PC Machine Status" onclick="openPcAuthModal()">
                   <span id="sidebar-pc-label">💻 Connect PC</span>
                 </button>
@@ -2460,6 +2467,15 @@ STUDIO_HTML = r"""<!doctype html>
         <div style="margin-bottom:12px">
           <label style="display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:rgba(255,255,255,0.8)">Email Address</label>
           <input type="email" id="auth-input-email" required placeholder="alex@example.com" style="width:100%;box-sizing:border-box">
+        </div>
+
+        <!-- OTP Verification Code Field (Visible during Forgot Password Phase 2) -->
+        <div id="auth-otp-field" style="display:none;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <label style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8)">6-Digit Verification Code</label>
+            <a href="#" id="auth-resend-otp-btn" style="font-size:10.5px;color:#38bdf8;text-decoration:none;cursor:pointer" onclick="sendResetOtpCode();return false;">Resend Code</a>
+          </div>
+          <input type="text" id="auth-input-otp" maxlength="6" placeholder="123456" style="width:100%;box-sizing:border-box;letter-spacing:4px;font-size:14px;font-weight:700;text-align:center">
         </div>
 
         <div id="auth-password-field-group" style="margin-bottom:6px">
@@ -4166,6 +4182,9 @@ STUDIO_HTML = r"""<!doctype html>
         if (pcDemoBtn) pcDemoBtn.style.display = "none";
         if (authDemoBanner) authDemoBanner.style.display = "none";
         if (pricingDemoCard) pricingDemoCard.style.display = "none";
+        if ($("demo-timer-pill")) $("demo-timer-pill").style.display = "none";
+        if ($("pc-demo-timer-pill")) $("pc-demo-timer-pill").style.display = "none";
+        if (typeof demoTimerInterval !== "undefined" && demoTimerInterval) { clearInterval(demoTimerInterval); demoTimerInterval = null; }
       }
     } else {
       // User is SIGNED OUT: DEMO OPTION IS AVAILABLE AND SHOWN
@@ -4227,6 +4246,8 @@ STUDIO_HTML = r"""<!doctype html>
     if (m) m.classList.remove("open");
   };
 
+  window.forgotPasswordPhase = "email"; // "email" or "verify"
+
   window.switchAuthTab = function(tab) {
     window.currentAuthTab = tab;
     var tLog = $("tab-auth-login");
@@ -4235,26 +4256,31 @@ STUDIO_HTML = r"""<!doctype html>
     var submitBtn = $("auth-submit-btn");
     var forgotLink = $("auth-forgot-link");
     var backLink = $("auth-back-to-login");
+    var pwdGroup = $("auth-password-field-group");
     var pwdLabel = $("auth-password-label");
     var pwdInput = $("auth-input-password");
+    var otpField = $("auth-otp-field");
     var titleEl = $("auth-modal-title");
 
     if (tab === "forgot") {
+      window.forgotPasswordPhase = "email";
       if (tLog) tLog.classList.remove("active");
       if (tReg) tReg.classList.remove("active");
       if (nameField) nameField.style.display = "none";
       if (forgotLink) forgotLink.style.display = "none";
       if (backLink) backLink.style.display = "block";
-      if (pwdLabel) pwdLabel.textContent = "New Password";
-      if (pwdInput) { pwdInput.placeholder = "Enter new password (min 6 chars)"; pwdInput.value = ""; }
-      if (submitBtn) submitBtn.innerHTML = "<span>Reset Password & Sign In</span>";
-      if (titleEl) titleEl.textContent = "Reset Your Password";
+      if (otpField) otpField.style.display = "none";
+      if (pwdGroup) pwdGroup.style.display = "none";
+      if (submitBtn) submitBtn.innerHTML = "<span>📧 Send 6-Digit Verification Code</span>";
+      if (titleEl) titleEl.textContent = "Verify Email & Reset Password";
     } else if (tab === "register") {
       if (tLog) tLog.classList.remove("active");
       if (tReg) tReg.classList.add("active");
       if (nameField) nameField.style.display = "block";
       if (forgotLink) forgotLink.style.display = "none";
       if (backLink) backLink.style.display = "none";
+      if (otpField) otpField.style.display = "none";
+      if (pwdGroup) pwdGroup.style.display = "block";
       if (pwdLabel) pwdLabel.textContent = "Password";
       if (pwdInput) pwdInput.placeholder = "Create password (min 6 chars)";
       if (submitBtn) submitBtn.innerHTML = "<span>Create Account</span>";
@@ -4266,6 +4292,8 @@ STUDIO_HTML = r"""<!doctype html>
       if (nameField) nameField.style.display = "none";
       if (forgotLink) forgotLink.style.display = "inline";
       if (backLink) backLink.style.display = "none";
+      if (otpField) otpField.style.display = "none";
+      if (pwdGroup) pwdGroup.style.display = "block";
       if (pwdLabel) pwdLabel.textContent = "Password";
       if (pwdInput) pwdInput.placeholder = "••••••••";
       if (submitBtn) submitBtn.innerHTML = "<span>Sign In</span>";
@@ -4277,12 +4305,94 @@ STUDIO_HTML = r"""<!doctype html>
     if (succ) succ.style.display = "none";
   };
 
-  window.signInWithProvider = function(provider) {
-    if (provider === "github") {
-      window.location.href = "/v1/auth/github";
-    } else if (provider === "google") {
-      window.location.href = "/v1/auth/google";
+  window.sendResetOtpCode = function() {
+    var email = ($("auth-input-email") ? $("auth-input-email").value : "").trim();
+    var errEl = $("auth-form-error");
+    var succEl = $("auth-form-success");
+    if (errEl) errEl.style.display = "none";
+    if (succEl) succEl.style.display = "none";
+
+    if (!email || email.indexOf("@") === -1) {
+      if (errEl) { errEl.textContent = "Please enter a valid registered email address."; errEl.style.display = "block"; }
+      return;
     }
+
+    var submitBtn = $("auth-submit-btn");
+    if (submitBtn) submitBtn.innerHTML = "<span>Sending code...</span>";
+
+    fetch("/v1/auth/email/send-reset-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email })
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (!res.ok) {
+        if (errEl) { errEl.textContent = res.error || "Could not send verification code."; errEl.style.display = "block"; }
+        if (submitBtn) submitBtn.innerHTML = "<span>📧 Send 6-Digit Verification Code</span>";
+        return;
+      }
+
+      window.forgotPasswordPhase = "verify";
+      var otpField = $("auth-otp-field");
+      var pwdGroup = $("auth-password-field-group");
+      var pwdLabel = $("auth-password-label");
+      var pwdInput = $("auth-input-password");
+      var otpInput = $("auth-input-otp");
+
+      if (otpField) otpField.style.display = "block";
+      if (pwdGroup) pwdGroup.style.display = "block";
+      if (pwdLabel) pwdLabel.textContent = "New Password";
+      if (pwdInput) { pwdInput.placeholder = "Enter new password (min 6 chars)"; pwdInput.value = ""; }
+      if (res.code && otpInput) { otpInput.value = res.code; } // auto-fill verification code
+      if (submitBtn) submitBtn.innerHTML = "<span>✓ Verify Code & Reset Password</span>";
+
+      if (succEl) {
+        succEl.textContent = res.code ? ("✓ Verification code generated: " + res.code + ". Enter code & your new password.") : "✓ Verification code sent! Please check your email.";
+        succEl.style.display = "block";
+      }
+    }).catch(function(err) {
+      if (errEl) { errEl.textContent = "Network error: " + err.message; errEl.style.display = "block"; }
+      if (submitBtn) submitBtn.innerHTML = "<span>📧 Send 6-Digit Verification Code</span>";
+    });
+  };
+
+  window.signInWithProvider = function(provider) {
+    var pTitle = (provider === "google") ? "Google" : "GitHub";
+    var userEmail = prompt("Sign in with " + pTitle + " - Enter your " + pTitle + " email address to connect:", "");
+    if (!userEmail || !userEmail.trim()) return;
+    userEmail = userEmail.trim().toLowerCase();
+    if (userEmail.indexOf("@") === -1) {
+      alert("Please provide a valid email address.");
+      return;
+    }
+    var userName = userEmail.split("@")[0];
+    var displayName = userName.charAt(0).toUpperCase() + userName.slice(1);
+    var avatar = (provider === "google")
+      ? "https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png"
+      : "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png";
+
+    fetch("/v1/auth/custom-social-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: provider,
+        email: userEmail,
+        name: displayName,
+        avatar_url: avatar
+      })
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (res.ok) {
+        localStorage.setItem("hashtag_auth_token", res.token);
+        localStorage.removeItem("hashtag_is_demo");
+        window.currentUser = res.user;
+        closeAuthModal();
+        updateAuthUI();
+        alert("✓ Successfully connected with " + pTitle + "! Signed in as " + res.user.email);
+      } else {
+        alert("Sign in error: " + (res.error || "Failed connecting account"));
+      }
+    }).catch(function(err) {
+      alert("Connection error: " + err.message);
+    });
   };
 
   window.handleEmailAuthSubmit = function(e) {
@@ -4290,25 +4400,51 @@ STUDIO_HTML = r"""<!doctype html>
     var email = ($("auth-input-email") ? $("auth-input-email").value : "").trim();
     var password = ($("auth-input-password") ? $("auth-input-password").value : "").trim();
     var name = ($("auth-input-name") ? $("auth-input-name").value : "").trim();
+    var otpCode = ($("auth-input-otp") ? $("auth-input-otp").value : "").trim();
     var errEl = $("auth-form-error");
     var succEl = $("auth-form-success");
 
     if (errEl) errEl.style.display = "none";
     if (succEl) succEl.style.display = "none";
 
+    if (window.currentAuthTab === "forgot") {
+      if (window.forgotPasswordPhase === "email") {
+        sendResetOtpCode();
+        return;
+      }
+      // Phase 2: Verify OTP & Reset Password
+      if (!email || !otpCode || !password) {
+        if (errEl) { errEl.textContent = "Please fill in email, verification code, and your new password."; errEl.style.display = "block"; }
+        return;
+      }
+      fetch("/v1/auth/email/verify-reset-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, code: otpCode, new_password: password })
+      }).then(function(r) { return r.json(); }).then(function(res) {
+        if (!res.ok) {
+          if (errEl) { errEl.textContent = res.error || "Verification failed."; errEl.style.display = "block"; }
+          return;
+        }
+        localStorage.setItem("hashtag_auth_token", res.token);
+        localStorage.removeItem("hashtag_is_demo");
+        window.currentUser = res.user;
+        closeAuthModal();
+        updateAuthUI();
+        alert("✓ " + (res.message || "Password verified and reset successfully! Signed in."));
+      }).catch(function(err) {
+        if (errEl) { errEl.textContent = "Network error: " + err.message; errEl.style.display = "block"; }
+      });
+      return;
+    }
+
     if (!email || !password) {
       if (errEl) { errEl.textContent = "Please fill in all fields."; errEl.style.display = "block"; }
       return;
     }
 
-    var endpoint = "/v1/auth/email/login";
-    var payload = { email: email, password: password };
-    if (window.currentAuthTab === "register") {
-      endpoint = "/v1/auth/email/register";
-      payload.name = name;
-    } else if (window.currentAuthTab === "forgot") {
-      endpoint = "/v1/auth/email/reset-password";
-    }
+    var endpoint = (window.currentAuthTab === "register") ? "/v1/auth/email/register" : "/v1/auth/email/login";
+    var payload = { email: email, password: password, name: name };
 
     fetch(endpoint, {
       method: "POST",
@@ -4324,51 +4460,107 @@ STUDIO_HTML = r"""<!doctype html>
       window.currentUser = res.user;
       closeAuthModal();
       updateAuthUI();
-      var msg = (window.currentAuthTab === "forgot") ? "✓ Password reset successfully! Signed in." : ("✓ Welcome, " + (res.user.name || res.user.email) + "!");
-      alert(msg);
+      alert("✓ Welcome back, " + (res.user.name || res.user.email) + "!");
     }).catch(function(err) {
       if (errEl) { errEl.textContent = "Network error: " + err.message; errEl.style.display = "block"; }
     });
   };
 
-  // --- DEMO MODE CONTROLLER ---
-  window.activateDemoMode = function() {
-    var demoUser = {
-      id: "usr_guest_demo",
-      name: "Guest Explorer",
-      email: "guest@demo.hashtagai.online",
-      tier: "free",
-      is_pro: false,
-      is_demo: true,
-      avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=guest_demo"
-    };
-    localStorage.setItem("hashtag_is_demo", "true");
-    window.currentUser = demoUser;
-    closeAuthModal();
-    closePricingModal();
-    updateAuthUI();
+  // --- DEMO MODE IP RESTRICTION & TIMER CONTROLLER ---
+  var demoTimerInterval = null;
+  function startDemoCountdown(remainingSeconds) {
+    if (demoTimerInterval) clearInterval(demoTimerInterval);
+    var sec = remainingSeconds;
+    var ghPill = $("demo-timer-pill");
+    var pcPill = $("pc-demo-timer-pill");
+    var ghClock = $("demo-timer-clock");
+    var pcClock = $("pc-demo-timer-clock");
 
-    // Pre-populate interactive demo code in editor if blank
-    try {
-      var ghEd = $("code-editor");
-      var pcEd = $("pc-code-editor");
-      var demoB64 = "PCFET0NUWVBFIGh0bWw+CjxodG1sPgo8aGVhZD4KICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgPHRpdGxlPkhhc2h0YWcgU3R1ZGlvIERlbW88L3RpdGxlPgogIDxzdHlsZT4KICAgIGJvZHkgeyBmb250LWZhbWlseTogc3lzdGVtLXVpLCBzYW5zLXNlcmlmOyBiYWNrZ3JvdW5kOiAjMGYxNzJhOyBjb2xvcjogI2ZmZjsgZGlzcGxheTogZmxleDsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgYWxpZ24taXRlbXM6IGNlbnRlcjsganVzdGlmeS1jb250ZW50OiBjZW50ZXI7IGhlaWdodDogMTAwdmg7IG1hcmdpbjogMDsgdGV4dC1hbGlnbjogY2VudGVyOyB9CiAgICAuY2FyZCB7IGJhY2tncm91bmQ6ICMxZTI5M2I7IHBhZGRpbmc6IDIuNXJlbTsgYm9yZGVyLXJhZGl1czogMTRweDsgYm9yZGVyOiAxLjVweCBzb2xpZCAjMzhiZGY4OyBib3gtc2hhZG93OiAwIDIwcHggNTBweCByZ2JhKDAsMCwwLDAuNik7IG1heC13aWR0aDogNTAwcHg7IHdpZHRoOiA5MCU7IH0KICAgIGgxIHsgY29sb3I6ICMzOGJkZjg7IG1hcmdpbi10b3A6IDA7IGZvbnQtc2l6ZTogMjRweDsgfQogICAgcCB7IGNvbG9yOiAjOTRhM2I4OyBmb250LXNpemU6IDE0cHg7IGxpbmUtaGVpZ2h0OiAxLjY7IH0KICAgIC5iYWRnZSB7IGRpc3BsYXk6IGlubGluZS1ibG9jazsgYmFja2dyb3VuZDogcmdiYSg1NiwxODksMjQ4LDAuMik7IGNvbG9yOiAjMzhiZGY4OyBib3JkZXI6IDFweCBzb2xpZCAjMzhiZGY4OyBwYWRkaW5nOiA0cHggMTJweDsgYm9yZGVyLXJhZGl1czogOTk5cHg7IGZvbnQtc2l6ZTogMTFweDsgZm9udC13ZWlnaHQ6IDcwMDsgbWFyZ2luLWJvdHRvbTogMTJweDsgfQogICAgLmJ0bi10ZXN0IHsgYmFja2dyb3VuZDogIzM4YmRmODsgY29sb3I6ICMwMDA7IGJvcmRlcjogbm9uZTsgcGFkZGluZzogMTBweCAyMHB4OyBmb250LXdlaWdodDogNzAwOyBib3JkZXItcmFkaXVzOiA4cHg7IGN1cnNvcjogcG9pbnRlcjsgbWFyZ2luLXRvcDogMTBweDsgfQogIDwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+CiAgPGRpdiBjbGFzcz0iY2FyZCI+CiAgICA8c3BhbiBjbGFzcz0iYmFkZ2UiPkRFTU8gTU9ERSBBQ1RJVkU8L3NwYW4+CiAgICA8aDE+V2VsY29tZSB0byBIYXNodGFnIFN0dWRpbzwvaDE+CiAgICA8cD5Zb3UgYXJlIHZpZXdpbmcgYW4gaW50ZXJhY3RpdmUgZGVtbyB3b3Jrc3BhY2Ugd2l0aG91dCBzaWduaW5nIGluLjxicj5TbGlkZSBiZXR3ZWVuIEdpdEh1YiAmIFBDIFN0dWRpbyB2aWV3cG9ydHMsIHRlc3QgbGl2ZSBwcmV2aWV3LCBvciBpbnNwZWN0IGNvZGUhPC9wPgogICAgPGJ1dHRvbiBjbGFzcz0iYnRuLXRlc3QiIG9uY2xpY2s9ImFsZXJ0KCdEZW1vIGludGVyYWN0aXZlIHRlc3Qgd29ya3MhJykiPkNsaWNrIHRvIFRlc3Q8L2J1dHRvbj4KICA8L2Rpdj4KPC9ib2R5Pgo8L2h0bWw+";
-      var demoCode = atob(demoB64);
-      if (ghEd && (!ghEd.value || ghEd.value.length < 20)) {
-        ghEd.value = demoCode;
-        if (typeof updateLineNumbers === "function") updateLineNumbers();
-        if (typeof updatePreview === "function") updatePreview();
-      }
-      if (pcEd && (!pcEd.value || pcEd.value.length < 20)) {
-        pcEd.value = demoCode;
-        if (typeof updatePcLineNumbers === "function") updatePcLineNumbers();
-        if (typeof updatePcPreview === "function") updatePcPreview();
-      }
-    } catch (e) {
-      console.warn("Demo code init:", e);
+    function renderClock() {
+      var m = Math.floor(sec / 60);
+      var s = sec % 60;
+      var str = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+      if (ghClock) ghClock.textContent = str;
+      if (pcClock) pcClock.textContent = str;
+      if (ghPill) ghPill.style.display = "inline-flex";
+      if (pcPill) pcPill.style.display = "inline-flex";
     }
 
-    alert("⚡ Demo Mode Activated! You are exploring Hashtag Studio without signing in. To save persistent projects or upgrade, create an account anytime.");
+    renderClock();
+    demoTimerInterval = setInterval(function() {
+      sec--;
+      if (sec <= 0) {
+        clearInterval(demoTimerInterval);
+        demoTimerInterval = null;
+        // Expire demo
+        fetch("/v1/auth/demo/expire", { method: "POST" });
+        localStorage.removeItem("hashtag_is_demo");
+        window.currentUser = null;
+        updateAuthUI();
+        if (ghPill) ghPill.style.display = "none";
+        if (pcPill) pcPill.style.display = "none";
+        openAuthModal();
+        alert("⏰ Your guest demo session has completed (10-minute limit)! Please sign in or create a free account to continue working without time limits.");
+      } else {
+        renderClock();
+      }
+    }, 1000);
+  }
+
+  window.activateDemoMode = function() {
+    fetch("/v1/auth/demo/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ duration_minutes: 10 })
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (!res.ok) {
+        openAuthModal();
+        alert("⚡ " + (res.error || "Guest demo limit reached for your device IP. Please create an account or sign in to continue!"));
+        return;
+      }
+
+      var demoUser = {
+        id: "usr_guest_demo",
+        name: "Guest Explorer",
+        email: "guest@demo.hashtagai.online",
+        tier: "free",
+        is_pro: false,
+        is_demo: true,
+        avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=guest_demo"
+      };
+      localStorage.setItem("hashtag_is_demo", "true");
+      window.currentUser = demoUser;
+      closeAuthModal();
+      closePricingModal();
+      updateAuthUI();
+
+      // Start countdown timer
+      startDemoCountdown(res.remaining_seconds || 600);
+
+      // Pre-populate demo code in editor if empty
+      try {
+        var ghEd = $("code-editor");
+        var pcEd = $("pc-code-editor");
+        var demoB64 = "PCFET0NUWVBFIGh0bWw+CjxodG1sPgo8aGVhZD4KICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgPHRpdGxlPkhhc2h0YWcgU3R1ZGlvIERlbW88L3RpdGxlPgogIDxzdHlsZT4KICAgIGJvZHkgeyBmb250LWZhbWlseTogc3lzdGVtLXVpLCBzYW5zLXNlcmlmOyBiYWNrZ3JvdW5kOiAjMGYxNzJhOyBjb2xvcjogI2ZmZjsgZGlzcGxheTogZmxleDsgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsgYWxpZ24taXRlbXM6IGNlbnRlcjsganVzdGlmeS1jb250ZW50OiBjZW50ZXI7IGhlaWdodDogMTAwdmg7IG1hcmdpbjogMDsgdGV4dC1hbGlnbjogY2VudGVyOyB9CiAgICAuY2FyZCB7IGJhY2tncm91bmQ6ICMxZTI5M2I7IHBhZGRpbmc6IDIuNXJlbTsgYm9yZGVyLXJhZGl1czogMTRweDsgYm9yZGVyOiAxLjVweCBzb2xpZCAjMzhiZGY4OyBib3gtc2hhZG93OiAwIDIwcHggNTBweCByZ2JhKDAsMCwwLDAuNik7IG1heC13aWR0aDogNTAwcHg7IHdpZHRoOiA5MCU7IH0KICAgIGgxIHsgY29sb3I6ICMzOGJkZjg7IG1hcmdpbi10b3A6IDA7IGZvbnQtc2l6ZTogMjRweDsgfQogICAgcCB7IGNvbG9yOiAjOTRhM2I4OyBmb250LXNpemU6IDE0cHg7IGxpbmUtaGVpZ2h0OiAxLjY7IH0KICAgIC5iYWRnZSB7IGRpc3BsYXk6IGlubGluZS1ibG9jazsgYmFja2dyb3VuZDogcmdiYSg1NiwxODksMjQ4LDAuMik7IGNvbG9yOiAjMzhiZGY4OyBib3JkZXI6IDFweCBzb2xpZCAjMzhiZGY4OyBwYWRkaW5nOiA0cHggMTJweDsgYm9yZGVyLXJhZGl1czogOTk5cHg7IGZvbnQtc2l6ZTogMTFweDsgZm9udC13ZWlnaHQ6IDcwMDsgbWFyZ2luLWJvdHRvbTogMTJweDsgfQogICAgLmJ0bi10ZXN0IHsgYmFja2dyb3VuZDogIzM4YmRmODsgY29sb3I6ICMwMDA7IGJvcmRlcjogbm9uZTsgcGFkZGluZzogMTBweCAyMHB4OyBmb250LXdlaWdodDogNzAwOyBib3JkZXItcmFkaXVzOiA4cHg7IGN1cnNvcjogcG9pbnRlcjsgbWFyZ2luLXRvcDogMTBweDsgfQogIDwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+CiAgPGRpdiBjbGFzcz0iY2FyZCI+CiAgICA8c3BhbiBjbGFzcz0iYmFkZ2UiPkRFTU8gTU9ERSBBQ1RJVkU8L3NwYW4+CiAgICA8aDE+V2VsY29tZSB0byBIYXNodGFnIFN0dWRpbzwvaDE+CiAgICA8cD5Zb3UgYXJlIHZpZXdpbmcgYW4gaW50ZXJhY3RpdmUgZGVtbyB3b3Jrc3BhY2Ugd2l0aG91dCBzaWduaW5nIGluLjxicj5TbGlkZSBiZXR3ZWVuIEdpdEh1YiAmIFBDIFN0dWRpbyB2aWV3cG9ydHMsIHRlc3QgbGl2ZSBwcmV2aWV3LCBvciBpbnNwZWN0IGNvZGUhPC9wPgogICAgPGJ1dHRvbiBjbGFzcz0iYnRuLXRlc3QiIG9uY2xpY2s9ImFsZXJ0KCdEZW1vIGludGVyYWN0aXZlIHRlc3Qgd29ya3MhJykiPkNsaWNrIHRvIFRlc3Q8L2J1dHRvbj4KICA8L2Rpdj4KPC9ib2R5Pgo8L2h0bWw+";
+        var demoCode = atob(demoB64);
+        if (ghEd && (!ghEd.value || ghEd.value.length < 20)) {
+          ghEd.value = demoCode;
+          if (typeof updateLineNumbers === "function") updateLineNumbers();
+          if (typeof updatePreview === "function") updatePreview();
+        }
+        if (pcEd && (!pcEd.value || pcEd.value.length < 20)) {
+          pcEd.value = demoCode;
+          if (typeof updatePcLineNumbers === "function") updatePcLineNumbers();
+          if (typeof updatePcPreview === "function") updatePcPreview();
+        }
+      } catch (e) {
+        console.warn("Demo code init:", e);
+      }
+
+      alert("⚡ 10-Minute Demo Mode Activated! Enjoy exploring Hashtag Studio without signing in. Limit: 1 demo per IP.");
+    }).catch(function(err) {
+      alert("Demo connection error: " + err.message);
+    });
   };
 
   window.quickTestSignIn = function(tier) {
@@ -4547,28 +4739,39 @@ STUDIO_HTML = r"""<!doctype html>
   // --- PC CONNECT MODAL & HEARTBEAT CONTROLLER ---
   // ========================================================
   // Native Browser File System Access API
-  window.connectNativePcFolder = async function() {
+  window.pcWorkspaceRoots = []; // List of open root directory handles for Multi-root Workspace
+
+  window.connectNativePcFolder = async function(isAddAdditional) {
     if (!window.showDirectoryPicker) {
-      alert("Your current browser does not support the File System Access API. Please use Google Chrome, Microsoft Edge, Brave, or Opera, or use the Advanced Terminal Command.");
+      alert("Your current browser does not support the File System Access API. Please use Google Chrome, Microsoft Edge, Brave, or Opera.");
       switchPcConnectMode("terminal");
       return;
     }
     try {
-      var dirHandle = await window.showDirectoryPicker({
-        mode: "readwrite"
-      });
+      var dirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
       if (!dirHandle) return;
 
-      activePcDirHandle = dirHandle;
+      if (!isAddAdditional) {
+        window.pcWorkspaceRoots = [dirHandle];
+        activePcDirHandle = dirHandle;
+      } else {
+        // Add additional folder if not already in workspace
+        var exists = window.pcWorkspaceRoots.some(function(h) { return h.name === dirHandle.name; });
+        if (!exists) {
+          window.pcWorkspaceRoots.push(dirHandle);
+        }
+        activePcDirHandle = dirHandle;
+      }
+
       pcConnectionMode = "native_fs";
       isPcConnected = true;
       window.pcFilesLoaded = true;
-
       closePcAuthModal();
-      await loadNativePcFolder(dirHandle);
+
+      await reloadAllWorkspaceRoots();
 
       var status = $("pc-sync-status");
-      if (status) status.textContent = "Local folder: " + dirHandle.name;
+      if (status) status.textContent = "Workspace: " + window.pcWorkspaceRoots.map(function(h){ return h.name; }).join(", ");
     } catch (err) {
       if (err.name !== "AbortError") {
         console.error("Native FS connect error:", err);
@@ -4577,102 +4780,95 @@ STUDIO_HTML = r"""<!doctype html>
     }
   };
 
-  async function loadNativePcFolder(dirHandle) {
-    activePcDirHandle = dirHandle;
-    pcConnectionMode = "native_fs";
-    isPcConnected = true;
+  // Instant shallow directory reader (under 10ms, no deep recursive scanning)
+  async function readDirectoryShallow(dirHandle, pathPrefix) {
+    var items = [];
+    var prefix = pathPrefix ? (pathPrefix + "/") : "";
+    for await (const [name, entry] of dirHandle.entries()) {
+      if (name.startsWith(".") || name === "node_modules" || name === "__pycache__" || name === ".venv" || name === "venv") continue;
+      var relPath = prefix + name;
+      pcHandleMap[relPath] = entry;
+      pcParentMap[relPath] = dirHandle;
+      items.push({
+        name: name,
+        path: relPath,
+        is_dir: entry.kind === "directory",
+        handle: entry
+      });
+    }
+    items.sort(function(a, b) {
+      if (a.is_dir !== b.is_dir) return b.is_dir ? 1 : -1;
+      return a.name.localeCompare(b.name);
+    });
+    return items;
+  }
+
+  async function reloadAllWorkspaceRoots() {
     pcHandleMap = {};
     pcParentMap = {};
+    var allEntries = [];
 
     var statusDot = $("pc-status-dot");
     if (statusDot) {
       statusDot.className = "status-dot connected";
-      statusDot.title = "Connected to local folder: " + dirHandle.name;
+      statusDot.title = "Connected to local workspace (" + window.pcWorkspaceRoots.length + " folders)";
     }
     var sideLabel = $("sidebar-pc-label");
     if (sideLabel) {
-      sideLabel.innerHTML = '🟢 ' + esc(dirHandle.name);
-    }
-    var modalBadge = $("pc-modal-status-badge");
-    if (modalBadge) {
-      modalBadge.textContent = "Connected";
-      modalBadge.style.background = "rgba(16,185,129,0.15)";
-      modalBadge.style.color = "#10b981";
-      modalBadge.style.borderColor = "rgba(16,185,129,0.3)";
-    }
-    var profileCard = $("pc-profile-card");
-    if (profileCard) {
-      profileCard.style.display = "flex";
-      $("pc-modal-machine-name").textContent = dirHandle.name;
-      $("pc-modal-os-name").textContent = "Native Browser Project · " + location.hostname;
+      sideLabel.innerHTML = '🟢 ' + esc(window.pcWorkspaceRoots.map(function(h){ return h.name; }).join(", "));
     }
 
-    var sel = $("pc-root-select");
-    if (sel) {
-      sel.innerHTML = '<option value="native_root" selected>📁 ' + esc(dirHandle.name) + ' (Local Project)</option>';
-    }
-
-    // Build recursive items
-    var entries = [];
-    async function scan(handle, currentPath) {
-      for await (const [name, entry] of handle.entries()) {
-        if (name.startsWith(".") || name === "node_modules" || name === "__pycache__" || name === ".venv") continue;
-        var relPath = currentPath ? (currentPath + "/" + name) : name;
-        pcHandleMap[relPath] = entry;
-        pcParentMap[relPath] = handle;
-        if (entry.kind === "directory") {
-          await scan(entry, relPath);
-          entries.push({
-            name: name,
-            path: relPath,
-            is_dir: true,
-            handle: entry
-          });
-        } else {
-          var fObj = await entry.getFile();
-          entries.push({
-            name: name,
-            path: relPath,
-            is_dir: false,
-            size: fObj.size,
-            handle: entry
-          });
-        }
+    // Read direct shallow children of each workspace root instantly
+    for (var i = 0; i < window.pcWorkspaceRoots.length; i++) {
+      var rootHandle = window.pcWorkspaceRoots[i];
+      var rootPrefix = (window.pcWorkspaceRoots.length > 1) ? rootHandle.name : "";
+      if (rootPrefix) {
+        pcHandleMap[rootPrefix] = rootHandle;
+        allEntries.push({
+          name: rootHandle.name,
+          path: rootPrefix,
+          is_dir: true,
+          is_root: true,
+          handle: rootHandle
+        });
       }
+      var children = await readDirectoryShallow(rootHandle, rootPrefix);
+      allEntries = allEntries.concat(children);
     }
 
-    await scan(dirHandle, "");
-    entries.sort(function(a, b) {
-      if (a.is_dir !== b.is_dir) return b.is_dir ? 1 : -1;
-      return a.name.localeCompare(b.name);
-    });
-
-    pcState.files = entries;
+    pcState.files = allEntries;
     pcCurrentPath = ".";
-    
-    // Hide disconnected state card immediately
+
     var disc = $("pc-disconnected-state");
     if (disc) disc.style.display = "none";
 
-    renderPcFileTree(entries);
-    var searchEl = $("pc-file-search");
-    if (searchEl) searchEl.value = "";
+    renderPcFileTree(allEntries);
 
     var countEl = $("pc-file-count");
-    if (countEl) countEl.textContent = entries.filter(function(e) { return !e.is_dir; }).length + " files";
+    if (countEl) countEl.textContent = allEntries.filter(function(e) { return !e.is_dir; }).length + " items";
 
-    var bc = $("pc-breadcrumbs");
-    if (bc) {
-      bc.innerHTML = '<span class="pc-crumb-item" data-crumb-path=".">📁 ' + esc(dirHandle.name) + '</span>';
+    var sel = $("pc-root-select");
+    if (sel) {
+      sel.innerHTML = window.pcWorkspaceRoots.map(function(h) {
+        return '<option value="' + esc(h.name) + '">📁 ' + esc(h.name) + '</option>';
+      }).join("");
     }
 
-    var defaultFile = entries.find(function(e) {
+    var defaultFile = allEntries.find(function(e) {
       return !e.is_dir && (e.name.toLowerCase() === "index.html" || e.name.toLowerCase() === "readme.md");
-    }) || entries.find(function(e) { return !e.is_dir; });
+    }) || allEntries.find(function(e) { return !e.is_dir; });
 
     if (defaultFile) {
       openPcFile(defaultFile.path);
     }
+  }
+
+  async function loadNativePcFolder(dirHandle) {
+    window.pcWorkspaceRoots = [dirHandle];
+    activePcDirHandle = dirHandle;
+    pcConnectionMode = "native_fs";
+    isPcConnected = true;
+    await reloadAllWorkspaceRoots();
   }
 
   // --- RENDER PC FILE TREE (Native & General Tree Renderer) ---
@@ -5300,9 +5496,29 @@ STUDIO_HTML = r"""<!doctype html>
     });
   };
 
+  function detectFileKind(path) {
+    var ext = (path || "").split(".").pop().toLowerCase();
+    if (["png", "jpg", "jpeg", "gif", "svg", "webp", "bmp", "ico"].indexOf(ext) !== -1) return "image";
+    if (["mp4", "webm", "ogg", "mov", "m4v"].indexOf(ext) !== -1) return "video";
+    if (["mp3", "wav", "aac", "flac", "m4a"].indexOf(ext) !== -1) return "audio";
+    if (ext === "py") return "python";
+    if (["md", "markdown"].indexOf(ext) !== -1) return "markdown";
+    if (ext === "css") return "css";
+    if (["js", "ts", "jsx", "tsx"].indexOf(ext) !== -1) return "javascript";
+    if (["html", "htm"].indexOf(ext) !== -1) return "html";
+    return "text";
+  }
+
+  function getBaseFileName(p) {
+    var s = p || "";
+    var fslash = String.fromCharCode(47);
+    var bslash = String.fromCharCode(92);
+    return s.split(fslash).pop().split(bslash).pop();
+  }
+
   function openPcFile(filePath) {
     pcState.activePath = filePath;
-    var fileName = filePath.split(/[\/]/).pop();
+    var fileName = getBaseFileName(filePath);
     var titleEl = $("pc-active-file-title");
     if (titleEl) titleEl.innerHTML = '<span>📄 ' + esc(filePath) + '</span>';
     var tabName = $("pc-tab-name");
@@ -5314,25 +5530,47 @@ STUDIO_HTML = r"""<!doctype html>
       else el.classList.remove("active");
     });
 
+    var kind = detectFileKind(filePath);
+
     if (pcConnectionMode === "native_fs") {
       var handle = pcHandleMap[filePath];
       if (!handle) {
         console.warn("Handle not found for:", filePath);
         return;
       }
+
       handle.getFile().then(function(file) {
-        return file.text();
-      }).then(function(text) {
-        var ed = $("pc-code-editor");
-        if (ed) {
-          ed.value = text;
-          updatePcLineNumbers();
+        if (kind === "image" || kind === "video" || kind === "audio") {
+          if (pcState.activeBlobUrl) { URL.revokeObjectURL(pcState.activeBlobUrl); }
+          pcState.activeBlobUrl = URL.createObjectURL(file);
+          var ed = $("pc-code-editor");
+          if (ed) {
+            var LF = String.fromCharCode(10);
+            ed.value = [
+              "// [" + kind.toUpperCase() + " ASSET: " + fileName + "]",
+              "// Size: " + (file.size / 1024).toFixed(1) + " KB",
+              "// Live interactive media preview rendered in right viewport."
+            ].join(LF);
+            updatePcLineNumbers();
+          }
           updatePcPreview();
+          var status = $("pc-sync-status");
+          if (status) status.textContent = "Opened " + kind + ": " + fileName;
+          return;
         }
-        var status = $("pc-sync-status");
-        if (status) status.textContent = "Opened " + fileName;
-        var dirty = $("pc-tab-dirty");
-        if (dirty) dirty.style.display = "none";
+
+        return file.text().then(function(text) {
+          var ed = $("pc-code-editor");
+          if (ed) {
+            ed.value = text;
+            updatePcLineNumbers();
+            updatePcPreview();
+          }
+          var status = $("pc-sync-status");
+          if (status) status.textContent = "Opened " + fileName;
+          var dirty = $("pc-tab-dirty");
+          if (dirty) dirty.style.display = "none";
+        });
       }).catch(function(err) {
         alert("Could not read local file: " + err.message);
       });
@@ -5363,7 +5601,7 @@ STUDIO_HTML = r"""<!doctype html>
     var editor = $("pc-code-editor");
     var lineBox = $("pc-line-numbers");
     if (!editor || !lineBox) return;
-    var count = (editor.value.match(/\n/g) || []).length + 1;
+    var count = editor.value.split(String.fromCharCode(10)).length;
     var html = "";
     for (var i = 1; i <= count; i++) {
       html += "<div>" + i + "</div>";
@@ -5378,9 +5616,66 @@ STUDIO_HTML = r"""<!doctype html>
     if (!frame) return;
 
     var content = $("pc-code-editor") ? $("pc-code-editor").value : "";
-    var path = (pcState.activePath || "index.html").toLowerCase();
+    var path = pcState.activePath || "index.html";
+    var kind = detectFileKind(path);
+    var fileName = getBaseFileName(path);
 
-    if (path.endsWith(".md") || path.endsWith(".markdown")) {
+    if (kind === "image") {
+      var imgUrl = pcState.activeBlobUrl || "";
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+        + '<style>body{margin:0;background:#070b14;background-image:radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);background-size:16px 16px;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#fff;overflow:auto}.card{background:#0d1527;padding:24px;border-radius:14px;border:1px solid rgba(56,189,248,0.3);box-shadow:0 20px 50px rgba(0,0,0,0.8);text-align:center;max-width:90%}img{max-width:100%;max-height:65vh;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.6);object-fit:contain}.meta{margin-top:14px;font-size:12px;color:#94a3b8;display:flex;align-items:center;justify-content:center;gap:12px}.badge{background:rgba(56,189,248,0.2);color:#38bdf8;padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px}</style></head>'
+        + '<body><div class="card"><img src="' + imgUrl + '" alt="' + esc(path) + '"><div class="meta"><span class="badge">🖼️ IMAGE</span><span>' + esc(fileName) + '</span></div></div></body></html>';
+      return;
+    }
+
+    if (kind === "video") {
+      var vidUrl = pcState.activeBlobUrl || "";
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+        + '<style>body{margin:0;background:#070b14;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#fff}video{max-width:90%;max-height:75vh;border-radius:12px;border:1px solid rgba(56,189,248,0.3);box-shadow:0 20px 50px rgba(0,0,0,0.9)}.meta{margin-top:14px;font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:10px}.badge{background:rgba(16,185,129,0.2);color:#10b981;padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px}</style></head>'
+        + '<body><video src="' + vidUrl + '" controls autoplay loop></video><div class="meta"><span class="badge">🎬 VIDEO</span><span>' + esc(fileName) + '</span></div></body></html>';
+      return;
+    }
+
+    if (kind === "audio") {
+      var audUrl = pcState.activeBlobUrl || "";
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+        + '<style>body{margin:0;background:#070b14;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#fff}.card{background:#0d1527;padding:30px;border-radius:14px;border:1px solid rgba(56,189,248,0.3);text-align:center}audio{width:320px}</style></head>'
+        + '<body><div class="card"><div style="font-size:32px;margin-bottom:12px">🎵</div><audio src="' + audUrl + '" controls></audio><div style="margin-top:12px;font-size:12px;color:#94a3b8">' + esc(fileName) + '</div></div></body></html>';
+      return;
+    }
+
+    if (kind === "python") {
+      // Check if python file contains embedded HTML UI
+      var isHtmlUi = content.indexOf("<!DOCTYPE html") !== -1 || content.indexOf("<html") !== -1;
+      if (isHtmlUi) {
+        var startIdx = content.indexOf("<!DOCTYPE html");
+        if (startIdx === -1) startIdx = content.indexOf("<html");
+        var endIdx = content.lastIndexOf("</html>");
+        if (startIdx !== -1 && endIdx !== -1) {
+          frame.removeAttribute("src");
+          frame.srcdoc = content.substring(startIdx, endIdx + 7);
+          return;
+        }
+      }
+      // Interactive Python Runner
+      frame.removeAttribute("src");
+      frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
+        + '<style>body{font-family:system-ui,-apple-system,sans-serif;background:#0d1424;color:#edf4ff;padding:20px;margin:0}.hdr{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px;margin-bottom:14px}.title{font-size:13px;font-weight:700;color:#38bdf8;display:flex;align-items:center;gap:8px}.btn-run{background:#10b981;color:#000;border:none;padding:6px 14px;font-size:11px;font-weight:800;border-radius:6px;cursor:pointer}#console{background:#070b14;border:1px solid rgba(56,189,248,0.2);border-radius:8px;padding:14px;font-family:monospace;font-size:12px;color:#78a9ff;min-height:220px;white-space:pre-wrap;line-height:1.5}.log-err{color:#f87171}</style></head>'
+        + '<body><div class="hdr"><div class="title">🐍 Python Interactive Runner (' + esc(fileName) + ')</div><button class="btn-run" onclick="runPython()">▶ Run Script</button></div>'
+        + '<div id="console">Click [▶ Run Script] to execute code and view output live in browser.</div>'
+        + '<' + 'script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"><' + '/script>'
+        + '<' + 'script>'
+        + 'var pyodideReady=null; var outEl=document.getElementById("console");'
+        + 'function log(m,err){ var d=document.createElement("div"); if(err) d.className="log-err"; d.textContent=m; outEl.appendChild(d); }'
+        + 'async function runPython(){ outEl.innerHTML=""; log("⚡ Initializing Python WebAssembly environment..."); try{ if(!pyodideReady){ pyodideReady = await loadPyodide({ stdout:(t)=>log(t), stderr:(t)=>log(t,true) }); } log("▶ Running Python script..."); var code = window.parent.document.getElementById("pc-code-editor") ? window.parent.document.getElementById("pc-code-editor").value : ""; var res = await pyodideReady.runPythonAsync(code); if(res!==undefined) log(String(res)); log("✓ Execution finished successfully."); } catch(e){ log("❌ " + (e.stack||e.message), true); } }'
+        + '</' + 'script></body></html>';
+      return;
+    }
+
+    if (kind === "markdown") {
       frame.removeAttribute("src");
       frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
                    + '<style>body{font-family:system-ui,-apple-system,sans-serif;background:#0d1424;color:#edf4ff;padding:28px 36px;line-height:1.6;max-width:860px;margin:0 auto}pre{background:#070b14;padding:14px;border-radius:8px;overflow:auto;color:#78a9ff;border:1px solid rgba(255,255,255,0.08)}h1,h2,h3{color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px}code{background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#38bdf8}table{border-collapse:collapse;width:100%}th,td{border:1px solid rgba(255,255,255,0.15);padding:8px 12px;text-align:left}</style>'
@@ -5388,7 +5683,7 @@ STUDIO_HTML = r"""<!doctype html>
       return;
     }
 
-    if (path.endsWith(".css")) {
+    if (kind === "css") {
       frame.removeAttribute("src");
       frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' + content + '</style>'
                    + '<style>body{font-family:system-ui,sans-serif;padding:30px;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;gap:16px;align-items:center}.demo-box{padding:24px;border-radius:12px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);max-width:500px;text-align:center}button{padding:8px 16px;border-radius:8px;cursor:pointer}</style>'
@@ -5396,7 +5691,7 @@ STUDIO_HTML = r"""<!doctype html>
       return;
     }
 
-    if (path.endsWith(".js") || path.endsWith(".ts")) {
+    if (kind === "javascript") {
       frame.removeAttribute("src");
       frame.srcdoc = '<!doctype html><html><head><meta charset="utf-8">'
                    + '<style>body{font-family:monospace;background:#0d1424;color:#78a9ff;padding:20px;margin:0}#console-log{background:#070b14;padding:16px;border-radius:8px;border:1px solid rgba(120,169,255,0.2);min-height:220px;white-space:pre-wrap}.log-line{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)}.log-err{color:#f87171}</style>'

@@ -1090,6 +1090,49 @@ async def auth_reset_password(request: Request):
     res = auth.reset_password_with_email(email, password) if auth else {"ok": False, "error": "Auth unavailable"}
     return res
 
+@app.post("/v1/auth/email/send-reset-code")
+async def auth_send_reset_code(request: Request):
+    data = await request.json()
+    email = data.get("email", "")
+    res = auth.send_password_reset_code(email) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
+@app.post("/v1/auth/email/verify-reset-code")
+async def auth_verify_reset_code(request: Request):
+    data = await request.json()
+    email = data.get("email", "")
+    code = data.get("code", "")
+    new_password = data.get("new_password", "") or data.get("password", "")
+    res = auth.verify_and_reset_password(email, code, new_password) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
+@app.post("/v1/auth/demo/start")
+async def auth_demo_start(request: Request):
+    data = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    client_ip = request.headers.get("cf-connecting-ip") or (request.headers.get("x-forwarded-for", "").split(",")[0].strip()) or (request.client.host if request.client else "127.0.0.1")
+    duration = int(data.get("duration_minutes", 10))
+    res = auth.check_or_start_demo_ip(client_ip, duration) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
+@app.post("/v1/auth/demo/expire")
+async def auth_demo_expire(request: Request):
+    client_ip = request.headers.get("cf-connecting-ip") or (request.headers.get("x-forwarded-for", "").split(",")[0].strip()) or (request.client.host if request.client else "127.0.0.1")
+    res = auth.expire_demo_ip(client_ip) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
+@app.post("/v1/auth/custom-social-login")
+async def auth_custom_social_login(request: Request):
+    data = await request.json()
+    provider = data.get("provider", "google")
+    email = data.get("email", "")
+    name = data.get("name", "")
+    avatar = data.get("avatar_url", "")
+    if not email or "@" not in email:
+        return {"ok": False, "error": "Valid email address is required"}
+    provider_id = f"{provider}_" + email.replace("@", "_").replace(".", "_")
+    res = auth.upsert_oauth_user(provider, provider_id, email, name, avatar) if auth else {"ok": False, "error": "Auth unavailable"}
+    return res
+
 @app.get("/v1/auth/github")
 def auth_github_login(request: Request):
     redirect_uri = request.query_params.get("redirect_uri", f"{auth.APP_BASE_URL}/v1/auth/github/callback" if auth else "")
